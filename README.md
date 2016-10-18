@@ -8,6 +8,10 @@ Position yourself, locate things, and confidently get in and get out. Save time 
 
 Trek2There™ provides two simple pieces of continuously updated information: the direction you need to travel, and a distance remaining to get there.
 
+## How to use the app
+
+Download the app from the [Google Play](https://play.google.com/store/apps/details?id=com.esri.trek2there) or [iTunes](https://itunes.apple.com/au/app/trek2there/id1162308506) app store. You can enter a destination either by typing in the coorindates or by choosing a desintation from another app that can launch Trek2There. You can try this out with our simple web app https://esri.github.io/Trek2There/Trek2ThereWebLauncher.html. Launch this webpage on your device, select a location and choose to launch Trek2There.
+
 ## Requirements
 
 <a href="http://www.esri.com/landing-pages/appstudio">AppStudio for ArcGIS</a> is required to compile the code in this repo.
