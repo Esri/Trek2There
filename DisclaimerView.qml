@@ -29,15 +29,18 @@ Item {
     Rectangle{
         anchors.fill: parent
         color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+        Accessible.role: Accessible.Pane
 
         ColumnLayout{
             anchors.fill: parent
             spacing: 0
+            Accessible.role: Accessible.Pane
 
             Rectangle{
                 Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
                 Layout.fillWidth: true
                 color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                Accessible.role: Accessible.Pane
 
                 Text{
                     anchors.fill: parent
@@ -45,7 +48,12 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                     text: qsTr("Disclaimer")
                     color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+
+                    Accessible.role: Accessible.Heading
+                    Accessible.name: text
                 }
+
+
             }
 
             //------------------------------------------------------------------
@@ -54,6 +62,7 @@ Item {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
                 color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                Accessible.ignored: true
 
                 Image{
                     source: "images/notice_triangle.png"
@@ -70,6 +79,7 @@ Item {
                 Layout.fillWidth: true
                 Layout.margins: 16 * AppFramework.displayScaleFactor
                 color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                Accessible.role: Accessible.Pane
 
                 TextArea{
                     id: disclaimerText
@@ -88,6 +98,11 @@ Item {
                     onLinkActivated: {
                          Qt.openUrlExternally(link);
                     }
+                    Accessible.role: Accessible.StaticText
+                    Accessible.name: qsTr("Disclaimer text")
+                    Accessible.readOnly: true
+                    Accessible.multiLine: true
+                    Accessible.focusable: true
                 }
             }
             //------------------------------------------------------------------
@@ -98,6 +113,7 @@ Item {
                 Layout.margins: 16 * AppFramework.displayScaleFactor
                 Layout.topMargin: 0
                 color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                Accessible.role: Accessible.Pane
 
                 Text{
                     anchors.fill: parent
@@ -105,6 +121,12 @@ Item {
                     text: qsTr("<a href='http://esriurl.com/labseula' style='color:#007ac2'>License Agreement</a> ")
                     onLinkActivated: {
                          Qt.openUrlExternally(link);
+                    }
+                    Accessible.role: Accessible.Link
+                    Accessible.name: qsTr("License agreement")
+                    Accessible.focusable: true
+                    Accessible.onPressAction: {
+                        Qt.openUrlExternally('http://esriurl.com/labseula');
                     }
                 }
             }
@@ -117,21 +139,30 @@ Item {
                 color: !nightMode ? "#ededed" : "#272727"
                 visible: false // disabled for v1.0
                 enabled: false // disabled for v1.0
+                Accessible.role: Accessible.Pane
+                Accessible.ignored: true // disabled for v1.0
 
                 RowLayout{
                     anchors.fill: parent
                     anchors.leftMargin: 16 * AppFramework.displayScaleFactor
                     anchors.rightMargin: 16 * AppFramework.displayScaleFactor
                     spacing: 0
+                    Accessible.role: Accessible.Pane
+
                     Rectangle{
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         color: "transparent"
+                        Accessible.role: Accessible.Pane
+
                         Text{
+                            id: doNotShowWarningAgainLabel
                             anchors.fill: parent
                             verticalAlignment: Text.AlignVCenter
                             text: qsTr("Don't show this message again.")
                             color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                            Accessible.role: Accessible.StaticText
+                            Accessible.name: text
                         }
                     }
 
@@ -139,11 +170,17 @@ Item {
                         Layout.preferredWidth: parent.height
                         Layout.fillHeight: true
                         color: "transparent"
+                        Accessible.role: Accessible.Pane
 
                         RadioButton{
                             id: doNotShowWarningAgain
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.right: parent.right
+
+                            Accessible.role: Accessible.RadioButton
+                            Accessible.name: doNotShowWarningAgainLabel.text
+                            Accessible.checkable: true
+
                             style: RadioButtonStyle {
                               indicator: Rectangle {
                                   implicitWidth: 20 * AppFramework.displayScaleFactor
@@ -173,18 +210,24 @@ Item {
                 Layout.fillWidth: true
                 Layout.bottomMargin: 16 * AppFramework.displayScaleFactor
                 color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                Accessible.role: Accessible.Pane
 
                 RowLayout{
                     anchors.fill: parent
                     anchors.leftMargin: 16 * AppFramework.displayScaleFactor
                     anchors.rightMargin: 16 * AppFramework.displayScaleFactor
                     spacing:0
+                    Accessible.role: Accessible.Pane
+
                     Rectangle{
                         Layout.fillHeight: true
                         Layout.fillWidth: true
                         visible: false // disabled for v1.0
                         enabled: false // disabled for v1.0
                         color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                        Accessible.role: Accessible.Pane
+                        Accessible.ignored: true // disabled for v1.0
+
                         Button{
                             height: parent.height
                             width: parent.width - 50 * AppFramework.displayScaleFactor
@@ -203,6 +246,13 @@ Item {
                             onClicked: {
                                 Qt.quit();
                             }
+
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr("Cancel")
+                            Accessible.description: qsTr("This button will close the application, if allowed by the operating system.")
+                            Accessible.onPressAction: {
+                                clicked();
+                            }
                         }
                     }
 
@@ -210,6 +260,8 @@ Item {
                         Layout.fillHeight: true
                         Layout.fillWidth: true
                         color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                        Accessible.role: Accessible.Pane
+
                         Button{
                             height: parent.height
                             width: parent.width // parent.width - 50 * AppFramework.displayScaleFactor
@@ -237,6 +289,13 @@ Item {
                                 app.settings.setValue("safteyWarningAccepted", true);
                                 */
                                 mainStackView.push({item: navigationView, replace: true});
+                            }
+
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr("Accept")
+                            Accessible.description: qsTr("This will take you to the navigation view, if you have read and accept the disclaimer text.")
+                            Accessible.onPressAction: {
+                                clicked();
                             }
                         }
                     }

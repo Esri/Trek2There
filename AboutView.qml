@@ -34,10 +34,12 @@ Item {
     Rectangle {
         anchors.fill: parent
         color: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
+        Accessible.role: Accessible.Pane
 
         ColumnLayout {
             anchors.fill: parent
             spacing: 0
+            Accessible.role: Accessible.Pane
 
             //------------------------------------------------------------------
 
@@ -46,15 +48,19 @@ Item {
                 Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
                 id: navBar
                 color: nightMode === false ? dayModeSettings.background : nightModeSettings.background
+                Accessible.role: Accessible.Pane
+                Accessible.name: qsTr("Navigation bar")
 
                 RowLayout {
                     anchors.fill: parent
                     spacing: 0
+                    Accessible.role: Accessible.Pane
 
                     Rectangle {
                         id: backButtonContainer
                         Layout.fillHeight: true
                         Layout.preferredWidth: 50 * AppFramework.displayScaleFactor
+                        Accessible.role: Accessible.Pane
 
                         Button {
                             anchors.fill: parent
@@ -71,17 +77,26 @@ Item {
                                         anchors.verticalCenter: parent.verticalCenter
                                         width: parent.width - (30 * AppFramework.displayScaleFactor)
                                         fillMode: Image.PreserveAspectFit
+                                        Accessible.ignored: true
                                     }
                                     ColorOverlay {
                                         source: backArrow
                                         anchors.fill: backArrow
                                         color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                                        Accessible.ignored: true
                                     }
                                 }
                             }
 
                             onClicked: {
                                 mainStackView.pop();
+                            }
+
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr("Go back")
+                            Accessible.description: qsTr("Go back to previous view")
+                            Accessible.onPressAction: {
+                                clicked();
                             }
                         }
                     }
@@ -90,6 +105,8 @@ Item {
                         Layout.fillHeight: true
                         Layout.fillWidth: true
                         color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                        Accessible.role: Accessible.Pane
+
                         Text {
                             anchors.fill: parent
                             anchors.rightMargin: backButtonContainer.width
@@ -97,6 +114,8 @@ Item {
                             horizontalAlignment: Text.AlignHCenter
                             text: qsTr("About")
                             color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                            Accessible.role: Accessible.Heading
+                            Accessible.name: text
                         }
                     }
                 }
@@ -109,10 +128,12 @@ Item {
                 Layout.fillWidth: true
                 Layout.margins: 16 * AppFramework.displayScaleFactor
                 color: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
+                Accessible.role: Accessible.Pane
 
                 ColumnLayout{
                     anchors.fill: parent
                     spacing:0
+                    Accessible.role: Accessible.Pane
 
                     //----------------------------------------------------------
 
@@ -121,6 +142,7 @@ Item {
                         Layout.bottomMargin: 5 * AppFramework.displayScaleFactor
                         Layout.fillWidth: true
                         color: "transparent"
+                        Accessible.role: Accessible.Pane
 
                         Text {
                             anchors.fill: parent
@@ -128,6 +150,8 @@ Item {
                             text: qsTr("<b>DESCRIPTION</b>")
                             verticalAlignment: Text.AlignBottom
                             color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                            Accessible.role: Accessible.Heading
+                            Accessible.name: qsTr("Description")
                         }
                     }
 
@@ -141,6 +165,10 @@ Item {
                         textFormat: Text.RichText
                         textColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                         text: "%1".arg(app.info.description)
+                        Accessible.role: Accessible.StaticText
+                        Accessible.name: qsTr("Description text")
+                        Accessible.readOnly: true
+                        Accessible.multiLine: true
                     }
                     //----------------------------------------------------------
 
@@ -149,6 +177,7 @@ Item {
                         Layout.bottomMargin: 5 * AppFramework.displayScaleFactor
                         Layout.fillWidth: true
                         color: "transparent"
+                        Accessible.role: Accessible.Pane
 
                         Text {
                             anchors.fill: parent
@@ -156,6 +185,8 @@ Item {
                             text: qsTr("<b>ACCESS AND USE CONSTRAINTS</b>")
                             verticalAlignment: Text.AlignBottom
                             color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                            Accessible.role: Accessible.Heading
+                            Accessible.name: qsTr("Access and use constraints")
                         }
                     }
 
@@ -165,6 +196,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.topMargin: 0
                         color: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
+                        Accessible.role: Accessible.Pane
 
                         Text{
                             anchors.fill: parent
@@ -174,6 +206,9 @@ Item {
                             onLinkActivated: {
                                  Qt.openUrlExternally(link);
                             }
+                            Accessible.role: Accessible.Link
+                            Accessible.name: qsTr("View the license agreement.")
+                            Accessible.focusable: true
                         }
                     }
 
@@ -184,6 +219,8 @@ Item {
                         Layout.fillWidth: true
                         Layout.topMargin: 0
                         color: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
+                        Accessible.role: Accessible.Pane
+
                         MouseArea{
                             anchors.fill: parent
                             onPressAndHold: {
@@ -194,11 +231,19 @@ Item {
                                     logTreksIndicator.text = "<b>-</b>";
                                 }
                             }
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr("Toggle logging of treks on or off. Logging is currently: %1".arg(logTreks ? "on" : "off"))
+                            Accessible.description: qsTr("This is a hidden mouse or touch area that allows a user to turn logging of treks on or off. It should be turned on with caution as it may create large sqllite databases on the device.")
+                            Accessible.focusable: true
+                            Accessible.onPressAction: {
+                                pressAndHold(null);
+                            }
                         }
 
                         RowLayout{
                             anchors.fill: parent
                             spacing:0
+
                             Text{
                                 id: softwareVersion
                                 Layout.fillHeight: true
@@ -207,6 +252,9 @@ Item {
                                 horizontalAlignment: Text.AlignLeft
                                 color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                 text: "<b>v%1.%2.%3</b>".arg(app.info.value("version").major).arg(app.info.value("version").minor).arg(app.info.value("version").micro)
+                                Accessible.role: Accessible.StaticText
+                                Accessible.name: qsTr("Current version of the application is %1".arg(text))
+
                             }
                             Text{
                                 id: logTreksIndicator
@@ -215,6 +263,9 @@ Item {
                                 textFormat: Text.RichText
                                 horizontalAlignment: Text.AlignRight
                                 color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                                Accessible.role: Accessible.Indicator
+                                Accessible.name: qsTr("Indicates if logging of treks is on or off. Logging is currently: %1".arg(logTreks ? "on" : "off"))
+                                Accessible.description: qsTr("If the text reads '+' then logging is turned on. If text reads '-' then logging is turned off.")
                             }
                         }
                     }

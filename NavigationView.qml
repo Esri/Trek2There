@@ -61,6 +61,7 @@ Item {
         id: appFrame
         anchors.fill: parent
         color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+        Accessible.role: Accessible.Pane
 
         MouseArea{
             id: viewTouchArea
@@ -74,20 +75,31 @@ Item {
                     hideToolbar.start();
                 }
             }
+
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("Show bottom toolbar")
+            Accessible.description: qsTr("This mouse area acts as a button and will show the bottom tool bar if it is hidden.")
+            Accessible.focusable: true
+            Accessible.onPressAction: {
+                clicked(null);
+            }
         }
 
         ColumnLayout {
             anchors.fill: parent
             spacing: 0
+            Accessible.role: Accessible.Pane
 
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 color: "transparent"
+                Accessible.role: Accessible.Pane
 
                 ColumnLayout{
                     anchors.fill: parent
                     spacing: 0
+                    Accessible.role: Accessible.Pane
 
                     //----------------------------------------------------------
 
@@ -100,6 +112,7 @@ Item {
                         Layout.topMargin: 10 * AppFramework.displayScaleFactor
                         visible: true
                         color:"transparent"
+                        Accessible.role: Accessible.Pane
 
                         StatusIndicator{
                             id: statusMessage
@@ -110,6 +123,9 @@ Item {
                             animateHide: false
                             messageType: statusMessage.warning
                             message: qsTr("Start moving to determine direction.")
+
+                            Accessible.role: Accessible.AlertMessage
+                            Accessible.name: message
                         }
                     }
 
@@ -121,6 +137,7 @@ Item {
                         Layout.fillWidth: true
                         color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                         property int imageScaleFactor: 40 * AppFramework.displayScaleFactor
+                        Accessible.role: Accessible.Pane
 
                         Rectangle{
                             id: noDestinationSet
@@ -130,16 +147,19 @@ Item {
                             z:100
                             visible: (requestedDestination === null) ? true : false
                             color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                            Accessible.role: Accessible.Pane
 
                             Rectangle{
                                 anchors.centerIn: parent
                                 height: 80 * AppFramework.displayScaleFactor
                                 width: parent.width
                                 color:!nightMode ? dayModeSettings.background : nightModeSettings.background
+                                Accessible.role: Accessible.Pane
 
                                 ColumnLayout{
                                     anchors.fill: parent
                                     spacing: 0
+                                    Accessible.role: Accessible.Pane
 
                                     Text{
                                         Layout.fillWidth: true
@@ -153,7 +173,10 @@ Item {
                                         horizontalAlignment: Text.AlignHCenter
                                         verticalAlignment: Text.AlignVCenter
                                         text: qsTr("No destination set!")
+                                        Accessible.role: Accessible.AlertMessage
+                                        Accessible.name: text
                                     }
+
                                     Text{
                                         Layout.fillWidth: true
                                         Layout.fillHeight: true
@@ -165,12 +188,11 @@ Item {
                                         horizontalAlignment: Text.AlignHCenter
                                         verticalAlignment: Text.AlignVCenter
                                         text: qsTr("Go to <img src=\"images/settings.png\" width='%1' height='%2'>&nbsp; to set your destination.".arg(30 * AppFramework.displayScaleFactor).arg(30 * AppFramework.displayScaleFactor))
+                                        Accessible.role: Accessible.AlertMessage
+                                        Accessible.name: qsTr("Click the settings button in the bottom toolbar to set your destination")
                                     }
                                 }
-
                             }
-
-
                         }
 
                         //------------------------------------------------------
@@ -179,6 +201,7 @@ Item {
                             anchors.fill: parent
                             color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                             z:99
+                            Accessible.role: Accessible.Pane
 
                             Image{
                                 id: directionOfTravel
@@ -188,6 +211,7 @@ Item {
                                 source: "images/direction_of_travel_circle.png"
                                 fillMode: Image.PreserveAspectFit
                                 visible: useDirectionOfTravelCircle
+                                Accessible.ignored: true
                             }
 
                             Image{
@@ -200,6 +224,10 @@ Item {
                                 rotation: currentDegreesOffCourse
                                 opacity: 1
                                 visible: true
+                                Accessible.role: Accessible.Indicator
+                                Accessible.name: qsTr("Direction of travel is: %1".arg(rotation.toString()))
+                                Accessible.description: qsTr("This arrow points toward the direction the user should travel. The degree is based off of the top of the device being the current bearing of travel.")
+                                Accessible.ignored: arrivedAtDestination
                             }
 
                             Image{
@@ -211,6 +239,10 @@ Item {
                                 fillMode: Image.PreserveAspectFit
                                 rotation: 0
                                 visible: false
+                                Accessible.role: Accessible.AlertMessage
+                                Accessible.name: qsTr("Arrived at destination")
+                                Accessible.description: qsTr("You have arrived at your destination")
+                                Accessible.ignored: navigating
                             }
                         }
                         //------------------------------------------------------
@@ -224,6 +256,7 @@ Item {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 100 * AppFramework.displayScaleFactor
                 color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                Accessible.role: Accessible.Pane
 
                 Text {
                     id: distanceReadout
@@ -237,6 +270,9 @@ Item {
                     minimumPointSize: largeFontSize
                     color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                     visible: requestedDestination !== null
+                    Accessible.role: Accessible.Indicator
+                    Accessible.name: text
+                    Accessible.description: qsTr("This value is the distance remaining between you and the destination")
                 }
             }
 
@@ -248,10 +284,14 @@ Item {
                 Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
                 color: "transparent"
                 opacity: 1
+                Accessible.role: Accessible.Pane
+                Accessible.name: qsTr("Toolbar")
+                Accessible.description: qsTr("This toolbar contains the settings button, the end navigation button and the day night mode switch button")
 
                 RowLayout {
                     anchors.fill: parent
                     spacing: 0
+                    Accessible.role: Accessible.Pane
 
                     //----------------------------------------------------------
 
@@ -259,6 +299,7 @@ Item {
                         Layout.fillHeight: true
                         Layout.preferredWidth: 50 * AppFramework.displayScaleFactor
                         color: "transparent"
+                        Accessible.role: Accessible.Pane
 
                         Button{
                             id: settingsButton
@@ -286,6 +327,13 @@ Item {
                                 }
                                 mainStackView.push({ item: settingsView });
                             }
+
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr("Settings")
+                            Accessible.description: qsTr("Click button to go to the settings page where you can set your destination coordinates or change the units of measurement.")
+                            Accessible.onPressAction: {
+                                clicked();
+                            }
                         }
                     }
 
@@ -295,6 +343,8 @@ Item {
                         Layout.fillHeight: true
                         Layout.fillWidth: true
                         color: "transparent"
+                        Accessible.role: Accessible.Pane
+
                         Button{
                             id: endNavigationButton
                             anchors.fill: parent
@@ -328,6 +378,13 @@ Item {
                                     applicationCallback = "";
                                 }
                             }
+
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr("End navigation")
+                            Accessible.description: qsTr("Click this button to end navigation and reset the user interface. You will be taken back to the calling application if appropriate.")
+                            Accessible.onPressAction: {
+                                clicked();
+                            }
                         }
                     }
 
@@ -337,6 +394,7 @@ Item {
                         Layout.fillHeight: true
                         Layout.preferredWidth: 50 * AppFramework.displayScaleFactor
                         color: "transparent"
+                        Accessible.role: Accessible.Pane
 
                         Button{
                             id: viewModeButton
@@ -360,6 +418,13 @@ Item {
 
                             onClicked:{
                                 nightMode = !nightMode ? true : false;
+                            }
+
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr("View mode")
+                            Accessible.description: qsTr("Click this button to change the viewing mode contrast of the application.")
+                            Accessible.onPressAction: {
+                                clicked();
                             }
                         }
                     }
