@@ -1,16 +1,18 @@
-# About Trek2There™
+# About Trek2There
 
 ![App](./thumbnail.png)
 
-Trek2There™ is a mobile app that gets your field workforce to any off-road location, where no trails or paths exist.
+Trek2There is a mobile app that gets your field workforce to any off-road location, where no trails or paths exist.
 
 Position yourself, locate things, and confidently get in and get out. Save time by getting there faster, and then find your way home safely.
 
-Trek2There™ provides two simple pieces of continuously updated information: the direction you need to travel, and a distance remaining to get there.
+Trek2There provides two simple pieces of continuously updated information: the direction you need to travel, and a distance remaining.
 
 ## How to use the app
 
-Download the app from the [Google Play](https://play.google.com/store/apps/details?id=com.esri.trek2there) or [iTunes](https://itunes.apple.com/au/app/trek2there/id1162308506) app store. You can enter a destination either by typing in the coorindates or by choosing a desintation from another app that can launch Trek2There. You can try this out with our simple web app https://esri.github.io/Trek2There/Trek2ThereWebLauncher.html. Launch this webpage on your device, select a location and choose to launch Trek2There.
+Download the app from the [Google Play](https://play.google.com/store/apps/details?id=com.esri.trek2there) or [iTunes](https://itunes.apple.com/au/app/trek2there/id1162308506) app store. You can enter a destination by typing in the coordinates or use another app to feed the information in automatically and launch Trek2There. 
+
+Try this out with our simple web app https://esri.github.io/Trek2There/Trek2ThereWebLauncher.html. Launch the webpage on your own device, select a destination by clicking on the map and follow the link to launch Trek2There.
 
 ## Requirements
 
