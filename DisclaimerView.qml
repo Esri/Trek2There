@@ -180,6 +180,7 @@ Item {
                             Accessible.role: Accessible.RadioButton
                             Accessible.name: doNotShowWarningAgainLabel.text
                             Accessible.checkable: true
+                            Accessible.onPressAction: { /* no action required yet */ }
 
                             style: RadioButtonStyle {
                               indicator: Rectangle {
@@ -251,7 +252,7 @@ Item {
                             Accessible.name: qsTr("Cancel")
                             Accessible.description: qsTr("This button will close the application, if allowed by the operating system.")
                             Accessible.onPressAction: {
-                                clicked();
+                                clicked(null);
                             }
                         }
                     }
@@ -295,7 +296,7 @@ Item {
                             Accessible.name: qsTr("Accept")
                             Accessible.description: qsTr("This will take you to the navigation view, if you have read and accept the disclaimer text.")
                             Accessible.onPressAction: {
-                                clicked();
+                                clicked(null);
                             }
                         }
                     }

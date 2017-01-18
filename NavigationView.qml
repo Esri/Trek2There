@@ -332,7 +332,7 @@ Item {
                             Accessible.name: qsTr("Settings")
                             Accessible.description: qsTr("Click button to go to the settings page where you can set your destination coordinates or change the units of measurement.")
                             Accessible.onPressAction: {
-                                clicked();
+                                clicked(null);
                             }
                         }
                     }
@@ -383,7 +383,9 @@ Item {
                             Accessible.name: qsTr("End navigation")
                             Accessible.description: qsTr("Click this button to end navigation and reset the user interface. You will be taken back to the calling application if appropriate.")
                             Accessible.onPressAction: {
-                                clicked();
+                                if(visible && enabled){
+                                    clicked(null);
+                                }
                             }
                         }
                     }
@@ -424,7 +426,7 @@ Item {
                             Accessible.name: qsTr("View mode")
                             Accessible.description: qsTr("Click this button to change the viewing mode contrast of the application.")
                             Accessible.onPressAction: {
-                                clicked();
+                                clicked(null);
                             }
                         }
                     }

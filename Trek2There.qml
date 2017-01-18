@@ -29,6 +29,8 @@ App {
     width: 480
     height: 640
 
+    Accessible.role: Accessible.Window
+
     // PROPERTIES //////////////////////////////////////////////////////////////
 
     property bool safteyWarningAccepted: app.settings.boolValue("safteyWarningAccepted", false)

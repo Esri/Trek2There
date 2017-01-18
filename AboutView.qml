@@ -96,7 +96,7 @@ Item {
                             Accessible.name: qsTr("Go back")
                             Accessible.description: qsTr("Go back to previous view")
                             Accessible.onPressAction: {
-                                clicked();
+                                clicked(null);
                             }
                         }
                     }
@@ -208,6 +208,7 @@ Item {
                             }
                             Accessible.role: Accessible.Link
                             Accessible.name: qsTr("View the license agreement.")
+                            Accessible.description: qsTr("Click link in this text element to view the Esri Labs EULA via a web browser.")
                             Accessible.focusable: true
                         }
                     }
@@ -254,7 +255,6 @@ Item {
                                 text: "<b>v%1.%2.%3</b>".arg(app.info.value("version").major).arg(app.info.value("version").minor).arg(app.info.value("version").micro)
                                 Accessible.role: Accessible.StaticText
                                 Accessible.name: qsTr("Current version of the application is %1".arg(text))
-
                             }
                             Text{
                                 id: logTreksIndicator

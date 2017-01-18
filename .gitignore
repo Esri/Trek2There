@@ -44,3 +44,5 @@ appinfo.user
 #AppStudio
 
 appmetrics.json
+
+*.qmlc
