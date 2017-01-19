@@ -145,26 +145,27 @@ Item {
                         Accessible.role: Accessible.Pane
 
                         Text {
+                            property string elementText: qsTr("DESCRIPTION")
                             anchors.fill: parent
                             textFormat: Text.RichText
-                            text: qsTr("<b>DESCRIPTION</b>")
+                            text: "<b>%1</b>".arg(elementText)
                             verticalAlignment: Text.AlignBottom
                             color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                             Accessible.role: Accessible.Heading
-                            Accessible.name: qsTr("Description")
+                            Accessible.name: elementText
                         }
                     }
 
                     TextArea{
+                        property string esriLabsText: qsTr("Trek2There is an Esri Labs project and not an official Esri product. Trek2There is provided on an as-is-basis and you assume all risks associated with using this app. Please refer to the license agreement for further details.")
                         Layout.fillHeight: true
-                        //Layout.preferredHeight: 200 * AppFramework.displayScaleFactor
                         Layout.fillWidth: true
                         readOnly: true
                         frameVisible: false
                         backgroundVisible: false
                         textFormat: Text.RichText
                         textColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                        text: "%1".arg(app.info.description)
+                        text: "<p>%1</p><p>%2</p>".arg(app.info.description).arg(esriLabsText)
                         Accessible.role: Accessible.StaticText
                         Accessible.name: qsTr("Description text")
                         Accessible.readOnly: true
@@ -180,13 +181,14 @@ Item {
                         Accessible.role: Accessible.Pane
 
                         Text {
+                            property string elementText: qsTr("ACCESS AND USE CONSTRAINTS")
                             anchors.fill: parent
                             textFormat: Text.RichText
-                            text: qsTr("<b>ACCESS AND USE CONSTRAINTS</b>")
+                            text: "<b>%1</b>".arg(elementText)
                             verticalAlignment: Text.AlignBottom
                             color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                             Accessible.role: Accessible.Heading
-                            Accessible.name: qsTr("Access and use constraints")
+                            Accessible.name: elementText
                         }
                     }
 

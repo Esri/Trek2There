@@ -84,9 +84,10 @@ Item {
                 TextArea{
                     id: disclaimerText
                     property string para1: qsTr("Do not attempt to use this directional information unless you are at a complete stop. Travel safely and use common sense when using Trek2There. Trek2There is not to be used for terrain avoidance as direction and distance information does not consider traveling around physical barriers such as cliffs, water bodies, roadways, moving vehicles, buildings, etc.")
-                    property string para2: qsTr("Do not follow any travel suggestions that appear to be hazardous, unsafe, or illegal. Trek2There is provided on an 'As-Is' basis. You assume all risk of using the Trek2There app.")
+                    property string para2: qsTr("Do not follow any travel suggestions that appear to be hazardous, unsafe, or illegal.")
                     property string para3: qsTr("Please refer to the license agreement for further details.")
                     property string para4: qsTr("I understand that usage metrics may be gathered and used to make Trek2There a better application.")
+                    property string esriLabsText: qsTr("Trek2There is an Esri Labs project and not an official Esri product. Trek2There is provided on an as-is-basis and you assume all risks associated with using this app. Please refer to the license agreement for further details.")
 
                     readOnly: true
                     frameVisible: false
@@ -94,7 +95,7 @@ Item {
                     anchors.fill: parent
                     textFormat: Text.RichText
                     textColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                    text: "<p>%1</p><p>%2</p><p>%3</p><p>%4</p>".arg(para1).arg(para2).arg(para3).arg(para4)
+                    text: "<p>%1</p><p>%2</p><p>%3</p><p>%4</p><p>%5</p>".arg(para1).arg(para2).arg(para3).arg(para4).arg(esriLabsText)
                     onLinkActivated: {
                          Qt.openUrlExternally(link);
                     }
@@ -116,14 +117,15 @@ Item {
                 Accessible.role: Accessible.Pane
 
                 Text{
+                    property string elementText: qsTr("License agreement")
                     anchors.fill: parent
                     textFormat: Text.RichText
-                    text: qsTr("<a href='http://esriurl.com/labseula' style='color:#007ac2'>License Agreement</a> ")
+                    text: "<a href='http://esriurl.com/labseula' style='color:#007ac2'>%1</a>".arg(elementText)
                     onLinkActivated: {
                          Qt.openUrlExternally(link);
                     }
                     Accessible.role: Accessible.Link
-                    Accessible.name: qsTr("License agreement")
+                    Accessible.name: elementText
                     Accessible.focusable: true
                     Accessible.onPressAction: {
                         Qt.openUrlExternally('http://esriurl.com/labseula');
