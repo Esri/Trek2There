@@ -1,4 +1,4 @@
-/* Copyright 2016 Esri
+/* Copyright 2017 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -187,7 +187,8 @@ Item {
                                         minimumPointSize: 9
                                         horizontalAlignment: Text.AlignHCenter
                                         verticalAlignment: Text.AlignVCenter
-                                        text: qsTr("Go to <img src=\"images/settings.png\" width='%1' height='%2'>&nbsp; to set your destination.".arg(30 * AppFramework.displayScaleFactor).arg(30 * AppFramework.displayScaleFactor))
+                                        textFormat: Text.RichText
+                                        text: qsTr("Go to <span style='font-family:%1; font-size:%2pt; color:%3' alt='settings'>%4</span> to set your destination.".arg(icons.name).arg(font.pointSize * 1.2).arg(buttonTextColor).arg(icons.settings))
                                         Accessible.role: Accessible.AlertMessage
                                         Accessible.name: qsTr("Click the settings button in the bottom toolbar to set your destination")
                                     }

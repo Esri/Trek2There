@@ -1,4 +1,4 @@
-/* Copyright 2016 Esri
+/* Copyright 2017 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,9 @@ import QtPositioning 5.4
 import QtQuick.Window 2.2
 
 import ArcGIS.AppFramework 1.0
+
 import "AppMetrics"
+import "IconFont"
 
 //------------------------------------------------------------------------------
 
@@ -80,6 +82,10 @@ App {
 
     MainView{
         anchors.fill: parent
+    }
+
+    IconFont{
+        id: icons
     }
 
     // SIGNALS /////////////////////////////////////////////////////////////////
