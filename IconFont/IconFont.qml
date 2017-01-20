@@ -18,11 +18,17 @@ import QtQuick 2.0
 
 FontLoader{
 
-    // ttf font file created with https://icomoon.io
+    // ttf font file created with fontastic.me
 
     source: "fonts/trek2there.ttf"
 
-    property string settings: "\ue900"
+    property string accuracy1: "1"
+    property string accuracy2: "2"
+    property string accuracy3: "3"
+    property string accuracy4: "4"
+    property string accuracy5: "5"
+
+    property string settings: "a"
 
     //--------------------------------------------------------------------------
 

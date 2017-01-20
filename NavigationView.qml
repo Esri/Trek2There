@@ -39,6 +39,8 @@ Item {
     property bool autohideToolbar: true
     property double currentDistance: 0.0
     property double currentDegreesOffCourse: 0
+    property int currentAccuracy: 0
+    property int currentAccuracyInUnits: 0
     property int sideMargin: 14 * AppFramework.displayScaleFactor
 
     signal arrived()
@@ -114,18 +116,103 @@ Item {
                         color:"transparent"
                         Accessible.role: Accessible.Pane
 
-                        StatusIndicator{
-                            id: statusMessage
-                            visible: false
+                        RowLayout{
                             anchors.fill: parent
-                            containerHeight: parent.height
-                            hideAutomatically: false
-                            animateHide: false
-                            messageType: statusMessage.warning
-                            message: qsTr("Start moving to determine direction.")
 
-                            Accessible.role: Accessible.AlertMessage
-                            Accessible.name: message
+                            Rectangle{
+                                Layout.fillHeight: true
+                                Layout.fillWidth: true
+                                color: "transparent"
+                                StatusIndicator{
+                                    id: statusMessage
+                                    visible: false
+                                    anchors.fill: parent
+                                    containerHeight: parent.height
+                                    Layout.fillHeight: true
+                                    Layout.fillWidth: true
+                                    hideAutomatically: false
+                                    animateHide: false
+                                    messageType: statusMessage.warning
+                                    message: qsTr("Start moving to determine direction.")
+
+                                    Accessible.role: Accessible.AlertMessage
+                                    Accessible.name: message
+                                }
+                            }
+
+                            Rectangle{
+                                id: locationAccuracyContainer
+                                Layout.preferredWidth: 40 * AppFramework.displayScaleFactor
+                                Layout.leftMargin: 10 * AppFramework.displayScaleFactor
+                                Layout.fillHeight: true
+                                //visible: !statusMessage.visible
+                                color: "transparent"
+
+                                Accessible.role: Accessible.Indicator
+                                Accessible.name: qsTr("Location Accuracy Indicator")
+                                Accessible.description: qsTr("Location accuracy is denoted on a scale of 1 to 5, with 1 being lowest and 5 being highest. Current location accuracy is rated %1".arg(currentAccuracy))
+
+                                ColumnLayout{
+                                    anchors.fill: parent
+
+                                    Rectangle{
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
+                                        color: "transparent"
+
+                                        Text{
+                                            id: locationAccuracyIndicator
+                                            text: currentAccuracy > 0 ? icons.getIconByName("accuracy" + currentAccuracy.toString()) : ""
+                                            color: buttonTextColor
+                                            opacity: 1
+                                            anchors.fill: parent
+                                            verticalAlignment: Text.AlignVCenter
+                                            horizontalAlignment: Text.AlignRight
+                                            font.family: icons.name
+                                            font.pointSize: 20
+                                            visible: currentAccuracy > 0
+                                            z: locationAccuracyBaseline.z + 1
+                                            Accessible.ignored: true
+                                        }
+
+                                        Text{
+                                            id: locationAccuracyBaseline
+                                            text: icons.accuracy5
+                                            color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
+                                            opacity: .4
+                                            anchors.fill: parent
+                                            verticalAlignment: Text.AlignVCenter
+                                            horizontalAlignment: Text.AlignRight
+                                            font.family: icons.name
+                                            font.pointSize: 20
+                                            Accessible.ignored: true
+                                            z:100
+                                        }
+                                    }
+
+                                    Rectangle{
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 15 * AppFramework.displayScaleFactor
+                                        color: "transparent"
+                                        Text{
+                                            id: accuracyInUnits
+                                            text: currentAccuracy > 0 ? "<p>&plusmn;%1%2</p>".arg(currentAccuracyInUnits.toString()).arg(usesMetric ? "m" : "ft") : "----"
+                                            color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
+                                            font.pointSize: 10
+                                            opacity: currentAccuracy > 0 ? 1 : .4
+                                            anchors.fill: parent
+                                            verticalAlignment: Text.AlignTop
+                                            horizontalAlignment: Text.AlignRight
+                                            textFormat: Text.RichText
+
+                                            Accessible.role: Accessible.Indicator
+                                            Accessible.name: qsTr("Accuracy in units is: %1".arg(text))
+                                            Accessible.description: qsTr("This denotes the current location accuracy in units rounded upward to the nearest %1".arg(usesMetric ? "meter" : "foot"))
+                                        }
+                                    }
+
+                                }
+                            }
                         }
                     }
 
@@ -475,6 +562,9 @@ Item {
         currentDistance = 0.0;
         distanceReadout.text = displayDistance(currentDistance.toString());
 
+        currentAccuracy = 0;
+        currentAccuracyInUnits = 0;
+
         if(autohideToolbar === true){
             if(hideToolbar.running){
                 hideToolbar.stop();
@@ -559,6 +649,30 @@ Item {
             if (position.coordinate.isValid === true) {
                 console.log("lat: %1, long:%2".arg(position.coordinate.latitude).arg(position.coordinate.longitude));
                 currentPosition.position = position;
+            }
+
+            if(position.horizontalAccuracyValid){
+                var accuracy = position.horizontalAccuracy;
+                if(accuracy < 10){
+                    currentAccuracy = 5;
+                }
+                else if(accuracy > 11 && accuracy < 40){
+                    currentAccuracy = 4;
+                }
+                else if(accuracy > 41 && accuracy < 70){
+                    currentAccuracy = 3;
+                }
+                else if(accuracy > 71 && accuracy < 100){
+                    currentAccuracy = 2;
+                }
+                else if(accuracy >= 100){
+                    currentAccuracy = 1;
+                }
+                else{
+                    currentAccuracy = 0;
+                }
+
+                currentAccuracyInUnits = usesMetric ? Math.ceil(accuracy) : Math.ceil(accuracy * 3.28084)
             }
 
            if(requestedDestination !== null){
