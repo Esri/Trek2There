@@ -38,6 +38,7 @@ App {
     property bool safteyWarningAccepted: app.settings.boolValue("safteyWarningAccepted", false)
     property bool showSafetyWarning: app.settings.boolValue("showSafetyWarning", true)
     property bool nightMode: app.settings.boolValue("nightMode", false)
+    property bool listenToClipboard: app.settings.boolValue("listenToClipboard", true)
 
     property RegExpValidator latitudeValidator: RegExpValidator { regExp: /^[-]?90$|^[-]?[1-8][0-9](\.\d{1,})?$|^[-]?[1-9](\.\d{1,})?$/g }
     property RegExpValidator longitudeValidator: RegExpValidator { regExp: /^[-]?180$|^[-]?1[0-7][0-9](\.\d{1,})?$|^[-]?[1-9][0-9](\.\d{1,})?$|^[-]?[1-9](\.\d{1,})?$/g }
@@ -141,5 +142,52 @@ App {
     }
 
     //--------------------------------------------------------------------------
+
+    function validCoordinates(lat,lon){
+        if(lon.search(longitudeValidator.regExp) > -1 && lat.search(latitudeValidator.regExp) > -1){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    // CONNECTIONS /////////////////////////////////////////////////////////////
+
+    Connections{
+        target: AppFramework.clipboard
+
+        onDataChanged: {
+
+            var inLat, inLon
+
+            if(AppFramework.clipboard.dataAvailable && listenToClipboard){
+                try{
+                    var inJson = JSON.parse(AppFramework.clipboard.text);
+                    if(inJson.hasOwnProperty("latitude") && inJson.hasOwnProperty("longitude")){
+                        inLat = inJson.latitude.toString().trim();
+                        inLon = inJson.longitude.toString().trim();
+                        if(validCoordinates(inLat, inLon)){
+                            requestedDestination =  QtPositioning.coordinate(inLat, inLon);
+                        }
+                    }
+                }
+                catch(e){
+                    if(e.toString().indexOf("JSON.parse: Parse error") > -1){
+                        var incoords = AppFramework.clipboard.text.split(',');
+                        if(incoords.length === 2){
+                            inLat = incoords[0].toString().trim();
+                            inLon = incoords[1].toString().trim();
+                            if(validCoordinates(inLat, inLon)){
+                                requestedDestination =  QtPositioning.coordinate(inLat, inLon);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // END /////////////////////////////////////////////////////////////////////
 
 }
