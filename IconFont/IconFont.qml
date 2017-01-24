@@ -27,8 +27,10 @@ FontLoader{
     property string accuracy3: "3"
     property string accuracy4: "4"
     property string accuracy5: "5"
+    property string accuracy_indicator: "b"
 
     property string settings: "a"
+    property string swap: "c"
 
     //--------------------------------------------------------------------------
 

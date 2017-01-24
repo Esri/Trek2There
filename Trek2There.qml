@@ -15,14 +15,13 @@
  */
 
 import QtQuick 2.5
+import QtQuick.Window 2.0
 import QtPositioning 5.4
-import QtQuick.Window 2.2
-
+//------------------------------------------------------------------------------
 import ArcGIS.AppFramework 1.0
-
+//------------------------------------------------------------------------------
 import "AppMetrics"
 import "IconFont"
-
 //------------------------------------------------------------------------------
 
 App {
@@ -81,12 +80,41 @@ App {
         releaseType: "beta"
     }
 
+    //------------------------------------------------------------------------------
+
     MainView{
         anchors.fill: parent
     }
 
+    //------------------------------------------------------------------------------
+
     IconFont{
         id: icons
+    }
+
+    //------------------------------------------------------------------------------
+
+    ClipboardDialog{
+        id: clipboardDialog
+
+        width: 300 * AppFramework.displayScaleFactor
+        height: 200 * AppFramework.displayScaleFactor
+
+        clipLat: appClipboard.inLat
+        clipLon: appClipboard.inLon
+
+        onUseCoordinates: {
+            if(clipLat !== "" && clipLon !== ""){
+                console.log("lat: %1, lon:%2".arg(clipLat).arg(clipLon))
+                requestedDestination =  QtPositioning.coordinate(clipLat.toString(), clipLon.toString());
+                dismissCoordinates();
+            }
+        }
+
+        onDismissCoordinates: {
+            appClipboard.inLat = "";
+            appClipboard.inLon = "";
+        }
     }
 
     // SIGNALS /////////////////////////////////////////////////////////////////
@@ -154,33 +182,43 @@ App {
 
     // CONNECTIONS /////////////////////////////////////////////////////////////
 
-    Connections{
+    Connections {
+        id: appClipboard
         target: AppFramework.clipboard
+
+        property string inLat: ""
+        property string inLon: ""
 
         onDataChanged: {
 
-            var inLat, inLon
+            var lat = "";
+            var lon = "";
 
             if(AppFramework.clipboard.dataAvailable && listenToClipboard){
                 try{
                     var inJson = JSON.parse(AppFramework.clipboard.text);
                     if(inJson.hasOwnProperty("latitude") && inJson.hasOwnProperty("longitude")){
-                        inLat = inJson.latitude.toString().trim();
-                        inLon = inJson.longitude.toString().trim();
-                        if(validCoordinates(inLat, inLon)){
-                            requestedDestination =  QtPositioning.coordinate(inLat, inLon);
-                        }
+                        lat = inJson.latitude.toString().trim();
+                        lon = inJson.longitude.toString().trim();
                     }
                 }
                 catch(e){
                     if(e.toString().indexOf("JSON.parse: Parse error") > -1){
                         var incoords = AppFramework.clipboard.text.split(',');
                         if(incoords.length === 2){
-                            inLat = incoords[0].toString().trim();
-                            inLon = incoords[1].toString().trim();
-                            if(validCoordinates(inLat, inLon)){
-                                requestedDestination =  QtPositioning.coordinate(inLat, inLon);
-                            }
+                            lat = incoords[0].toString().trim();
+                            lon = incoords[1].toString().trim();
+                        }
+                    }
+                }
+                finally{
+                    if(lat !== "" && lon !== ""){
+                        if(validCoordinates(lat, lon)){
+                            appClipboard.inLat = lat;
+                            appClipboard.inLon = lon;
+                            clipboardDialog.clipLat = lat;
+                            clipboardDialog.clipLon = lon;
+                            clipboardDialog.open();
                         }
                     }
                 }

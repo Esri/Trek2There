@@ -142,7 +142,7 @@ Item {
 
                             Rectangle{
                                 id: locationAccuracyContainer
-                                Layout.preferredWidth: 40 * AppFramework.displayScaleFactor
+                                Layout.preferredWidth: 30 * AppFramework.displayScaleFactor
                                 Layout.leftMargin: 10 * AppFramework.displayScaleFactor
                                 Layout.fillHeight: true
                                 //visible: !statusMessage.visible
@@ -165,11 +165,12 @@ Item {
                                             text: currentAccuracy > 0 ? icons.getIconByName("accuracy" + currentAccuracy.toString()) : ""
                                             color: buttonTextColor
                                             opacity: 1
-                                            anchors.fill: parent
-                                            verticalAlignment: Text.AlignVCenter
-                                            horizontalAlignment: Text.AlignRight
+                                            anchors.centerIn: parent
+                                            //anchors.fill: parent
+                                            //verticalAlignment: Text.AlignVCenter
+                                            //horizontalAlignment: Text.AlignRight
                                             font.family: icons.name
-                                            font.pointSize: 20
+                                            font.pointSize: 24
                                             visible: currentAccuracy > 0
                                             z: locationAccuracyBaseline.z + 1
                                             Accessible.ignored: true
@@ -177,14 +178,15 @@ Item {
 
                                         Text{
                                             id: locationAccuracyBaseline
-                                            text: icons.accuracy5
+                                            text: icons.accuracy_indicator
                                             color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
                                             opacity: .4
-                                            anchors.fill: parent
-                                            verticalAlignment: Text.AlignVCenter
-                                            horizontalAlignment: Text.AlignRight
+                                            anchors.centerIn: parent
+                                            //anchors.fill: parent
+                                            //verticalAlignment: Text.AlignVCenter
+                                            //horizontalAlignment: Text.AlignRight
                                             font.family: icons.name
-                                            font.pointSize: 20
+                                            font.pointSize: 24
                                             Accessible.ignored: true
                                             z:100
                                         }
@@ -200,9 +202,10 @@ Item {
                                             color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
                                             font.pointSize: 10
                                             opacity: currentAccuracy > 0 ? 1 : .4
-                                            anchors.fill: parent
-                                            verticalAlignment: Text.AlignTop
-                                            horizontalAlignment: Text.AlignRight
+                                            anchors.centerIn: parent
+                                            //anchors.fill: parent
+                                            //verticalAlignment: Text.AlignTop
+                                            //horizontalAlignment: Text.AlignVCenter
                                             textFormat: Text.RichText
 
                                             Accessible.role: Accessible.Indicator
