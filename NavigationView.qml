@@ -164,11 +164,33 @@ Item {
                                             id: locationAccuracyIndicator
                                             text: currentAccuracy > 0 ? icons.getIconByName("accuracy" + currentAccuracy.toString()) : ""
                                             color: buttonTextColor
+                                                /*(function(accuracy){
+                                                var color;
+                                                switch(accuracy){
+                                                    case 4:
+                                                        color = "green";
+                                                        break;
+                                                    case 3:
+                                                        color = "orange";
+                                                        break;
+                                                    case 2:
+                                                        color = "darkorange";
+                                                        break;
+                                                    case 1:
+                                                        color = "red";
+                                                        break;
+                                                    case 0:
+                                                        color = "#aaa";
+                                                        break;
+                                                    default:
+                                                        color = "#aaa;"
+                                                        break;
+                                                }
+                                                return color;
+
+                                            })(currentAccuracy)*/
                                             opacity: 1
                                             anchors.centerIn: parent
-                                            //anchors.fill: parent
-                                            //verticalAlignment: Text.AlignVCenter
-                                            //horizontalAlignment: Text.AlignRight
                                             font.family: icons.name
                                             font.pointSize: 24
                                             visible: currentAccuracy > 0
@@ -182,9 +204,6 @@ Item {
                                             color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
                                             opacity: .4
                                             anchors.centerIn: parent
-                                            //anchors.fill: parent
-                                            //verticalAlignment: Text.AlignVCenter
-                                            //horizontalAlignment: Text.AlignRight
                                             font.family: icons.name
                                             font.pointSize: 24
                                             Accessible.ignored: true
@@ -203,9 +222,6 @@ Item {
                                             font.pointSize: 10
                                             opacity: currentAccuracy > 0 ? 1 : .4
                                             anchors.centerIn: parent
-                                            //anchors.fill: parent
-                                            //verticalAlignment: Text.AlignTop
-                                            //horizontalAlignment: Text.AlignVCenter
                                             textFormat: Text.RichText
 
                                             Accessible.role: Accessible.Indicator
@@ -657,15 +673,12 @@ Item {
             if(position.horizontalAccuracyValid){
                 var accuracy = position.horizontalAccuracy;
                 if(accuracy < 10){
-                    currentAccuracy = 5;
-                }
-                else if(accuracy > 11 && accuracy < 40){
                     currentAccuracy = 4;
                 }
-                else if(accuracy > 41 && accuracy < 70){
+                else if(accuracy > 11 && accuracy < 55){
                     currentAccuracy = 3;
                 }
-                else if(accuracy > 71 && accuracy < 100){
+                else if(accuracy > 56 && accuracy < 100){
                     currentAccuracy = 2;
                 }
                 else if(accuracy >= 100){
