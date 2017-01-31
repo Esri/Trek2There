@@ -535,9 +535,9 @@ Item {
                             Image{
                                 id: viewModeButtonIcon
                                 anchors.centerIn: parent
-                                height: parent.height - (24 * AppFramework.displayScaleFactor)
+                                height: parent.height - (26 * AppFramework.displayScaleFactor)
                                 fillMode: Image.PreserveAspectFit
-                                source: !nightMode ? "images/night_mode_blue.png" : "images/day_mode_blue.png"
+                                source: "images/contrast.png"
                             }
 
                             onClicked:{
@@ -545,7 +545,7 @@ Item {
                             }
 
                             Accessible.role: Accessible.Button
-                            Accessible.name: qsTr("View mode")
+                            Accessible.name: qsTr("Contrast mode")
                             Accessible.description: qsTr("Click this button to change the viewing mode contrast of the application.")
                             Accessible.onPressAction: {
                                 clicked(null);
