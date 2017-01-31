@@ -37,6 +37,7 @@ Item {
     property bool navigating: false
     property bool arrivedAtDestination: false
     property bool autohideToolbar: true
+    property bool noPositionSource: false
     property double currentDistance: 0.0
     property double currentDegreesOffCourse: 0
     property int currentAccuracy: 0
@@ -310,6 +311,8 @@ Item {
                             z:99
                             Accessible.role: Accessible.Pane
 
+
+
                             Image{
                                 id: directionOfTravel
                                 anchors.centerIn: parent
@@ -317,7 +320,7 @@ Item {
                                 width: isLandscape ? parent.width : parent.width - directionUI.imageScaleFactor
                                 source: "images/direction_of_travel_circle.png"
                                 fillMode: Image.PreserveAspectFit
-                                visible: useDirectionOfTravelCircle
+                                visible: useDirectionOfTravelCircle && !noPositionSource
                                 Accessible.ignored: true
                             }
 
@@ -330,7 +333,7 @@ Item {
                                 fillMode: Image.PreserveAspectFit
                                 rotation: currentDegreesOffCourse
                                 opacity: 1
-                                visible: true
+                                visible: !noPositionSource
                                 Accessible.role: Accessible.Indicator
                                 Accessible.name: qsTr("Direction of travel is: %1".arg(rotation.toString()))
                                 Accessible.description: qsTr("This arrow points toward the direction the user should travel. The degree is based off of the top of the device being the current bearing of travel.")
@@ -350,6 +353,18 @@ Item {
                                 Accessible.name: qsTr("Arrived at destination")
                                 Accessible.description: qsTr("You have arrived at your destination")
                                 Accessible.ignored: navigating
+                            }
+
+                            Image{
+                                id: noSignalIndicator
+                                anchors.centerIn: parent
+                                height: isLandscape ? parent.height : parent.height - directionUI.imageScaleFactor
+                                width: isLandscape ? parent.width : parent.width - directionUI.imageScaleFactor
+                                source: "images/no_signal.png"
+                                visible: noPositionSource && !arrivedAtDestination
+                                fillMode: Image.PreserveAspectFit
+                                Accessible.role: Accessible.Indicator
+                                Accessible.name: qsTr("There is no signal")
                             }
                         }
                         //------------------------------------------------------
@@ -700,9 +715,11 @@ Item {
                     message as well as the startNavigation method as well to fix this.
                 */
                 if (position.directionValid){
+                    noPositionSource = false;
                     statusMessage.hide();
                 }
                 else{
+                    noPositionSource = true;
                     directionArrow.opacity = 0.2;
                     statusMessage.show();
                 }
@@ -726,8 +743,10 @@ Item {
 
         onDegreesOffCourseChanged: {
             if(degreesOffCourse === NaN || degreesOffCourse === 0){
+                noPositionSource = true;
                 directionArrow.opacity = 0.2;
             }else{
+                noPositionSource = false;
                 directionArrow.opacity = 1;
                 directionArrow.rotation = degreesOffCourse;
             }

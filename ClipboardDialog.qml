@@ -202,7 +202,7 @@ Dialog {
 
                         Accessible.role: Accessible.Button
                         Accessible.name: qsTr("No")
-                        Accessible.description: qsTr("Do not use the coordiante values copied to the clipboard.")
+                        Accessible.description: qsTr("Do not use the coordinate values copied to the clipboard.")
                         Accessible.onPressAction: {
                             if(enabled && visible){
                                 clicked(null);

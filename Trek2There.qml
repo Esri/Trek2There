@@ -191,6 +191,8 @@ App {
 
         onDataChanged: {
 
+            console.log('there is data on the clipboard');
+
             var lat = "";
             var lon = "";
 
