@@ -14,20 +14,18 @@
  *
  */
 
-import QtQuick 2.5
+import QtQuick 2.8
 import QtQml 2.2
-import QtQuick.Controls 1.4
-import QtQuick.Controls.Styles 1.4
+import QtQuick.Controls 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Layouts 1.1
-import QtPositioning 5.4
 
 import ArcGIS.AppFramework 1.0
 
 Item {
     id: aboutView
 
-    property int sideMargin: 14 * AppFramework.displayScaleFactor
+    property int sideMargin: sf(14)
 
     // UI //////////////////////////////////////////////////////////////////////
 
@@ -45,7 +43,7 @@ Item {
 
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
+                Layout.preferredHeight: sf(50)
                 id: navBar
                 color: nightMode === false ? dayModeSettings.background : nightModeSettings.background
                 Accessible.role: Accessible.Pane
@@ -59,33 +57,33 @@ Item {
                     Rectangle {
                         id: backButtonContainer
                         Layout.fillHeight: true
-                        Layout.preferredWidth: 50 * AppFramework.displayScaleFactor
+                        Layout.preferredWidth: sf(50)
                         Accessible.role: Accessible.Pane
 
                         Button {
                             anchors.fill: parent
-                            style: ButtonStyle {
-                                background: Rectangle {
-                                    color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                                    anchors.fill: parent
 
-                                    Image {
-                                        id: backArrow
-                                        source: "images/back_arrow.png"
-                                        anchors.left: parent.left
-                                        anchors.leftMargin: sideMargin
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        width: parent.width - (30 * AppFramework.displayScaleFactor)
-                                        fillMode: Image.PreserveAspectFit
-                                        Accessible.ignored: true
-                                    }
-                                    ColorOverlay {
-                                        source: backArrow
-                                        anchors.fill: backArrow
-                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                                        Accessible.ignored: true
-                                    }
-                                }
+                            background: Rectangle {
+                                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                                anchors.fill: parent
+                            }
+
+                            Image {
+                                id: backArrow
+                                source: "images/back_arrow.png"
+                                anchors.left: parent.left
+                                anchors.leftMargin: sideMargin
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: parent.width - sf(30)
+                                fillMode: Image.PreserveAspectFit
+                                Accessible.ignored: true
+                            }
+
+                            ColorOverlay {
+                                source: backArrow
+                                anchors.fill: backArrow
+                                color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                                Accessible.ignored: true
                             }
 
                             onClicked: {
@@ -126,7 +124,7 @@ Item {
             Rectangle{
                 Layout.fillHeight: true
                 Layout.fillWidth: true
-                Layout.margins: 16 * AppFramework.displayScaleFactor
+                Layout.margins: sf(16)
                 color: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
                 Accessible.role: Accessible.Pane
 
@@ -138,8 +136,8 @@ Item {
                     //----------------------------------------------------------
 
                     Rectangle {
-                        Layout.preferredHeight: 30 * AppFramework.displayScaleFactor
-                        Layout.bottomMargin: 5 * AppFramework.displayScaleFactor
+                        Layout.preferredHeight: sf(30)
+                        Layout.bottomMargin: sf(5)
                         Layout.fillWidth: true
                         color: "transparent"
                         Accessible.role: Accessible.Pane
@@ -161,23 +159,22 @@ Item {
                         Layout.fillHeight: true
                         Layout.fillWidth: true
                         readOnly: true
-                        frameVisible: false
-                        backgroundVisible: false
+                        wrapMode: TextArea.Wrap
                         textFormat: Text.RichText
-                        textColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                         text: "<p>%1</p><p>%2</p>".arg(app.info.description).arg(esriLabsText)
                         Accessible.role: Accessible.StaticText
                         Accessible.name: qsTr("Description text")
                         Accessible.readOnly: true
                         Accessible.multiLine: true
                     }
+
                     //----------------------------------------------------------
 
-                    Rectangle {
-                        Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
-                        Layout.bottomMargin: 5 * AppFramework.displayScaleFactor
+                    Item {
+                        Layout.preferredHeight: sf(50)
+                        Layout.bottomMargin: sf(5)
                         Layout.fillWidth: true
-                        color: "transparent"
                         Accessible.role: Accessible.Pane
 
                         Text {
@@ -193,7 +190,7 @@ Item {
                     }
 
                     Rectangle{
-                        Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
+                        Layout.preferredHeight: sf(50)
                         Layout.fillHeight: true
                         Layout.fillWidth: true
                         Layout.topMargin: 0
@@ -218,7 +215,7 @@ Item {
                     //----------------------------------------------------------
 
                     Rectangle{
-                        Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
+                        Layout.preferredHeight: sf(50)
                         Layout.fillWidth: true
                         Layout.topMargin: 0
                         color: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground

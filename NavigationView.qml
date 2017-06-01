@@ -14,10 +14,9 @@
  *
  */
 
-import QtQuick 2.5
+import QtQuick 2.8
 import QtQml 2.2
-import QtQuick.Controls 1.4
-import QtQuick.Controls.Styles 1.4
+import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
 import QtGraphicalEffects 1.0
 import QtPositioning 5.4
@@ -109,10 +108,10 @@ Item {
                     Rectangle{
                         id:statusMessageContianer
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 40 * AppFramework.displayScaleFactor
-                        Layout.rightMargin: 10 * AppFramework.displayScaleFactor
-                        Layout.leftMargin: 10 * AppFramework.displayScaleFactor
-                        Layout.topMargin: 10 * AppFramework.displayScaleFactor
+                        Layout.preferredHeight: sf(40)
+                        Layout.rightMargin: sf(10)
+                        Layout.leftMargin: sf(10)
+                        Layout.topMargin: sf(10)
                         visible: true
                         color:"transparent"
                         Accessible.role: Accessible.Pane
@@ -143,8 +142,8 @@ Item {
 
                             Rectangle{
                                 id: locationAccuracyContainer
-                                Layout.preferredWidth: 30 * AppFramework.displayScaleFactor
-                                Layout.leftMargin: 10 * AppFramework.displayScaleFactor
+                                Layout.preferredWidth: sf(30)
+                                Layout.leftMargin: sf(10)
                                 Layout.fillHeight: true
                                 //visible: !statusMessage.visible
                                 color: "transparent"
@@ -214,7 +213,7 @@ Item {
 
                                     Rectangle{
                                         Layout.fillWidth: true
-                                        Layout.preferredHeight: 15 * AppFramework.displayScaleFactor
+                                        Layout.preferredHeight: sf(15)
                                         color: "transparent"
                                         Text{
                                             id: accuracyInUnits
@@ -243,7 +242,7 @@ Item {
                         Layout.fillHeight: true
                         Layout.fillWidth: true
                         color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                        property int imageScaleFactor: 40 * AppFramework.displayScaleFactor
+                        property int imageScaleFactor: sf(40)
                         Accessible.role: Accessible.Pane
 
                         Rectangle{
@@ -251,16 +250,16 @@ Item {
                             anchors.fill: parent
                             anchors.leftMargin: sideMargin
                             anchors.rightMargin: sideMargin
-                            z:100
+                            z: 100
                             visible: (requestedDestination === null) ? true : false
                             color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                             Accessible.role: Accessible.Pane
 
                             Rectangle{
                                 anchors.centerIn: parent
-                                height: 80 * AppFramework.displayScaleFactor
+                                height: sf(80)
                                 width: parent.width
-                                color:!nightMode ? dayModeSettings.background : nightModeSettings.background
+                                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                                 Accessible.role: Accessible.Pane
 
                                 ColumnLayout{
@@ -308,7 +307,7 @@ Item {
                         Rectangle{
                             anchors.fill: parent
                             color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                            z:99
+                            z: 99
                             Accessible.role: Accessible.Pane
 
 
@@ -376,7 +375,7 @@ Item {
 
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 100 * AppFramework.displayScaleFactor
+                Layout.preferredHeight: sf(100)
                 color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                 Accessible.role: Accessible.Pane
 
@@ -403,7 +402,7 @@ Item {
             Rectangle {
                 id: toolbar
                 Layout.fillWidth: true
-                Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
+                Layout.preferredHeight: sf(50)
                 color: "transparent"
                 opacity: 1
                 Accessible.role: Accessible.Pane
@@ -419,26 +418,25 @@ Item {
 
                     Rectangle {
                         Layout.fillHeight: true
-                        Layout.preferredWidth: 50 * AppFramework.displayScaleFactor
+                        Layout.preferredWidth: sf(50)
                         color: "transparent"
                         Accessible.role: Accessible.Pane
 
                         Button{
                             id: settingsButton
                             anchors.fill: parent
-                            tooltip: qsTr("Settings")
+                            ToolTip.visible: hovered
+                            ToolTip.text: qsTr("Settings")
 
-                            style: ButtonStyle{
-                                background: Rectangle{
-                                    color: "transparent"
-                                    anchors.fill: parent
-                                }
+                            background: Rectangle{
+                                color: "transparent"
+                                anchors.fill: parent
                             }
 
                             Image{
                                 id: settingsButtonIcon
                                 anchors.centerIn: parent
-                                height: parent.height - (24 * AppFramework.displayScaleFactor)
+                                height: parent.height - sf(24)
                                 fillMode: Image.PreserveAspectFit
                                 source: "images/settings.png"
                             }
@@ -447,7 +445,7 @@ Item {
                                 if(navigating === false){
                                     reset();
                                 }
-                                mainStackView.push({ item: settingsView });
+                                mainStackView.push(settingsView);
                             }
 
                             Accessible.role: Accessible.Button
@@ -473,23 +471,23 @@ Item {
                             visible: false
                             enabled: false
 
-                            style: ButtonStyle{
-                                background: Rectangle{
-                                    anchors.fill: parent
-                                    anchors.bottomMargin: 5 * AppFramework.displayScaleFactor
-                                    color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                                    border.width: 1 * AppFramework.displayScaleFactor
-                                    border.color: !nightMode ? dayModeSettings.buttonBorder : nightModeSettings.buttonBorder
-                                    radius: 5 * AppFramework.displayScaleFactor
-                                    Text{
-                                        anchors.fill: parent
-                                        verticalAlignment: Text.AlignVCenter
-                                        horizontalAlignment: Text.AlignHCenter
-                                        anchors.rightMargin: 15 * AppFramework.displayScaleFactor
-                                        text: qsTr("End")
-                                        color: buttonTextColor
-                                    }
-                                }
+                            background: Rectangle{
+                                anchors.fill: parent
+                                anchors.bottomMargin: sf(5)
+                                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                                border.width: sf(1)
+                                border.color: !nightMode ? dayModeSettings.buttonBorder : nightModeSettings.buttonBorder
+                                radius: sf(5)
+
+                            }
+
+                            Text{
+                                anchors.fill: parent
+                                verticalAlignment: Text.AlignVCenter
+                                horizontalAlignment: Text.AlignHCenter
+                                anchors.rightMargin: sf(15)
+                                text: qsTr("End")
+                                color: buttonTextColor
                             }
 
                             onClicked: {
@@ -516,26 +514,25 @@ Item {
 
                     Rectangle {
                         Layout.fillHeight: true
-                        Layout.preferredWidth: 50 * AppFramework.displayScaleFactor
+                        Layout.preferredWidth: sf(50)
                         color: "transparent"
                         Accessible.role: Accessible.Pane
 
                         Button{
                             id: viewModeButton
                             anchors.fill: parent
-                            tooltip: qsTr("View Mode")
+                            ToolTip.visible: hovered
+                            ToolTip.text: qsTr("View Mode")
 
-                            style: ButtonStyle{
-                                background: Rectangle{
-                                    color: "transparent"
-                                    anchors.fill: parent
-                                }
+                            background: Rectangle{
+                                color: "transparent"
+                                anchors.fill: parent
                             }
 
                             Image{
                                 id: viewModeButtonIcon
                                 anchors.centerIn: parent
-                                height: parent.height - (26 * AppFramework.displayScaleFactor)
+                                height: parent.height - sf(26)
                                 fillMode: Image.PreserveAspectFit
                                 source: "images/contrast.png"
                             }

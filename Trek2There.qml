@@ -14,7 +14,7 @@
  *
  */
 
-import QtQuick 2.5
+import QtQuick 2.8
 import QtQuick.Window 2.0
 import QtPositioning 5.4
 //------------------------------------------------------------------------------
@@ -97,8 +97,8 @@ App {
     ClipboardDialog{
         id: clipboardDialog
 
-        width: 300 * AppFramework.displayScaleFactor
-        height: 200 * AppFramework.displayScaleFactor
+        width: sf(300)
+        height: sf(200)
 
         clipLat: appClipboard.inLat
         clipLon: appClipboard.inLon
@@ -178,6 +178,12 @@ App {
         else{
             return false;
         }
+    }
+
+    //--------------------------------------------------------------------------
+
+    function sf(val){
+        return val * AppFramework.displayScaleFactor;
     }
 
     // CONNECTIONS /////////////////////////////////////////////////////////////

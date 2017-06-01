@@ -14,9 +14,8 @@
  *
  */
 
-import QtQuick 2.5
-import QtQuick.Controls 1.4
-import QtQuick.Controls.Styles 1.4
+import QtQuick 2.8
+import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
 import ArcGIS.AppFramework 1.0
 
@@ -37,7 +36,7 @@ Item {
             Accessible.role: Accessible.Pane
 
             Rectangle{
-                Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
+                Layout.preferredHeight: sf(50)
                 Layout.fillWidth: true
                 color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                 Accessible.role: Accessible.Pane
@@ -60,14 +59,14 @@ Item {
 
             Rectangle{
                 Layout.fillWidth: true
-                Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
+                Layout.preferredHeight: sf(50)
                 color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                 Accessible.ignored: true
 
                 Image{
                     source: "images/notice_triangle.png"
                     anchors.centerIn: parent
-                    height: 30 * AppFramework.displayScaleFactor
+                    height: sf(30)
                     fillMode: Image.PreserveAspectFit
                 }
             }
@@ -77,7 +76,7 @@ Item {
             Rectangle{
                 Layout.fillHeight: true
                 Layout.fillWidth: true
-                Layout.margins: 16 * AppFramework.displayScaleFactor
+                Layout.margins: sf(16)
                 color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                 Accessible.role: Accessible.Pane
 
@@ -90,12 +89,11 @@ Item {
                     property string esriLabsText: qsTr("Trek2There is an Esri Labs project and not an official Esri product. Trek2There is provided on an as-is-basis and you assume all risks associated with using this app. Please refer to the license agreement for further details.")
 
                     readOnly: true
-                    frameVisible: false
-                    backgroundVisible: false
                     anchors.fill: parent
                     textFormat: Text.RichText
-                    textColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                    color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                     text: "<p>%1</p><p>%2</p><p>%3</p><p>%4</p><p>%5</p>".arg(para1).arg(para2).arg(para3).arg(para4).arg(esriLabsText)
+                    wrapMode: TextArea.Wrap
                     onLinkActivated: {
                          Qt.openUrlExternally(link);
                     }
@@ -109,9 +107,9 @@ Item {
             //------------------------------------------------------------------
 
             Rectangle{
-                Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
+                Layout.preferredHeight: sf(50)
                 Layout.fillWidth: true
-                Layout.margins: 16 * AppFramework.displayScaleFactor
+                Layout.margins: sf(16)
                 Layout.topMargin: 0
                 color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                 Accessible.role: Accessible.Pane
@@ -136,7 +134,7 @@ Item {
             //------------------------------------------------------------------
 
             Rectangle{
-                Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
+                Layout.preferredHeight: sf(50)
                 Layout.fillWidth: true
                 color: !nightMode ? "#ededed" : "#272727"
                 visible: false // disabled for v1.0
@@ -146,8 +144,8 @@ Item {
 
                 RowLayout{
                     anchors.fill: parent
-                    anchors.leftMargin: 16 * AppFramework.displayScaleFactor
-                    anchors.rightMargin: 16 * AppFramework.displayScaleFactor
+                    anchors.leftMargin: sf(16)
+                    anchors.rightMargin: sf(16)
                     spacing: 0
                     Accessible.role: Accessible.Pane
 
@@ -184,23 +182,21 @@ Item {
                             Accessible.checkable: true
                             Accessible.onPressAction: { /* no action required yet */ }
 
-                            style: RadioButtonStyle {
-                              indicator: Rectangle {
-                                  implicitWidth: 20 * AppFramework.displayScaleFactor
-                                  implicitHeight: 20 * AppFramework.displayScaleFactor
-                                  radius: 10 * AppFramework.displayScaleFactor
-                                  border.width: 2 * AppFramework.displayScaleFactor
-                                  border.color: !nightMode ? "#595959" : nightModeSettings.foreground
-                                  color: !nightMode ? "#ededed" : "#272727"
-                                  Rectangle {
-                                      anchors.fill: parent
-                                      visible: control.checked
-                                      color: !nightMode ? "#595959" : nightModeSettings.foreground
-                                      radius: 9 * AppFramework.displayScaleFactor
-                                      anchors.margins: 4 * AppFramework.displayScaleFactor
-                                  }
+                            indicator: Rectangle {
+                              implicitWidth: sf(20)
+                              implicitHeight: sf(20)
+                              radius: sf(10)
+                              border.width: sf(2)
+                              border.color: !nightMode ? "#595959" : nightModeSettings.foreground
+                              color: !nightMode ? "#ededed" : "#272727"
+                              Rectangle {
+                                  anchors.fill: parent
+                                  visible: control.checked
+                                  color: !nightMode ? "#595959" : nightModeSettings.foreground
+                                  radius: sf(9)
+                                  anchors.margins: sf(4)
                               }
-                          }
+                            }
                         }
                     }
                 }
@@ -209,17 +205,17 @@ Item {
             //------------------------------------------------------------------
 
             Rectangle{
-                Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
+                Layout.preferredHeight: sf(50)
                 Layout.fillWidth: true
-                Layout.bottomMargin: 16 * AppFramework.displayScaleFactor
+                Layout.bottomMargin: sf(16)
                 color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                 Accessible.role: Accessible.Pane
 
                 RowLayout{
                     anchors.fill: parent
-                    anchors.leftMargin: 16 * AppFramework.displayScaleFactor
-                    anchors.rightMargin: 16 * AppFramework.displayScaleFactor
-                    spacing:0
+                    anchors.leftMargin: sf(16)
+                    anchors.rightMargin: sf(16)
+                    spacing: 0
                     Accessible.role: Accessible.Pane
 
                     Rectangle{
@@ -233,19 +229,17 @@ Item {
 
                         Button{
                             height: parent.height
-                            width: parent.width - 50 * AppFramework.displayScaleFactor
+                            width: parent.width - sf(50)
                             anchors.left: parent.left
-                            style: ButtonStyle{
-                                background: Rectangle{
-                                    anchors.fill: parent
-                                    color: control.pressed || control.hovered ? "#fff" : ( !nightMode ? dayModeSettings.background : nightModeSettings.background )
-                                    Text{
-                                        anchors.centerIn: parent
-                                        color: buttonTextColor
-                                        text: qsTr("Cancel")
-                                      }
-                                }
+                            background: Rectangle{
+                                anchors.fill: parent
+                                color: parent.pressed || parent.hovered ? "#fff" : ( !nightMode ? dayModeSettings.background : nightModeSettings.background )
                             }
+                            Text{
+                                anchors.centerIn: parent
+                                color: buttonTextColor
+                                text: qsTr("Cancel")
+                              }
                             onClicked: {
                                 Qt.quit();
                             }
@@ -269,19 +263,17 @@ Item {
                             height: parent.height
                             width: parent.width // parent.width - 50 * AppFramework.displayScaleFactor
                             anchors.right: parent.right
-                            style: ButtonStyle{
-                                background: Rectangle{
-                                    anchors.fill: parent
-                                    color: control.pressed || control.hovered ? "#fff" : ( !nightMode ? dayModeSettings.background : nightModeSettings.background )
-                                    border.color: !nightMode ? "#ddd" : nightModeSettings.secondaryBackground
-                                    border.width: 1 * AppFramework.displayScaleFactor
-                                    radius: 5 * AppFramework.displayScaleFactor
-                                    Text{
-                                        anchors.centerIn: parent
-                                        color: buttonTextColor
-                                        text: qsTr("Accept")
-                                    }
-                                }
+                            background: Rectangle{
+                                anchors.fill: parent
+                                color: parent.pressed || parent.hovered ? "#fff" : ( !nightMode ? dayModeSettings.background : nightModeSettings.background )
+                                border.color: !nightMode ? "#ddd" : nightModeSettings.secondaryBackground
+                                border.width: sf(1)
+                                radius: sf(5)
+                            }
+                            Text{
+                                anchors.centerIn: parent
+                                color: buttonTextColor
+                                text: qsTr("Accept")
                             }
 
                             onClicked: {
@@ -291,7 +283,7 @@ Item {
                                 }
                                 app.settings.setValue("safteyWarningAccepted", true);
                                 */
-                                mainStackView.push({item: navigationView, replace: true});
+                                mainStackView.push(navigationView, {}, StackView.ReplaceTransition);
                             }
 
                             Accessible.role: Accessible.Button

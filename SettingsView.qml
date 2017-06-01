@@ -14,10 +14,9 @@
  *
  */
 
-import QtQuick 2.5
+import QtQuick 2.8
 import QtQml 2.2
-import QtQuick.Controls 1.4
-import QtQuick.Controls.Styles 1.4
+import QtQuick.Controls 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Layouts 1.1
 import QtPositioning 5.4
@@ -32,7 +31,7 @@ Item {
     property var distanceFormats: ["Decimal degrees", "Degrees, minues and seconds", "Degrees and decimal minutes", "MGRS", "US national degrees"]
     property int currentDistanceFormat: 0
     property var currentDestination: null
-    property int sideMargin: 14 * AppFramework.displayScaleFactor
+    property int sideMargin: sf(14)
 
     // UI //////////////////////////////////////////////////////////////////////
 
@@ -48,9 +47,9 @@ Item {
 
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
+                Layout.preferredHeight: sf(50)
                 id: navBAr
-                color: nightMode ===false ? dayModeSettings.background : nightModeSettings.background
+                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                 Accessible.role: Accessible.Pane
                 Accessible.name: qsTr("Navigation bar")
 
@@ -62,43 +61,40 @@ Item {
                     Rectangle {
                         id: backButtonContainer
                         Layout.fillHeight: true
-                        Layout.preferredWidth: 50 * AppFramework.displayScaleFactor
+                        Layout.preferredWidth: sf(50)
                         Accessible.role: Accessible.Pane
 
                         Button {
                             anchors.fill: parent
-                            style: ButtonStyle {
-                                background: Rectangle {
-                                    color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                                    anchors.fill: parent
-
-                                    Image {
-                                        id: backArrow
-                                        source: "images/back_arrow.png"
-                                        anchors.left: parent.left
-                                        anchors.leftMargin: sideMargin
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        width: parent.width - (30 * AppFramework.displayScaleFactor)
-                                        fillMode: Image.PreserveAspectFit
-                                        Accessible.ignored: true
-                                    }
-                                    ColorOverlay {
-                                        source: backArrow
-                                        anchors.fill: backArrow
-                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                                        Accessible.ignored: true
-                                    }
-                                }
+                            background: Rectangle {
+                                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                                anchors.fill: parent
+                            }
+                            Image {
+                                id: backArrow
+                                source: "images/back_arrow.png"
+                                anchors.left: parent.left
+                                anchors.leftMargin: sideMargin
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: parent.width - sf(30)
+                                fillMode: Image.PreserveAspectFit
+                                Accessible.ignored: true
+                            }
+                            ColorOverlay {
+                                source: backArrow
+                                anchors.fill: backArrow
+                                color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                                Accessible.ignored: true
                             }
 
                             onClicked: {
-                                var previousItem = mainStackView.get( settingsView.Stack.index - 1 );
+                                var previousItem = mainStackView.get( settingsView.StackView.index - 1 );
                                 if(destinationLatitude.acceptableInput && destinationLongitude.acceptableInput){
                                     requestedDestination = (destinationLatitude.length > 0  && destinationLongitude.length > 0) ? QtPositioning.coordinate(destinationLatitude.text, destinationLongitude.text) : null;
                                 }
                                 Qt.inputMethod.hide();
 
-                                mainStackView.push( { item: previousItem } );
+                                mainStackView.push( previousItem );
                             }
 
                             Accessible.role: Accessible.Button
@@ -130,33 +126,30 @@ Item {
                     Rectangle {
                         id: aboutButtonContainer
                         Layout.fillHeight: true
-                        Layout.preferredWidth: 50 * AppFramework.displayScaleFactor
+                        Layout.preferredWidth: sf(50)
                         Accessible.role: Accessible.Pane
 
                         Button {
                             anchors.fill: parent
-                            style: ButtonStyle {
-                                background: Rectangle {
-                                    color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                                    anchors.fill: parent
-
-                                    Image {
-                                        id: aboutIcon
-                                        source: "images/about.png"
-                                        anchors.left: parent.left
-                                        anchors.leftMargin: sideMargin
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        width: parent.width - (30 * AppFramework.displayScaleFactor)
-                                        fillMode: Image.PreserveAspectFit
-                                        Accessible.ignored: true
-                                    }
-                                    ColorOverlay {
-                                        source: aboutIcon
-                                        anchors.fill: aboutIcon
-                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                                        Accessible.ignored: true
-                                    }
-                                }
+                            background: Rectangle {
+                                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                                anchors.fill: parent
+                            }
+                            Image {
+                                id: aboutIcon
+                                source: "images/about.png"
+                                anchors.left: parent.left
+                                anchors.leftMargin: sideMargin
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: parent.width - sf(30)
+                                fillMode: Image.PreserveAspectFit
+                                Accessible.ignored: true
+                            }
+                            ColorOverlay {
+                                source: aboutIcon
+                                anchors.fill: aboutIcon
+                                color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                                Accessible.ignored: true
                             }
 
                             onClicked: {
@@ -200,8 +193,8 @@ Item {
                         // SECTION /////////////////////////////////////////////
 
                         Rectangle {
-                            Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
-                            Layout.bottomMargin: 5 * AppFramework.displayScaleFactor
+                            Layout.preferredHeight: sf(50)
+                            Layout.bottomMargin: sf(5)
                             Layout.fillWidth: true
                             color: "transparent"
                             Accessible.role: Accessible.Pane
@@ -221,9 +214,9 @@ Item {
                         //------------------------------------------------------
 
                         Rectangle {
-                            Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
+                            Layout.preferredHeight: sf(50)
                             Layout.fillWidth: true
-                            Layout.bottomMargin: 2 * AppFramework.displayScaleFactor
+                            Layout.bottomMargin: sf(2)
                             color: !nightMode ? "#fff" : nightModeSettings.background
                             visible: false // OFF FOR V1.0
                             enabled: false // OFF FOR V1.0
@@ -239,7 +232,7 @@ Item {
 
                                 Text {
                                     Layout.fillHeight: true
-                                    Layout.preferredWidth: 120 * AppFramework.displayScaleFactor
+                                    Layout.preferredWidth: sf(120)
                                     text: qsTr("Format")
                                     verticalAlignment: Text.AlignVCenter
                                     color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
@@ -251,23 +244,18 @@ Item {
                                 Button {
                                     Layout.fillHeight: true
                                     Layout.fillWidth: true
-
-                                    style: ButtonStyle {
-                                        background: Rectangle {
-                                            anchors.fill: parent
-                                            color: !nightMode ? "#fff" : nightModeSettings.background
-
-                                            Text {
-                                                anchors.fill: parent
-                                                anchors.leftMargin: 5 * AppFramework.displayScaleFactor
-                                                verticalAlignment: Text.AlignVCenter
-                                                horizontalAlignment: Text.AlignLeft
-                                                color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                                                text: distanceFormats[currentDistanceFormat]
-                                            }
-                                        }
+                                    background: Rectangle {
+                                        anchors.fill: parent
+                                        color: !nightMode ? "#fff" : nightModeSettings.background
                                     }
-
+                                    Text {
+                                        anchors.fill: parent
+                                        anchors.leftMargin: sf(5)
+                                        verticalAlignment: Text.AlignVCenter
+                                        horizontalAlignment: Text.AlignLeft
+                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                                        text: distanceFormats[currentDistanceFormat]
+                                    }
                                     onClicked: {
                                         // TODO Provide dialog to change format
                                     }
@@ -286,9 +274,9 @@ Item {
                         //------------------------------------------------------
 
                         Rectangle {
-                            Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
+                            Layout.preferredHeight: sf(50)
                             Layout.fillWidth: true
-                            Layout.bottomMargin: 2 * AppFramework.displayScaleFactor
+                            Layout.bottomMargin: sf(2)
                             color: !nightMode ? "#fff" : nightModeSettings.background
                             Accessible.role: Accessible.Pane
 
@@ -301,7 +289,7 @@ Item {
 
                                 Text {
                                     Layout.fillHeight: true
-                                    Layout.preferredWidth: 120 * AppFramework.displayScaleFactor
+                                    Layout.preferredWidth: sf(120)
                                     text: qsTr("Latitude")
                                     verticalAlignment: Text.AlignVCenter
                                     color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
@@ -317,18 +305,15 @@ Item {
                                     text: (requestedDestination === null) ? "" : requestedDestination.latitude
                                     inputMethodHints: Qt.ImhPreferNumbers
                                     validator: latitudeValidator
-                                    style: TextFieldStyle {
-                                        background: Rectangle {
-                                            anchors.fill: parent
-                                            anchors.topMargin: 3 * AppFramework.displayScaleFactor
-                                            anchors.bottomMargin: 3 * AppFramework.displayScaleFactor
-                                            border.width: 1 * AppFramework.displayScaleFactor
-                                            border.color: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
-                                            color: dayModeSettings.background
-                                        }
-                                        textColor: dayModeSettings.foreground
+                                    background: Rectangle {
+                                        anchors.fill: parent
+                                        anchors.topMargin: sf(3)
+                                        anchors.bottomMargin: sf(3)
+                                        border.width: sf(1)
+                                        border.color: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
+                                        color: dayModeSettings.background
                                     }
-
+                                    color: dayModeSettings.foreground
                                     Accessible.role: Accessible.EditableText
                                     Accessible.name: qsTr("Enter latitude")
                                     Accessible.description: qsTr("Enter the latitude of your desired destination here.")
@@ -341,7 +326,7 @@ Item {
                         //------------------------------------------------------
 
                         Rectangle {
-                            Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
+                            Layout.preferredHeight: sf(50)
                             Layout.fillWidth: true
                             color: !nightMode ? "#fff" : nightModeSettings.background
                             Accessible.role: Accessible.Pane
@@ -355,7 +340,7 @@ Item {
 
                                 Text {
                                     Layout.fillHeight: true
-                                    Layout.preferredWidth: 120 * AppFramework.displayScaleFactor
+                                    Layout.preferredWidth: sf(120)
                                     text: qsTr("Longitude")
                                     verticalAlignment: Text.AlignVCenter
                                     color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
@@ -370,17 +355,15 @@ Item {
                                     text: (requestedDestination === null) ? "" : requestedDestination.longitude
                                     inputMethodHints: Qt.ImhPreferNumbers
                                     validator: longitudeValidator
-                                    style: TextFieldStyle {
-                                        background: Rectangle {
-                                            anchors.fill: parent
-                                            anchors.topMargin: 3 * AppFramework.displayScaleFactor
-                                            anchors.bottomMargin: 3 * AppFramework.displayScaleFactor
-                                            border.width: 1 * AppFramework.displayScaleFactor
-                                            border.color: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
-                                            color: dayModeSettings.background
-                                        }
-                                        textColor: dayModeSettings.foreground
+                                    background: Rectangle {
+                                        anchors.fill: parent
+                                        anchors.topMargin: sf(3)
+                                        anchors.bottomMargin: sf(3)
+                                        border.width: sf(1)
+                                        border.color: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
+                                        color: dayModeSettings.background
                                     }
+                                    color: dayModeSettings.foreground
 
                                     Accessible.role: Accessible.EditableText
                                     Accessible.name: qsTr("Enter longitude")
@@ -395,10 +378,10 @@ Item {
                         // SECTION /////////////////////////////////////////////
 
                         Rectangle {
-                            Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
+                            Layout.preferredHeight: sf(50)
                             Layout.fillWidth: true
-                            Layout.topMargin: 8 * AppFramework.displayScaleFactor
-                            Layout.bottomMargin: 5 * AppFramework.displayScaleFactor
+                            Layout.topMargin: sf(8)
+                            Layout.bottomMargin: sf(5)
                             color: "transparent"
                             Accessible.role: Accessible.Pane
 
@@ -417,64 +400,59 @@ Item {
                         //------------------------------------------------------
 
                         Rectangle {
-                            Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
+                            Layout.preferredHeight: sf(50)
                             Layout.fillWidth: true
                             color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                             Accessible.role: Accessible.Pane
 
                             Button {
                                 anchors.fill: parent
-                                style: ButtonStyle {
-                                    background: Rectangle {
-                                        anchors.fill: parent
+                                background: Rectangle {
+                                    anchors.fill: parent
+                                    color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                                }
+                                RowLayout {
+                                    anchors.fill: parent
+                                    spacing: 0
+                                    anchors.leftMargin: sideMargin
+                                    anchors.rightMargin: sideMargin
+
+                                    Rectangle {
+                                        Layout.fillHeight: true
+                                        Layout.preferredWidth: sf(50)
                                         color: !nightMode ? dayModeSettings.background : nightModeSettings.background
 
-                                        RowLayout {
-                                            anchors.fill: parent
-                                            spacing: 0
-                                            anchors.leftMargin: sideMargin
-                                            anchors.rightMargin: sideMargin
-
-                                            Rectangle {
-                                                Layout.fillHeight: true
-                                                Layout.preferredWidth: 50 * AppFramework.displayScaleFactor
-                                                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-
-                                                RadioButton{
-                                                    id: metricChecked
-                                                    anchors.centerIn: parent
-                                                    width: parent.width - (30 * AppFramework.displayScaleFactor)
-                                                    checked: usesMetric === true
-                                                    Accessible.ignored: true
-                                                    style: RadioButtonStyle {
-                                                      indicator: Rectangle {
-                                                          implicitWidth: 20 * AppFramework.displayScaleFactor
-                                                          implicitHeight: 20 * AppFramework.displayScaleFactor
-                                                          radius: 10 * AppFramework.displayScaleFactor
-                                                          border.width: 2 * AppFramework.displayScaleFactor
-                                                          border.color: !nightMode ? "#595959" : nightModeSettings.foreground
-                                                          color: !nightMode ? "#ededed" : "#272727"
-                                                          Rectangle {
-                                                              anchors.fill: parent
-                                                              visible: control.checked
-                                                              color: !nightMode ? "#595959" : nightModeSettings.foreground
-                                                              radius: 9 * AppFramework.displayScaleFactor
-                                                              anchors.margins: 4 * AppFramework.displayScaleFactor
-                                                            }
-                                                        }
-                                                    }
+                                        RadioButton{
+                                            id: metricChecked
+                                            anchors.centerIn: parent
+                                            width: parent.width - sf(30)
+                                            checked: usesMetric === true
+                                            Accessible.ignored: true
+                                            indicator: Rectangle {
+                                              implicitWidth: sf(20)
+                                              implicitHeight: sf(20)
+                                              radius: sf(10)
+                                              border.width: sf(2)
+                                              border.color: !nightMode ? "#595959" : nightModeSettings.foreground
+                                              color: !nightMode ? "#ededed" : "#272727"
+                                              Rectangle {
+                                                  anchors.fill: parent
+                                                  visible: parent.parent.checked
+                                                  color: !nightMode ? "#595959" : nightModeSettings.foreground
+                                                  radius: sf(9)
+                                                  anchors.margins: sf(4)
                                                 }
                                             }
-                                            Text {
-                                                Layout.fillHeight: true
-                                                Layout.fillWidth: true
-                                                Layout.leftMargin: sideMargin
-                                                text: qsTr("Metric")
-                                                verticalAlignment: Text.AlignVCenter
-                                                color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                                                Accessible.ignored: true
-                                            }
                                         }
+                                    }
+                                    Text {
+                                        Layout.fillHeight: true
+                                        Layout.fillWidth: true
+                                        Layout.leftMargin: sideMargin
+                                        text: qsTr("Metric")
+                                        verticalAlignment: Text.AlignVCenter
+                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                                        Accessible.ignored: true
                                     }
                                 }
 
@@ -494,64 +472,59 @@ Item {
                         //------------------------------------------------------
 
                         Rectangle {
-                            Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
+                            Layout.preferredHeight: sf(50)
                             Layout.fillWidth: true
                             color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                             Accessible.role: Accessible.Pane
 
                             Button {
                                 anchors.fill: parent
-                                style: ButtonStyle {
-                                    background: Rectangle {
-                                        anchors.fill: parent
+                                background: Rectangle {
+                                    anchors.fill: parent
+                                    color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                                }
+                                RowLayout {
+                                    anchors.fill: parent
+                                    spacing: 0
+                                    anchors.leftMargin: sideMargin
+                                    anchors.rightMargin: sideMargin
+
+                                    Rectangle {
+                                        Layout.fillHeight: true
+                                        Layout.preferredWidth: sf(50)
                                         color: !nightMode ? dayModeSettings.background : nightModeSettings.background
 
-                                        RowLayout {
-                                            anchors.fill: parent
-                                            spacing: 0
-                                            anchors.leftMargin: sideMargin
-                                            anchors.rightMargin: sideMargin
-
-                                            Rectangle {
-                                                Layout.fillHeight: true
-                                                Layout.preferredWidth: 50 * AppFramework.displayScaleFactor
-                                                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-
-                                                RadioButton{
-                                                    id: imperialChecked
-                                                    anchors.centerIn: parent
-                                                    width: parent.width - (30 * AppFramework.displayScaleFactor)
-                                                    checked: usesMetric === false
-                                                    Accessible.ignored: true
-                                                    style: RadioButtonStyle {
-                                                      indicator: Rectangle {
-                                                          implicitWidth: 20 * AppFramework.displayScaleFactor
-                                                          implicitHeight: 20 * AppFramework.displayScaleFactor
-                                                          radius: 10 * AppFramework.displayScaleFactor
-                                                          border.width: 2 * AppFramework.displayScaleFactor
-                                                          border.color: !nightMode ? "#595959" : nightModeSettings.foreground
-                                                          color: !nightMode ? "#ededed" : "#272727"
-                                                          Rectangle {
-                                                              anchors.fill: parent
-                                                              visible: control.checked
-                                                              color: !nightMode ? "#595959" : nightModeSettings.foreground
-                                                              radius: 9 * AppFramework.displayScaleFactor
-                                                              anchors.margins: 4 * AppFramework.displayScaleFactor
-                                                          }
-                                                      }
-                                                  }
-                                                }
-                                            }
-                                            Text {
-                                                Layout.fillHeight: true
-                                                Layout.fillWidth: true
-                                                Layout.leftMargin: sideMargin
-                                                text: qsTr("Imperial")
-                                                verticalAlignment: Text.AlignVCenter
-                                                color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                                                Accessible.ignored: true
+                                        RadioButton{
+                                            id: imperialChecked
+                                            anchors.centerIn: parent
+                                            width: parent.width - sf(30)
+                                            checked: usesMetric === false
+                                            Accessible.ignored: true
+                                            indicator: Rectangle {
+                                              implicitWidth: sf(20)
+                                              implicitHeight: sf(20)
+                                              radius: sf(10)
+                                              border.width: sf(2)
+                                              border.color: !nightMode ? "#595959" : nightModeSettings.foreground
+                                              color: !nightMode ? "#ededed" : "#272727"
+                                              Rectangle {
+                                                  anchors.fill: parent
+                                                  visible: parent.parent.checked
+                                                  color: !nightMode ? "#595959" : nightModeSettings.foreground
+                                                  radius: sf(9)
+                                                  anchors.margins: sf(4)
+                                              }
                                             }
                                         }
+                                    }
+                                    Text {
+                                        Layout.fillHeight: true
+                                        Layout.fillWidth: true
+                                        Layout.leftMargin: sideMargin
+                                        text: qsTr("Imperial")
+                                        verticalAlignment: Text.AlignVCenter
+                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                                        Accessible.ignored: true
                                     }
                                 }
 
@@ -571,9 +544,9 @@ Item {
                         // SECTION /////////////////////////////////////////////
 
                         Rectangle {
-                            Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
+                            Layout.preferredHeight: sf(50)
                             Layout.fillWidth: true
-                            Layout.topMargin: 10 * AppFramework.displayScaleFactor
+                            Layout.topMargin: sf(10)
                             visible: false
                             enabled: false
                             color: !nightMode ? dayModeSettings.background : nightModeSettings.background
@@ -582,42 +555,40 @@ Item {
 
                             Button {
                                 anchors.fill: parent
-                                style: ButtonStyle {
-                                    background: Rectangle {
-                                        anchors.fill: parent
+                                background: Rectangle {
+                                    anchors.fill: parent
+                                    color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                                }
+
+                                RowLayout {
+                                    anchors.fill: parent
+                                    spacing: 0
+                                    anchors.leftMargin: sideMargin
+                                    anchors.rightMargin: sideMargin
+
+                                    Rectangle {
+                                        Layout.fillHeight: true
+                                        Layout.preferredWidth: sf(50)
                                         color: !nightMode ? dayModeSettings.background : nightModeSettings.background
 
-                                        RowLayout {
-                                            anchors.fill: parent
-                                            spacing: 0
-                                            anchors.leftMargin: sideMargin
-                                            anchors.rightMargin: sideMargin
-
-                                            Rectangle {
-                                                Layout.fillHeight: true
-                                                Layout.preferredWidth: 50 * AppFramework.displayScaleFactor
-                                                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-
-                                                Image {
-                                                    id: useOuterArrowCheckmark
-                                                    anchors.centerIn: parent
-                                                    width: parent.width - (30 * AppFramework.displayScaleFactor)
-                                                    fillMode: Image.PreserveAspectFit
-                                                    visible: useDirectionOfTravelCircle === true ? true : false
-                                                    source: "images/checkmark.png"
-                                                    Accessible.ignored: true
-                                                }
-                                            }
-                                            Text {
-                                                Layout.fillHeight: true
-                                                Layout.fillWidth: true
-                                                Layout.leftMargin: sideMargin
-                                                text: qsTr("Use outer arrow")
-                                                verticalAlignment: Text.AlignVCenter
-                                                color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                                                Accessible.ignored: true
-                                            }
+                                        Image {
+                                            id: useOuterArrowCheckmark
+                                            anchors.centerIn: parent
+                                            width: parent.width - sf(30)
+                                            fillMode: Image.PreserveAspectFit
+                                            visible: useDirectionOfTravelCircle === true ? true : false
+                                            source: "images/checkmark.png"
+                                            Accessible.ignored: true
                                         }
+                                    }
+                                    Text {
+                                        Layout.fillHeight: true
+                                        Layout.fillWidth: true
+                                        Layout.leftMargin: sideMargin
+                                        text: qsTr("Use outer arrow")
+                                        verticalAlignment: Text.AlignVCenter
+                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                                        Accessible.ignored: true
                                     }
                                 }
 
@@ -647,7 +618,7 @@ Item {
 
                         Rectangle {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
+                            Layout.preferredHeight: sf(50)
                             color: "transparent"
                             Accessible.ignored: true
                         }

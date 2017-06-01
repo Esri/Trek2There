@@ -61,8 +61,8 @@
     "type": "app",
     "urlScheme": "arcgis-trek2there",
     "version": {
-        "major": 1,
-        "micro": 13,
-        "minor": 1
+        "major": 2,
+        "micro": 0,
+        "minor": 0
     }
 }

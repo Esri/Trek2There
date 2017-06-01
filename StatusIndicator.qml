@@ -14,7 +14,7 @@
  *
  */
 
-import QtQuick 2.6
+import QtQuick 2.8
 import QtQuick.Layouts 1.1
 import ArcGIS.AppFramework 1.0
 
@@ -64,7 +64,7 @@ Rectangle {
     border.width: indicatorBorderWidth
     border.color: messageType.borderColor
     visible: false
-    radius: 6 * AppFramework.displayScaleFactor
+    radius: sf(6)
 
     // UI //////////////////////////////////////////////////////////////////////
 

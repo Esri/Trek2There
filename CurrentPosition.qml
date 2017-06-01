@@ -14,11 +14,9 @@
  *
  */
 
-import QtQuick 2.5
-import QtQuick.Controls 1.4
-import QtQuick.Layouts 1.1
-import QtPositioning 5.3
-import QtLocation 5.3
+import QtQuick 2.8
+import QtPositioning 5.8
+import QtLocation 5.8
 
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Controls 1.0
