@@ -19,11 +19,15 @@ import QtQml 2.2
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
 import QtGraphicalEffects 1.0
-import QtPositioning 5.4
+import QtPositioning 5.8
 import QtQuick.Dialogs 1.2
 import QtQuick.Window 2.2
+import QtMultimedia 5.5
+import QtSensors 5.5
 
 import ArcGIS.AppFramework 1.0
+
+import "js/MathLib.js" as MathLib
 
 //------------------------------------------------------------------------------
 
@@ -37,11 +41,15 @@ Item {
     property bool arrivedAtDestination: false
     property bool autohideToolbar: true
     property bool noPositionSource: false
+    property bool showHUD: false
     property double currentDistance: 0.0
     property double currentDegreesOffCourse: 0
     property int currentAccuracy: 0
     property int currentAccuracyInUnits: 0
     property int sideMargin: 14 * AppFramework.displayScaleFactor
+
+    property bool cpDistanceEqual: false
+    property bool cpAzimuthEqual: false
 
     signal arrived()
     signal reset()
@@ -49,17 +57,43 @@ Item {
     signal pauseNavigation()
     signal endNavigation()
 
+    property Image mapPin: Image {
+        source: "images/map_pin_night.png"
+    }
+
     //--------------------------------------------------------------------------
 
     Component.onCompleted: {
+        sensors.startOrientationSensor();
+        //sensors.startCompass();
+        //sensors.startTiltSensor();
+        //sensors.startRotationSensor();
+
         if(requestedDestination !== null){
+            viewData.itemCoordinate = requestedDestination;
             startNavigation();
         }
     }
 
+    onShowHUDChanged: {
+        if(showHUD){
+            camera.start();
+        }
+
+//        if(arrowView.visible){
+//            fadeArrowView.from = 1;
+//            fadeArrowView.to = 0;
+//        }
+//        else{
+//            fadeArrowView.from = 0;
+//            fadeArrowView.to = 1;
+//        }
+//        fadeArrowView.start();
+    }
+
     // UI //////////////////////////////////////////////////////////////////////
 
-    Rectangle {
+     Rectangle {
         id: appFrame
         anchors.fill: parent
         color: !nightMode ? dayModeSettings.background : nightModeSettings.background
@@ -87,15 +121,303 @@ Item {
             }
         }
 
-        ColumnLayout {
+        // HUD View ------------------------------------------------------------
+
+        Item {
+            id: hudView
             anchors.fill: parent
-            spacing: 0
+            visible: showHUD //false
+
+            onVisibleChanged: {
+                if (!visible) {
+                    camera.stop();
+                }
+            }
+
+            //------------------------------------------------------------------
+
+            VideoOutput {
+                id: videoOutput
+
+                anchors.fill: parent
+
+                source: camera
+
+                fillMode: VideoOutput.PreserveAspectCrop
+                autoOrientation: Qt.platform.os === "windows" ? false : true
+                focus : visible
+            }
+
+            //------------------------------------------------------------------
+
+            Camera {
+                id: camera
+
+                imageProcessing.whiteBalanceMode: CameraImageProcessing.WhiteBalanceFlash
+
+                focus {
+                    focusMode: Camera.FocusContinuous
+                    focusPointMode: Camera.FocusPointAuto
+                }
+
+                exposure {
+                    exposureCompensation: -1.0
+                    exposureMode: Camera.ExposurePortrait
+                }
+
+                captureMode: Camera.CaptureStillImage
+                flash.mode: Camera.FlashRedEyeReduction
+            }
+
+            //------------------------------------------------------------------
+
+            Canvas {
+                id: overlay
+                anchors.fill: parent
+                clip: true
+
+                property int offsetx
+                property int offsety
+                property int scalex
+                property int scaley
+                property var viewCoords: null
+
+                Connections {
+                    target: viewData
+
+                    onObserverCoordinateChanged: {
+                        overlay.requestPaint();
+                    }
+
+                    onItemCoordinateChanged: {
+                        overlay.requestPaint();
+                    }
+
+                    onDeviceBearingChanged: {
+                        overlay.requestPaint();
+                    }
+
+                    onDevicePitchChanged: {
+                        overlay.requestPaint();
+                    }
+
+                    onDeviceRollChanged: {
+                        overlay.requestPaint();
+                    }
+
+                    onFieldOfViewXChanged: {
+                        overlay.requestPaint();
+                    }
+
+                    onFieldOfViewYChanged: {
+                        overlay.requestPaint();
+                    }
+                }
+
+                //--------------------------------------------------------------------------
+
+                onPaint: {
+                    var context = getContext("2d");
+                    context.save();
+                    context.clearRect(0, 0, width, height);
+
+                    adjustScaling();
+
+                    context.beginPath();
+                    context.rect(offsetx, offsety, scalex, scaley);
+                    context.clip();
+
+                    MathLib.initializeTransformationMatrix(viewData.observerHeight, viewData.deviceBearing, viewData.devicePitch, viewData.deviceRoll, viewData.fieldOfViewX, viewData.fieldOfViewY);
+
+                    updateViewModel(context);
+
+                    context.restore();
+                }
+
+                //--------------------------------------------------------------------------
+
+                function adjustScaling() {
+                    var rect = videoOutput.contentRect;
+                    scalex = rect.width;
+                    scaley = rect.height;
+                    offsetx = rect.x;
+                    offsety = rect.y;
+                }
+
+                function toScreenCoord(pt) {
+                    return (pt ? Qt.vector2d(scalex * pt.x + offsetx, scaley * pt.y + offsety) : null);
+                }
+
+                //--------------------------------------------------------------------------
+
+                function updateViewModel(context) {
+
+                    var distance1 = viewData.observerCoordinate.distanceTo(viewData.itemCoordinate);
+                    console.log("-----------------distance1:", distance1)
+                    var distance = currentPosition.distanceToDestination
+
+                    cpDistanceEqual = distance1 === distance;
+                    console.log("-----------------distance:", distance)
+
+                    var azimuth1 = viewData.observerCoordinate.azimuthTo(viewData.itemCoordinate);
+                    console.log("-----------------azimuth1:", azimuth1)
+                    var azimuth = currentPosition.azimuthToDestination
+                    console.log("-----------------azimuth:", azimuth)
+                    cpAzimuthEqual = azimuth1 === azimuth;
+
+                    var inFoV = MathLib.inFieldOfView(azimuth, viewData.deviceBearing, viewData.deviceRoll, viewData.fieldOfViewX, viewData.fieldOfViewY);
+                    console.log("-----------------inFov:", inFoV)
+                    if (!inFoV) {
+                        console.log("Not in Field of view.")
+                    }
+
+                    var pointInPlane = MathLib.transformAzimuthToCamera(azimuth, distance, viewData.itemHeight - viewData.observerHeight);
+                    console.log("-----------------pointInPlane:", pointInPlane)
+                    if (!pointInPlane || pointInPlane.x < 0 || pointInPlane.x > 1 || pointInPlane.y < 0 || pointInPlane.y > 1) {
+                        console.log("point is not in the plane");
+                    }
+
+                    var scale = (10000 - distance) / 10000 < .3 ? .3 : (10000 - distance) / 10000;
+                    viewCoords = toScreenCoord(pointInPlane);
+                    drawSymbol(context, viewCoords, scale, "red");
+                }
+
+                //--------------------------------------------------------------------------
+
+                function drawSymbol(context, pt, scale, color) {
+                    var height = Math.ceil(100 * scale);
+                    var centeredY = pt.y - (height / 2);
+                    context.drawImage(mapPin.source, pt.x, centeredY, height, height);
+                }
+            }
+        }
+
+        // Compass View --------------------------------------------------------
+
+        Rectangle {
+            id: arrowView
+            anchors.fill: parent
+            visible: !showHUD
+            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+
+            ColumnLayout {
+                anchors.fill: parent
+                spacing: 0
+                Accessible.role: Accessible.Pane
+                visible: requestedDestination !== null
+
+                Item {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    Accessible.role: Accessible.Pane
+
+                    ColumnLayout{
+                        anchors.fill: parent
+                        spacing: 0
+                        Accessible.role: Accessible.Pane
+
+                        Item{
+                            Layout.preferredHeight: sf(40)
+                        }
+
+                       // DIRECTION ARROW //////////////////////////////////////////
+
+                        Item {
+                            id: directionUI
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                            property int imageScaleFactor: sf(40)
+                            Accessible.role: Accessible.Pane
+
+                            //------------------------------------------------------
+
+                            Item{
+                                anchors.fill: parent
+                                //color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                                z: 99
+                                Accessible.role: Accessible.Pane
+
+                                Image{
+                                    id: directionOfTravel
+                                    anchors.centerIn: parent
+                                    height: isLandscape ? parent.height : parent.height - directionUI.imageScaleFactor
+                                    width: isLandscape ? parent.width : parent.width - directionUI.imageScaleFactor
+                                    source: "images/direction_of_travel_circle.png"
+                                    fillMode: Image.PreserveAspectFit
+                                    visible: useDirectionOfTravelCircle && !noPositionSource
+                                    Accessible.ignored: true
+                                }
+
+                                Image{
+                                    id: directionArrow
+                                    anchors.centerIn: parent
+                                    source: !nightMode ? "images/arrow_day.png" : "images/arrow_night.png"
+                                    width: isLandscape ? parent.width - directionUI.imageScaleFactor : parent.width - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
+                                    height: isLandscape ? parent.height - directionUI.imageScaleFactor : parent.height - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
+                                    fillMode: Image.PreserveAspectFit
+                                    rotation: currentDegreesOffCourse
+                                    opacity: 1
+                                    visible: !noPositionSource
+                                    Accessible.role: Accessible.Indicator
+                                    Accessible.name: qsTr("Direction of travel is: %1".arg(rotation.toString()))
+                                    Accessible.description: qsTr("This arrow points toward the direction the user should travel. The degree is based off of the top of the device being the current bearing of travel.")
+                                    Accessible.ignored: arrivedAtDestination
+                                }
+
+                                Image{
+                                    id: arrivedIcon
+                                    anchors.centerIn: parent
+                                    source: !nightMode ? "images/map_pin_day.png" : "images/map_pin_night.png"
+                                    width: isLandscape ? parent.width - directionUI.imageScaleFactor : parent.width - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
+                                    height: isLandscape ? parent.height - directionUI.imageScaleFactor : parent.height - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
+                                    fillMode: Image.PreserveAspectFit
+                                    rotation: 0
+                                    visible: false
+                                    Accessible.role: Accessible.AlertMessage
+                                    Accessible.name: qsTr("Arrived at destination")
+                                    Accessible.description: qsTr("You have arrived at your destination")
+                                    Accessible.ignored: navigating
+                                }
+
+                                Image{
+                                    id: noSignalIndicator
+                                    anchors.centerIn: parent
+                                    height: isLandscape ? parent.height : parent.height - directionUI.imageScaleFactor
+                                    width: isLandscape ? parent.width : parent.width - directionUI.imageScaleFactor
+                                    source: "images/no_signal.png"
+                                    visible: noPositionSource && !arrivedAtDestination
+                                    fillMode: Image.PreserveAspectFit
+                                    Accessible.role: Accessible.Indicator
+                                    Accessible.name: qsTr("There is no signal")
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Item {
+                    Layout.preferredHeight: sf(150)
+                }
+            }
+        }
+
+        // No Destination Message ----------------------------------------------
+
+        Item{
+            id: noDestinationSet
+            anchors.fill: parent
+            anchors.leftMargin: sideMargin
+            anchors.rightMargin: sideMargin
+            z: 100
+            visible: (requestedDestination === null) ? true : false
             Accessible.role: Accessible.Pane
 
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                color: "transparent"
+            Rectangle{
+                anchors.centerIn: parent
+                height: sf(80)
+                width: parent.width
+                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                radius: sf(6)
                 Accessible.role: Accessible.Pane
 
                 ColumnLayout{
@@ -103,455 +425,372 @@ Item {
                     spacing: 0
                     Accessible.role: Accessible.Pane
 
-                    //----------------------------------------------------------
-
-                    Rectangle{
-                        id:statusMessageContianer
+                    Text{
                         Layout.fillWidth: true
-                        Layout.preferredHeight: sf(40)
-                        Layout.rightMargin: sf(10)
-                        Layout.leftMargin: sf(10)
-                        Layout.topMargin: sf(10)
-                        visible: true
-                        color:"transparent"
-                        Accessible.role: Accessible.Pane
-
-                        RowLayout{
-                            anchors.fill: parent
-
-                            Rectangle{
-                                Layout.fillHeight: true
-                                Layout.fillWidth: true
-                                color: "transparent"
-                                StatusIndicator{
-                                    id: statusMessage
-                                    visible: false
-                                    anchors.fill: parent
-                                    containerHeight: parent.height
-                                    Layout.fillHeight: true
-                                    Layout.fillWidth: true
-                                    hideAutomatically: false
-                                    animateHide: false
-                                    messageType: statusMessage.warning
-                                    message: qsTr("Start moving to determine direction.")
-
-                                    Accessible.role: Accessible.AlertMessage
-                                    Accessible.name: message
-                                }
-                            }
-
-                            Rectangle{
-                                id: locationAccuracyContainer
-                                Layout.preferredWidth: sf(30)
-                                Layout.leftMargin: sf(10)
-                                Layout.fillHeight: true
-                                //visible: !statusMessage.visible
-                                color: "transparent"
-
-                                Accessible.role: Accessible.Indicator
-                                Accessible.name: qsTr("Location Accuracy Indicator")
-                                Accessible.description: qsTr("Location accuracy is denoted on a scale of 1 to 5, with 1 being lowest and 5 being highest. Current location accuracy is rated %1".arg(currentAccuracy))
-
-                                ColumnLayout{
-                                    anchors.fill: parent
-
-                                    Rectangle{
-                                        Layout.fillWidth: true
-                                        Layout.fillHeight: true
-                                        color: "transparent"
-
-                                        Text{
-                                            id: locationAccuracyIndicator
-                                            text: currentAccuracy > 0 ? icons.getIconByName("accuracy" + currentAccuracy.toString()) : ""
-                                            color: buttonTextColor
-                                                /*(function(accuracy){
-                                                var color;
-                                                switch(accuracy){
-                                                    case 4:
-                                                        color = "green";
-                                                        break;
-                                                    case 3:
-                                                        color = "orange";
-                                                        break;
-                                                    case 2:
-                                                        color = "darkorange";
-                                                        break;
-                                                    case 1:
-                                                        color = "red";
-                                                        break;
-                                                    case 0:
-                                                        color = "#aaa";
-                                                        break;
-                                                    default:
-                                                        color = "#aaa;"
-                                                        break;
-                                                }
-                                                return color;
-
-                                            })(currentAccuracy)*/
-                                            opacity: 1
-                                            anchors.centerIn: parent
-                                            font.family: icons.name
-                                            font.pointSize: 24
-                                            visible: currentAccuracy > 0
-                                            z: locationAccuracyBaseline.z + 1
-                                            Accessible.ignored: true
-                                        }
-
-                                        Text{
-                                            id: locationAccuracyBaseline
-                                            text: icons.accuracy_indicator
-                                            color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
-                                            opacity: .4
-                                            anchors.centerIn: parent
-                                            font.family: icons.name
-                                            font.pointSize: 24
-                                            Accessible.ignored: true
-                                            z:100
-                                        }
-                                    }
-
-                                    Rectangle{
-                                        Layout.fillWidth: true
-                                        Layout.preferredHeight: sf(15)
-                                        color: "transparent"
-                                        Text{
-                                            id: accuracyInUnits
-                                            text: currentAccuracy > 0 ? "<p>&plusmn;%1%2</p>".arg(currentAccuracyInUnits.toString()).arg(usesMetric ? "m" : "ft") : "----"
-                                            color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
-                                            font.pointSize: 10
-                                            opacity: currentAccuracy > 0 ? 1 : .4
-                                            anchors.centerIn: parent
-                                            textFormat: Text.RichText
-
-                                            Accessible.role: Accessible.Indicator
-                                            Accessible.name: qsTr("Accuracy in units is: %1".arg(text))
-                                            Accessible.description: qsTr("This denotes the current location accuracy in units rounded upward to the nearest %1".arg(usesMetric ? "meter" : "foot"))
-                                        }
-                                    }
-
-                                }
-                            }
-                        }
+                        Layout.fillHeight: true
+                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                        fontSizeMode: Text.Fit
+                        wrapMode: Text.Wrap
+                        font.pointSize: largeFontSize
+                        minimumPointSize: 9
+                        font.weight: Font.Black
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        text: qsTr("No destination set!")
+                        Accessible.role: Accessible.AlertMessage
+                        Accessible.name: text
                     }
 
-                   // DIRECTION ARROW //////////////////////////////////////////
+                    Text{
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                        fontSizeMode: Text.Fit
+                        wrapMode: Text.Wrap
+                        font.pointSize: baseFontSize
+                        minimumPointSize: 9
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        textFormat: Text.RichText
+                        text: qsTr("Go to <span style='font-family:%1; font-size:%2pt; color:%3' alt='settings'>%4</span> to set your destination.".arg(icons.name).arg(font.pointSize * 1.2).arg(buttonTextColor).arg(icons.settings))
+                        Accessible.role: Accessible.AlertMessage
+                        Accessible.name: qsTr("Click the settings button in the bottom toolbar to set your destination")
+                    }
+                }
+            }
+        }
 
-                    Rectangle {
-                        id: directionUI
+        // Status Message and Location Accuracy Indicator ----------------------
+
+        Item{
+            id:statusMessageContianer
+            width: parent.width
+            height: sf(40)
+            anchors.top: parent.top
+            visible: true
+            Accessible.role: Accessible.Pane
+
+            RowLayout{
+                anchors.fill: parent
+                anchors.rightMargin: sf(10)
+                anchors.leftMargin: sf(10)
+                anchors.topMargin: sf(10)
+
+                Item{
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    StatusIndicator{
+                        id: statusMessage
+                        visible: false
+                        anchors.fill: parent
+                        containerHeight: parent.height
                         Layout.fillHeight: true
                         Layout.fillWidth: true
-                        color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                        property int imageScaleFactor: sf(40)
-                        Accessible.role: Accessible.Pane
+                        hideAutomatically: false
+                        animateHide: false
+                        messageType: statusMessage.warning
+                        message: qsTr("Start moving to determine direction.")
+
+                        Accessible.role: Accessible.AlertMessage
+                        Accessible.name: message
+                    }
+                }
+
+                Item{
+                    id: locationAccuracyContainer
+                    Layout.preferredWidth: sf(30)
+                    Layout.leftMargin: sf(10)
+                    Layout.fillHeight: true
+                    //visible: !statusMessage.visible
+
+                    Accessible.role: Accessible.Indicator
+                    Accessible.name: qsTr("Location Accuracy Indicator")
+                    Accessible.description: qsTr("Location accuracy is denoted on a scale of 1 to 5, with 1 being lowest and 5 being highest. Current location accuracy is rated %1".arg(currentAccuracy))
+
+                    ColumnLayout{
+                        anchors.fill: parent
 
                         Rectangle{
-                            id: noDestinationSet
-                            anchors.fill: parent
-                            anchors.leftMargin: sideMargin
-                            anchors.rightMargin: sideMargin
-                            z: 100
-                            visible: (requestedDestination === null) ? true : false
-                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                            Accessible.role: Accessible.Pane
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            color: "transparent"
 
-                            Rectangle{
-                                anchors.centerIn: parent
-                                height: sf(80)
-                                width: parent.width
-                                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                                Accessible.role: Accessible.Pane
-
-                                ColumnLayout{
-                                    anchors.fill: parent
-                                    spacing: 0
-                                    Accessible.role: Accessible.Pane
-
-                                    Text{
-                                        Layout.fillWidth: true
-                                        Layout.fillHeight: true
-                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                                        fontSizeMode: Text.Fit
-                                        wrapMode: Text.Wrap
-                                        font.pointSize: largeFontSize
-                                        minimumPointSize: 9
-                                        font.weight: Font.Black
-                                        horizontalAlignment: Text.AlignHCenter
-                                        verticalAlignment: Text.AlignVCenter
-                                        text: qsTr("No destination set!")
-                                        Accessible.role: Accessible.AlertMessage
-                                        Accessible.name: text
+                            Text{
+                                id: locationAccuracyIndicator
+                                text: currentAccuracy > 0 ? icons.getIconByName("accuracy" + currentAccuracy.toString()) : ""
+                                color: buttonTextColor
+                                    /*(function(accuracy){
+                                    var color;
+                                    switch(accuracy){
+                                        case 4:
+                                            color = "green";
+                                            break;
+                                        case 3:
+                                            color = "orange";
+                                            break;
+                                        case 2:
+                                            color = "darkorange";
+                                            break;
+                                        case 1:
+                                            color = "red";
+                                            break;
+                                        case 0:
+                                            color = "#aaa";
+                                            break;
+                                        default:
+                                            color = "#aaa;"
+                                            break;
                                     }
+                                    return color;
 
-                                    Text{
-                                        Layout.fillWidth: true
-                                        Layout.fillHeight: true
-                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                                        fontSizeMode: Text.Fit
-                                        wrapMode: Text.Wrap
-                                        font.pointSize: baseFontSize
-                                        minimumPointSize: 9
-                                        horizontalAlignment: Text.AlignHCenter
-                                        verticalAlignment: Text.AlignVCenter
-                                        textFormat: Text.RichText
-                                        text: qsTr("Go to <span style='font-family:%1; font-size:%2pt; color:%3' alt='settings'>%4</span> to set your destination.".arg(icons.name).arg(font.pointSize * 1.2).arg(buttonTextColor).arg(icons.settings))
-                                        Accessible.role: Accessible.AlertMessage
-                                        Accessible.name: qsTr("Click the settings button in the bottom toolbar to set your destination")
-                                    }
-                                }
-                            }
-                        }
-
-                        //------------------------------------------------------
-
-                        Rectangle{
-                            anchors.fill: parent
-                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                            z: 99
-                            Accessible.role: Accessible.Pane
-
-
-
-                            Image{
-                                id: directionOfTravel
+                                })(currentAccuracy)*/
+                                opacity: 1
                                 anchors.centerIn: parent
-                                height: isLandscape ? parent.height : parent.height - directionUI.imageScaleFactor
-                                width: isLandscape ? parent.width : parent.width - directionUI.imageScaleFactor
-                                source: "images/direction_of_travel_circle.png"
-                                fillMode: Image.PreserveAspectFit
-                                visible: useDirectionOfTravelCircle && !noPositionSource
+                                font.family: icons.name
+                                font.pointSize: 24
+                                visible: currentAccuracy > 0
+                                z: locationAccuracyBaseline.z + 1
                                 Accessible.ignored: true
                             }
 
-                            Image{
-                                id: directionArrow
+                            Text{
+                                id: locationAccuracyBaseline
+                                text: icons.accuracy_indicator
+                                color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
+                                opacity: .4
                                 anchors.centerIn: parent
-                                source: !nightMode ? "images/arrow_day.png" : "images/arrow_night.png"
-                                width: isLandscape ? parent.width - directionUI.imageScaleFactor : parent.width - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
-                                height: isLandscape ? parent.height - directionUI.imageScaleFactor : parent.height - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
-                                fillMode: Image.PreserveAspectFit
-                                rotation: currentDegreesOffCourse
-                                opacity: 1
-                                visible: !noPositionSource
-                                Accessible.role: Accessible.Indicator
-                                Accessible.name: qsTr("Direction of travel is: %1".arg(rotation.toString()))
-                                Accessible.description: qsTr("This arrow points toward the direction the user should travel. The degree is based off of the top of the device being the current bearing of travel.")
-                                Accessible.ignored: arrivedAtDestination
-                            }
-
-                            Image{
-                                id: arrivedIcon
-                                anchors.centerIn: parent
-                                source: !nightMode ? "images/map_pin_day.png" : "images/map_pin_night.png"
-                                width: isLandscape ? parent.width - directionUI.imageScaleFactor : parent.width - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
-                                height: isLandscape ? parent.height - directionUI.imageScaleFactor : parent.height - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
-                                fillMode: Image.PreserveAspectFit
-                                rotation: 0
-                                visible: false
-                                Accessible.role: Accessible.AlertMessage
-                                Accessible.name: qsTr("Arrived at destination")
-                                Accessible.description: qsTr("You have arrived at your destination")
-                                Accessible.ignored: navigating
-                            }
-
-                            Image{
-                                id: noSignalIndicator
-                                anchors.centerIn: parent
-                                height: isLandscape ? parent.height : parent.height - directionUI.imageScaleFactor
-                                width: isLandscape ? parent.width : parent.width - directionUI.imageScaleFactor
-                                source: "images/no_signal.png"
-                                visible: noPositionSource && !arrivedAtDestination
-                                fillMode: Image.PreserveAspectFit
-                                Accessible.role: Accessible.Indicator
-                                Accessible.name: qsTr("There is no signal")
+                                font.family: icons.name
+                                font.pointSize: 24
+                                Accessible.ignored: true
+                                z:100
                             }
                         }
-                        //------------------------------------------------------
+
+                        Item{
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: sf(15)
+                            Text{
+                                id: accuracyInUnits
+                                text: currentAccuracy > 0 ? "<p>&plusmn;%1%2</p>".arg(currentAccuracyInUnits.toString()).arg(usesMetric ? "m" : "ft") : "----"
+                                color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
+                                font.pointSize: 10
+                                opacity: currentAccuracy > 0 ? 1 : .4
+                                anchors.centerIn: parent
+                                textFormat: Text.RichText
+
+                                Accessible.role: Accessible.Indicator
+                                Accessible.name: qsTr("Accuracy in units is: %1".arg(text))
+                                Accessible.description: qsTr("This denotes the current location accuracy in units rounded upward to the nearest %1".arg(usesMetric ? "meter" : "foot"))
+                            }
+                        }
+
                     }
                 }
             }
+        }
 
-            // DISTANCE READOUT ////////////////////////////////////////////////
+        // Distance Readout ----------------------------------------------------
 
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: sf(100)
-                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                Accessible.role: Accessible.Pane
+        Item {
+            width: parent.width
+            height: sf(100)
+            anchors.bottom: toolbar.top
+            Accessible.role: Accessible.Pane
 
-                Text {
-                    id: distanceReadout
-                    anchors.fill: parent
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    text: displayDistance(currentDistance.toString())
-                    font.pointSize: extraLargeFontSize
-                    font.weight: Font.Light
-                    fontSizeMode: Text.Fit
-                    minimumPointSize: largeFontSize
-                    color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                    visible: requestedDestination !== null
-                    Accessible.role: Accessible.Indicator
-                    Accessible.name: text
-                    Accessible.description: qsTr("This value is the distance remaining between you and the destination")
-                }
+            Text {
+                id: distanceReadout
+                anchors.fill: parent
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                text: displayDistance(currentDistance.toString())
+                font.pointSize: extraLargeFontSize
+                font.weight: Font.Light
+                fontSizeMode: Text.Fit
+                minimumPointSize: largeFontSize
+                color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                visible: requestedDestination !== null
+                Accessible.role: Accessible.Indicator
+                Accessible.name: text
+                Accessible.description: qsTr("This value is the distance remaining between you and the destination")
             }
+        }
 
-            // UTILITY | SETTINGS //////////////////////////////////////////////
+        // Toolbar -------------------------------------------------------------
 
-            Rectangle {
-                id: toolbar
-                Layout.fillWidth: true
-                Layout.preferredHeight: sf(50)
-                color: "transparent"
-                opacity: 1
+        Item {
+            id: toolbar
+            width: parent.width
+            height: sf(50)
+            anchors.bottom: parent.bottom
+            opacity: 1
+            Accessible.role: Accessible.Pane
+            Accessible.name: qsTr("Toolbar")
+            Accessible.description: qsTr("This toolbar contains the settings button, the end navigation button and the day night mode switch button")
+
+            RowLayout {
+                anchors.fill: parent
+                spacing: 0
                 Accessible.role: Accessible.Pane
-                Accessible.name: qsTr("Toolbar")
-                Accessible.description: qsTr("This toolbar contains the settings button, the end navigation button and the day night mode switch button")
 
-                RowLayout {
-                    anchors.fill: parent
-                    spacing: 0
+                //----------------------------------------------------------
+
+                Item {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: sf(50)
                     Accessible.role: Accessible.Pane
 
-                    //----------------------------------------------------------
+                    Button{
+                        id: settingsButton
+                        anchors.fill: parent
+                        ToolTip.visible: hovered
+                        ToolTip.text: qsTr("Settings")
 
-                    Rectangle {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: sf(50)
-                        color: "transparent"
-                        Accessible.role: Accessible.Pane
-
-                        Button{
-                            id: settingsButton
+                        background: Rectangle{
+                            color: "transparent"
                             anchors.fill: parent
-                            ToolTip.visible: hovered
-                            ToolTip.text: qsTr("Settings")
+                        }
 
-                            background: Rectangle{
-                                color: "transparent"
-                                anchors.fill: parent
-                            }
+                        Image{
+                            id: settingsButtonIcon
+                            anchors.centerIn: parent
+                            height: parent.height - sf(24)
+                            fillMode: Image.PreserveAspectFit
+                            source: "images/settings.png"
+                        }
 
-                            Image{
-                                id: settingsButtonIcon
-                                anchors.centerIn: parent
-                                height: parent.height - sf(24)
-                                fillMode: Image.PreserveAspectFit
-                                source: "images/settings.png"
+                        onClicked:{
+                            if(navigating === false){
+                                reset();
                             }
+                            mainStackView.push(settingsView);
+                        }
 
-                            onClicked:{
-                                if(navigating === false){
-                                    reset();
-                                }
-                                mainStackView.push(settingsView);
-                            }
-
-                            Accessible.role: Accessible.Button
-                            Accessible.name: qsTr("Settings")
-                            Accessible.description: qsTr("Click button to go to the settings page where you can set your destination coordinates or change the units of measurement.")
-                            Accessible.onPressAction: {
-                                clicked(null);
-                            }
+                        Accessible.role: Accessible.Button
+                        Accessible.name: qsTr("Settings")
+                        Accessible.description: qsTr("Click button to go to the settings page where you can set your destination coordinates or change the units of measurement.")
+                        Accessible.onPressAction: {
+                            clicked(null);
                         }
                     }
+                }
 
-                    //----------------------------------------------------------
+                //----------------------------------------------------------
 
-                    Rectangle{
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        color: "transparent"
-                        Accessible.role: Accessible.Pane
+                Item{
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    Accessible.role: Accessible.Pane
 
-                        Button{
-                            id: endNavigationButton
+                    Button{
+                        id: endNavigationButton
+                        anchors.fill: parent
+                        visible: false
+                        enabled: false
+
+                        background: Rectangle{
                             anchors.fill: parent
-                            visible: false
-                            enabled: false
+                            anchors.topMargin: sf(2)
+                            anchors.bottomMargin: sf(3)
+                            color: "transparent"
+                            border.width: sf(1)
+                            border.color: !showHUD ? !nightMode ? dayModeSettings.buttonBorder : nightModeSettings.buttonBorder : buttonTextColor
+                            radius: sf(5)
 
-                            background: Rectangle{
-                                anchors.fill: parent
-                                anchors.bottomMargin: sf(5)
-                                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                                border.width: sf(1)
-                                border.color: !nightMode ? dayModeSettings.buttonBorder : nightModeSettings.buttonBorder
-                                radius: sf(5)
+                        }
 
-                            }
+                        Text{
+                            anchors.fill: parent
+                            verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignHCenter
+                            anchors.rightMargin: sf(15)
+                            text: qsTr("End")
+                            color: buttonTextColor
+                        }
 
-                            Text{
-                                anchors.fill: parent
-                                verticalAlignment: Text.AlignVCenter
-                                horizontalAlignment: Text.AlignHCenter
-                                anchors.rightMargin: sf(15)
-                                text: qsTr("End")
-                                color: buttonTextColor
-                            }
-
-                            onClicked: {
-                                endNavigation();
-                                if(applicationCallback !== ""){
-                                    callingApplication = "";
-                                    Qt.openUrlExternally(applicationCallback);
-                                    applicationCallback = "";
-                                }
-                            }
-
-                            Accessible.role: Accessible.Button
-                            Accessible.name: qsTr("End navigation")
-                            Accessible.description: qsTr("Click this button to end navigation and reset the user interface. You will be taken back to the calling application if appropriate.")
-                            Accessible.onPressAction: {
-                                if(visible && enabled){
-                                    clicked(null);
-                                }
+                        onClicked: {
+                            endNavigation();
+                            if(applicationCallback !== ""){
+                                callingApplication = "";
+                                Qt.openUrlExternally(applicationCallback);
+                                applicationCallback = "";
                             }
                         }
-                    }
 
-                    //----------------------------------------------------------
-
-                    Rectangle {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: sf(50)
-                        color: "transparent"
-                        Accessible.role: Accessible.Pane
-
-                        Button{
-                            id: viewModeButton
-                            anchors.fill: parent
-                            ToolTip.visible: hovered
-                            ToolTip.text: qsTr("View Mode")
-
-                            background: Rectangle{
-                                color: "transparent"
-                                anchors.fill: parent
-                            }
-
-                            Image{
-                                id: viewModeButtonIcon
-                                anchors.centerIn: parent
-                                height: parent.height - sf(26)
-                                fillMode: Image.PreserveAspectFit
-                                source: "images/contrast.png"
-                            }
-
-                            onClicked:{
-                                nightMode = !nightMode ? true : false;
-                            }
-
-                            Accessible.role: Accessible.Button
-                            Accessible.name: qsTr("Contrast mode")
-                            Accessible.description: qsTr("Click this button to change the viewing mode contrast of the application.")
-                            Accessible.onPressAction: {
+                        Accessible.role: Accessible.Button
+                        Accessible.name: qsTr("End navigation")
+                        Accessible.description: qsTr("Click this button to end navigation and reset the user interface. You will be taken back to the calling application if appropriate.")
+                        Accessible.onPressAction: {
+                            if(visible && enabled){
                                 clicked(null);
                             }
                         }
                     }
                 }
+
+                //----------------------------------------------------------
+
+                Item {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: sf(50)
+                    Accessible.role: Accessible.Pane
+
+                    Button{
+                        id: viewModeButton
+                        anchors.fill: parent
+                        ToolTip.visible: hovered
+                        ToolTip.text: qsTr("View Mode")
+
+                        background: Rectangle{
+                            color: "transparent"
+                            anchors.fill: parent
+                        }
+
+                        Image{
+                            id: viewModeButtonIcon
+                            anchors.centerIn: parent
+                            height: parent.height - sf(26)
+                            fillMode: Image.PreserveAspectFit
+                            source: "images/contrast.png"
+                        }
+
+                        onClicked:{
+                            nightMode = !nightMode ? true : false;
+                        }
+
+                        Accessible.role: Accessible.Button
+                        Accessible.name: qsTr("Contrast mode")
+                        Accessible.description: qsTr("Click this button to change the viewing mode contrast of the application.")
+                        Accessible.onPressAction: {
+                            clicked(null);
+                        }
+                    }
+                }
             }
-            //------------------------------------------------------------------
+        }
+
+        Rectangle {
+            id: zInfoBar
+            color: "white"
+            width: parent.width
+            height: sf(50)
+            anchors.margins: sf(4)
+            x: 0
+            y: 0 // parent.height / 2 - (height/2)
+            z: 10000
+            opacity: .8
+            visible: false
+
+                Text{
+                    id: infoText
+                    anchors.fill: parent
+                    color: "black"
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    text: "CAZ: %1 | Az2D: %2 | PDir: %3 | UC: %4"
+                    .arg(sensors.sensorAzimuth)
+                    .arg(currentPosition.azimuthToDestination)
+                    .arg(currentPosition.position !== undefined ? currentPosition.position.direction : "-")
+                    .arg(sensors.positionSource.zCounter);
+                }
         }
     }
 
@@ -578,8 +817,8 @@ Item {
         console.log('reseting navigation')
 
         navigating = false;
-        positionSource.active = false;
-        positionSource.stop();
+        sensors.stopPositionSource();
+        sensors.stopCompass();
 
         statusMessage.hide();
 
@@ -615,10 +854,15 @@ Item {
         console.log('starting navigation')
         reset(); // TODO: This may cause some hiccups as positoin source is stopped and started. even though update is called, not sure all devices allow the update immedieately.
         navigating = true;
-        positionSource.active = true;
-        positionSource.update();
+
+        sensors.startCompass();
+        sensors.startPositionSource();
+        sensors.positionSource.update();
+
         currentPosition.destinationCoordinate = requestedDestination;
-        positionSource.update();
+
+        sensors.positionSource.update();
+
         endNavigationButton.visible = true;
         endNavigationButton.enabled = true;
 
@@ -673,76 +917,88 @@ Item {
 
     // COMPONENTS //////////////////////////////////////////////////////////////
 
-    PositionSource {
-        id: positionSource
+//    PositionSource {
+//        id: positionSource
 
-        onPositionChanged: {
-            if (position.coordinate.isValid === true) {
-                console.log("lat: %1, long:%2".arg(position.coordinate.latitude).arg(position.coordinate.longitude));
-                currentPosition.position = position;
-            }
+//        onPositionChanged: {
+//            if (position.coordinate.isValid === true) {
+//                console.log("lat: %1, long:%2".arg(position.coordinate.latitude).arg(position.coordinate.longitude));
+//                currentPosition.position = position;
+//                viewData.observerCoordinate = position.coordinate;
+//                console.log("OC----------------------------:", viewData.observerCoordinate);
+//                console.log("IC----------------------------:", viewData.itemCoordinate);
+//                console.log("DIS---------------------------:", viewData.observerCoordinate.distanceTo(viewData.itemCoordinate));
+//            }
 
-            if(position.horizontalAccuracyValid){
-                var accuracy = position.horizontalAccuracy;
-                if(accuracy < 10){
-                    currentAccuracy = 4;
-                }
-                else if(accuracy > 11 && accuracy < 55){
-                    currentAccuracy = 3;
-                }
-                else if(accuracy > 56 && accuracy < 100){
-                    currentAccuracy = 2;
-                }
-                else if(accuracy >= 100){
-                    currentAccuracy = 1;
-                }
-                else{
-                    currentAccuracy = 0;
-                }
+//            if(position.horizontalAccuracyValid){
+//                var accuracy = position.horizontalAccuracy;
+//                if(accuracy < 10){
+//                    currentAccuracy = 4;
+//                }
+//                else if(accuracy > 11 && accuracy < 55){
+//                    currentAccuracy = 3;
+//                }
+//                else if(accuracy > 56 && accuracy < 100){
+//                    currentAccuracy = 2;
+//                }
+//                else if(accuracy >= 100){
+//                    currentAccuracy = 1;
+//                }
+//                else{
+//                    currentAccuracy = 0;
+//                }
 
-                currentAccuracyInUnits = usesMetric ? Math.ceil(accuracy) : Math.ceil(accuracy * 3.28084)
-            }
+//                currentAccuracyInUnits = usesMetric ? Math.ceil(accuracy) : Math.ceil(accuracy * 3.28084)
+//            }
 
-           if(requestedDestination !== null){
-                /*
-                    TODO: On some Android devices position.directionValid must return
-                    true so the statusMessage isn't shown when navigation first starts
-                    in order to inform the user to move. This isn't an issue on iOS.
-                    May need to evaluate reset() method that hides the status
-                    message as well as the startNavigation method as well to fix this.
-                */
-                if (position.directionValid){
-                    noPositionSource = false;
-                    statusMessage.hide();
-                }
-                else{
-                    noPositionSource = true;
-                    directionArrow.opacity = 0.2;
-                    statusMessage.show();
-                }
-           }
-        }
+//           if(requestedDestination !== null){
+//                /*
+//                    TODO: On some Android devices position.directionValid must return
+//                    true so the statusMessage isn't shown when navigation first starts
+//                    in order to inform the user to move. This isn't an issue on iOS.
+//                    May need to evaluate reset() method that hides the status
+//                    message as well as the startNavigation method as well to fix this.
+//                */
+//                if (position.directionValid){
+//                    noPositionSource = false;
+//                    statusMessage.hide();
+//                }
+//                else{
+//                    noPositionSource = true;
+//                    directionArrow.opacity = 0.2;
+//                    statusMessage.show();
+//                }
+//           }
+//        }
 
-        onSourceErrorChanged: {
-        }
-    }
+//        onSourceErrorChanged: {
+//        }
+//    }
 
     //--------------------------------------------------------------------------
 
     CurrentPosition {
         id: currentPosition
 
+        sensorAzimuth: sensors.sensorAzimuth
+        usingCompass: sensors.compass.active
+
+        onPositionChanged: {
+            console.log("--------------------",position);
+        }
+
         onDistanceToDestinationChanged: {
-            if(navigating === true){
+            if (navigating === true) {
                 distanceReadout.text = displayDistance(distanceToDestination);
             }
         }
 
         onDegreesOffCourseChanged: {
-            if(degreesOffCourse === NaN || degreesOffCourse === 0){
+            if (degreesOffCourse === NaN || degreesOffCourse === 0) {
                 noPositionSource = true;
                 directionArrow.opacity = 0.2;
-            }else{
+            }
+            else {
                 noPositionSource = false;
                 directionArrow.opacity = 1;
                 directionArrow.rotation = degreesOffCourse;
@@ -750,10 +1006,146 @@ Item {
         }
 
         onAtDestination: {
-            if(navigating===true){
+            if (navigating === true) {
                 arrived();
             }
         }
+    }
+
+    //--------------------------------------------------------------------------
+
+    HUDSensors {
+        id: sensors
+
+        azimuthFilterType: 0 // 0=rounding 1=smoothing
+        azimuthRounding: 2  // Nearest degree >> 2=0.5, 3=0.33, 4=0.25 ... 10=0.1
+        azimuthFilterLength: 10
+        attitudeFilterType: 1 // 0=rounding 1=smoothing
+        attitudeRounding: 2  // Nearest degree >> 2=0.5, 3=0.33, 4=0.25 ... 10=0.1
+        attitudeFilterLength: 25
+        magneticDeclination: 0.0
+
+        onSensorPositionChanged: {
+                if (sensors.position.coordinate.isValid) {
+                    if (position.latitudeValid && position.longitudeValid) {
+                        currentPosition.position = sensors.position;
+                        viewData.observerCoordinate = QtPositioning.coordinate(sensors.position.coordinate.latitude, sensors.position.coordinate.longitude, sensors.position.coordinate.altitude);
+                    }
+                }
+
+                if (sensors.position.horizontalAccuracyValid) {
+                    var accuracy = sensors.position.horizontalAccuracy;
+                    if(accuracy < 10){
+                        currentAccuracy = 4;
+                    }
+                    else if(accuracy > 11 && accuracy < 55){
+                        currentAccuracy = 3;
+                    }
+                    else if(accuracy > 56 && accuracy < 100){
+                        currentAccuracy = 2;
+                    }
+                    else if(accuracy >= 100){
+                        currentAccuracy = 1;
+                    }
+                    else{
+                        currentAccuracy = 0;
+                    }
+
+                    currentAccuracyInUnits = usesMetric ? Math.ceil(accuracy) : Math.ceil(accuracy * 3.28084)
+                }
+
+               if(requestedDestination !== null){
+                    /*
+                        TODO: On some Android devices position.directionValid must return
+                        true so the statusMessage isn't shown when navigation first starts
+                        in order to inform the user to move. This isn't an issue on iOS.
+                        May need to evaluate reset() method that hides the status
+                        message as well as the startNavigation method as well to fix this.
+                    */
+                    if (position.directionValid){
+                        noPositionSource = false;
+                        statusMessage.hide();
+                    }
+                    else{
+                        noPositionSource = true;
+                        directionArrow.opacity = 0.2;
+                        statusMessage.show();
+                    }
+               }
+        }
+
+        onPositionChanged: {}
+
+        onAzimuthFromTrueNorthChanged: updateBearing()
+
+        onPitchAngleChanged: updatePitch()
+
+        onRollAngleChanged: updateRoll()
+
+        onOrientationChanged: {
+            showHUD = (orientation !== OrientationReading.FaceUp && orientation !== OrientationReading.FaceDown && orientation !== OrientationReading.Undefined);
+        }
+
+        function updatePosition() {
+            if (position.latitudeValid && position.longitudeValid) {
+                //viewData.setPosition(position, currentPosition.arrivalThresholdInMeters);
+            }
+        }
+
+        function updateBearing() {
+            if (sensors.azimuthFromTrueNorth) {
+                viewData.deviceBearing = sensors.azimuthFromTrueNorth;
+            }
+        }
+
+        function updatePitch() {
+            if (sensors.pitchAngle) {
+                viewData.devicePitch = sensors.pitchAngle;
+            }
+        }
+
+        function updateRoll() {
+            if (sensors.rollAngle) {
+                viewData.deviceRoll = sensors.rollAngle;
+            }
+        }
+    }
+
+    //--------------------------------------------------------------------------
+
+    Item {
+        id: viewData
+        property real fieldOfViewX: 48.5
+        property real fieldOfViewY: 62
+
+        property real deviceBearing: 0
+        property real devicePitch: 0
+        property real deviceRoll: 0
+
+        property var observerCoordinate //: QtPositioning.coordinate
+        property var itemCoordinate     //: QtPositioning.coordinate
+        property real observerHeight: 1.6
+        property real itemHeight: 0.0
+
+        //----------------------------------------------------------------------
+
+//        function setPosition(position, threshold) {
+////            if (threshold > 0) {
+////                var distance = position.coordinate.distanceTo(observerCoordinate);
+
+////                if (distance < threshold) {
+////                    return;
+////                }
+////            }
+
+//            var longitude = position.coordinate.longitude;
+//            var latitude = position.coordinate.latitude;
+//            var altitude = observerHeight;
+
+//            observerCoordinate = QtPositioning.coordinate(latitude, longitude, altitude);
+
+//            console.log("observerCoordinate:", observerCoordinate);
+//        }
     }
 
     //--------------------------------------------------------------------------
@@ -763,6 +1155,7 @@ Item {
         onRequestedDestinationChanged: {
             console.log(requestedDestination);
             if(requestedDestination !== null){
+                viewData.itemCoordinate = requestedDestination;
                 startNavigation();
             }
         }
@@ -796,6 +1189,34 @@ Item {
             toolbar.enabled = false;
             if(hideToolbar.running===true){
                 hideToolbar.stop();
+            }
+        }
+    }
+
+    //--------------------------------------------------------------------------
+
+    PropertyAnimation {
+        id: fadeArrowView
+        duration: 700
+        property: "opacity"
+        running: false
+        target: arrowView
+
+        onStarted: {
+            if(showHUD){
+                hudView.visible = true;
+            }
+            else {
+                arrowView.visible = true;
+            }
+        }
+
+        onStopped: {
+            if(showHUD){
+                arrowView.visible = false;
+            }
+            else{
+                hudView.visible = false;
             }
         }
     }

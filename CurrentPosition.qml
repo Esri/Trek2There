@@ -31,6 +31,8 @@ QtObject {
     property var destinationCoordinate: null
     property var position
     property var positionCoordinate
+    property double sensorAzimuth: 0.0
+    property bool usingCompass: false
 
     property KalmanCoordinate kalmanCoord: KalmanCoordinate{}
     property double kalmanLat
@@ -101,14 +103,15 @@ QtObject {
             if(etaSeconds < arrivalThresholdInSeconds){
                 atDestination();
             }
-        } else {
+        }
+        else {
             etaSeconds = -1;
             arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * 2;
             etaToDestination = new Date();
         }
 
         if (position.directionValid) {
-            degreesOffCourse = (azimuthToDestination - position.direction);
+            degreesOffCourse = !usingCompass ? (azimuthToDestination - position.direction) : (azimuthToDestination - sensorAzimuth) // Math.abs(sensorAzimuth - azimuthToDestination)
         }
         else{
             degreesOffCourse = 0;

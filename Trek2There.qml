@@ -53,7 +53,7 @@ App {
     property bool isLandscape: (Screen.primaryOrientation === 2) ? true : false
     property bool useDirectionOfTravelCircle: true
 
-    property var requestedDestination: null
+    property var requestedDestination: null //QtPositioning.coordinate(23,45) //null
     property var openParameters: null
     property string callingApplication: ""
     property string applicationCallback: ""
