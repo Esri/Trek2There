@@ -58,13 +58,14 @@ Item {
     signal endNavigation()
 
     property Image mapPin: Image {
-        source: "images/map_pin_night.png"
+        source: !nightMode ? "images/map_pin_day.png" : "images/map_pin_night.png"
     }
 
     //--------------------------------------------------------------------------
 
     Component.onCompleted: {
         sensors.startOrientationSensor();
+        camera.start();
         //sensors.startCompass();
         //sensors.startTiltSensor();
         //sensors.startRotationSensor();
@@ -76,19 +77,6 @@ Item {
     }
 
     onShowHUDChanged: {
-        if(showHUD){
-            camera.start();
-        }
-
-//        if(arrowView.visible){
-//            fadeArrowView.from = 1;
-//            fadeArrowView.to = 0;
-//        }
-//        else{
-//            fadeArrowView.from = 0;
-//            fadeArrowView.to = 1;
-//        }
-//        fadeArrowView.start();
     }
 
     // UI //////////////////////////////////////////////////////////////////////
@@ -99,7 +87,7 @@ Item {
         color: !nightMode ? dayModeSettings.background : nightModeSettings.background
         Accessible.role: Accessible.Pane
 
-        MouseArea{
+        MouseArea {
             id: viewTouchArea
             anchors.fill: parent
             enabled: autohideToolbar ? true : false
@@ -126,11 +114,14 @@ Item {
         Item {
             id: hudView
             anchors.fill: parent
-            visible: showHUD //false
+            visible: showHUD
 
             onVisibleChanged: {
                 if (!visible) {
                     camera.stop();
+                }
+                else {
+                    camera.start();
                 }
             }
 
@@ -214,7 +205,7 @@ Item {
                     }
                 }
 
-                //--------------------------------------------------------------------------
+                //--------------------------------------------------------------
 
                 onPaint: {
                     var context = getContext("2d");
@@ -234,7 +225,7 @@ Item {
                     context.restore();
                 }
 
-                //--------------------------------------------------------------------------
+                //--------------------------------------------------------------
 
                 function adjustScaling() {
                     var rect = videoOutput.contentRect;
@@ -244,35 +235,31 @@ Item {
                     offsety = rect.y;
                 }
 
+                //--------------------------------------------------------------
+
                 function toScreenCoord(pt) {
                     return (pt ? Qt.vector2d(scalex * pt.x + offsetx, scaley * pt.y + offsety) : null);
                 }
 
-                //--------------------------------------------------------------------------
+                //--------------------------------------------------------------
 
                 function updateViewModel(context) {
 
                     var distance1 = viewData.observerCoordinate.distanceTo(viewData.itemCoordinate);
-                    console.log("-----------------distance1:", distance1)
-                    var distance = currentPosition.distanceToDestination
-
+                    var distance = currentPosition.distanceToDestination;
                     cpDistanceEqual = distance1 === distance;
-                    console.log("-----------------distance:", distance)
 
                     var azimuth1 = viewData.observerCoordinate.azimuthTo(viewData.itemCoordinate);
-                    console.log("-----------------azimuth1:", azimuth1)
-                    var azimuth = currentPosition.azimuthToDestination
-                    console.log("-----------------azimuth:", azimuth)
+                    var azimuth = currentPosition.azimuthToDestination;
                     cpAzimuthEqual = azimuth1 === azimuth;
 
                     var inFoV = MathLib.inFieldOfView(azimuth, viewData.deviceBearing, viewData.deviceRoll, viewData.fieldOfViewX, viewData.fieldOfViewY);
-                    console.log("-----------------inFov:", inFoV)
                     if (!inFoV) {
-                        console.log("Not in Field of view.")
+                        console.log("Not in Field of view.");
                     }
 
                     var pointInPlane = MathLib.transformAzimuthToCamera(azimuth, distance, viewData.itemHeight - viewData.observerHeight);
-                    console.log("-----------------pointInPlane:", pointInPlane)
+                    console.log("-----------------pointInPlane:", pointInPlane);
                     if (!pointInPlane || pointInPlane.x < 0 || pointInPlane.x > 1 || pointInPlane.y < 0 || pointInPlane.y > 1) {
                         console.log("point is not in the plane");
                     }
@@ -297,8 +284,8 @@ Item {
         Rectangle {
             id: arrowView
             anchors.fill: parent
-            visible: !showHUD
             color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+            visible: !showHUD
 
             ColumnLayout {
                 anchors.fill: parent
@@ -311,12 +298,12 @@ Item {
                     Layout.fillHeight: true
                     Accessible.role: Accessible.Pane
 
-                    ColumnLayout{
+                    ColumnLayout {
                         anchors.fill: parent
                         spacing: 0
                         Accessible.role: Accessible.Pane
 
-                        Item{
+                        Item {
                             Layout.preferredHeight: sf(40)
                         }
 
@@ -331,13 +318,13 @@ Item {
 
                             //------------------------------------------------------
 
-                            Item{
+                            Item {
                                 anchors.fill: parent
                                 //color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                                 z: 99
                                 Accessible.role: Accessible.Pane
 
-                                Image{
+                                Image {
                                     id: directionOfTravel
                                     anchors.centerIn: parent
                                     height: isLandscape ? parent.height : parent.height - directionUI.imageScaleFactor
@@ -348,7 +335,7 @@ Item {
                                     Accessible.ignored: true
                                 }
 
-                                Image{
+                                Image {
                                     id: directionArrow
                                     anchors.centerIn: parent
                                     source: !nightMode ? "images/arrow_day.png" : "images/arrow_night.png"
@@ -364,7 +351,7 @@ Item {
                                     Accessible.ignored: arrivedAtDestination
                                 }
 
-                                Image{
+                                Image {
                                     id: arrivedIcon
                                     anchors.centerIn: parent
                                     source: !nightMode ? "images/map_pin_day.png" : "images/map_pin_night.png"
@@ -379,7 +366,7 @@ Item {
                                     Accessible.ignored: navigating
                                 }
 
-                                Image{
+                                Image {
                                     id: noSignalIndicator
                                     anchors.centerIn: parent
                                     height: isLandscape ? parent.height : parent.height - directionUI.imageScaleFactor
@@ -403,7 +390,7 @@ Item {
 
         // No Destination Message ----------------------------------------------
 
-        Item{
+        Item {
             id: noDestinationSet
             anchors.fill: parent
             anchors.leftMargin: sideMargin
@@ -412,7 +399,7 @@ Item {
             visible: (requestedDestination === null) ? true : false
             Accessible.role: Accessible.Pane
 
-            Rectangle{
+            Rectangle {
                 anchors.centerIn: parent
                 height: sf(80)
                 width: parent.width
@@ -420,12 +407,12 @@ Item {
                 radius: sf(6)
                 Accessible.role: Accessible.Pane
 
-                ColumnLayout{
+                ColumnLayout {
                     anchors.fill: parent
                     spacing: 0
                     Accessible.role: Accessible.Pane
 
-                    Text{
+                    Text {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
@@ -441,7 +428,7 @@ Item {
                         Accessible.name: text
                     }
 
-                    Text{
+                    Text {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
@@ -462,7 +449,7 @@ Item {
 
         // Status Message and Location Accuracy Indicator ----------------------
 
-        Item{
+        Item {
             id:statusMessageContianer
             width: parent.width
             height: sf(40)
@@ -470,16 +457,16 @@ Item {
             visible: true
             Accessible.role: Accessible.Pane
 
-            RowLayout{
+            RowLayout {
                 anchors.fill: parent
                 anchors.rightMargin: sf(10)
                 anchors.leftMargin: sf(10)
                 anchors.topMargin: sf(10)
 
-                Item{
+                Item {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
-                    StatusIndicator{
+                    StatusIndicator {
                         id: statusMessage
                         visible: false
                         anchors.fill: parent
@@ -496,7 +483,7 @@ Item {
                     }
                 }
 
-                Item{
+                Item {
                     id: locationAccuracyContainer
                     Layout.preferredWidth: sf(30)
                     Layout.leftMargin: sf(10)
@@ -507,15 +494,15 @@ Item {
                     Accessible.name: qsTr("Location Accuracy Indicator")
                     Accessible.description: qsTr("Location accuracy is denoted on a scale of 1 to 5, with 1 being lowest and 5 being highest. Current location accuracy is rated %1".arg(currentAccuracy))
 
-                    ColumnLayout{
+                    ColumnLayout {
                         anchors.fill: parent
 
-                        Rectangle{
+                        Rectangle {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             color: "transparent"
 
-                            Text{
+                            Text {
                                 id: locationAccuracyIndicator
                                 text: currentAccuracy > 0 ? icons.getIconByName("accuracy" + currentAccuracy.toString()) : ""
                                 color: buttonTextColor
@@ -553,7 +540,7 @@ Item {
                                 Accessible.ignored: true
                             }
 
-                            Text{
+                            Text {
                                 id: locationAccuracyBaseline
                                 text: icons.accuracy_indicator
                                 color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
@@ -566,10 +553,10 @@ Item {
                             }
                         }
 
-                        Item{
+                        Item {
                             Layout.fillWidth: true
                             Layout.preferredHeight: sf(15)
-                            Text{
+                            Text {
                                 id: accuracyInUnits
                                 text: currentAccuracy > 0 ? "<p>&plusmn;%1%2</p>".arg(currentAccuracyInUnits.toString()).arg(usesMetric ? "m" : "ft") : "----"
                                 color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
@@ -639,18 +626,18 @@ Item {
                     Layout.preferredWidth: sf(50)
                     Accessible.role: Accessible.Pane
 
-                    Button{
+                    Button {
                         id: settingsButton
                         anchors.fill: parent
                         ToolTip.visible: hovered
                         ToolTip.text: qsTr("Settings")
 
-                        background: Rectangle{
+                        background: Rectangle {
                             color: "transparent"
                             anchors.fill: parent
                         }
 
-                        Image{
+                        Image {
                             id: settingsButtonIcon
                             anchors.centerIn: parent
                             height: parent.height - sf(24)
@@ -658,8 +645,8 @@ Item {
                             source: "images/settings.png"
                         }
 
-                        onClicked:{
-                            if(navigating === false){
+                        onClicked: {
+                            if (navigating === false) {
                                 reset();
                             }
                             mainStackView.push(settingsView);
@@ -676,18 +663,18 @@ Item {
 
                 //----------------------------------------------------------
 
-                Item{
+                Item {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     Accessible.role: Accessible.Pane
 
-                    Button{
+                    Button {
                         id: endNavigationButton
                         anchors.fill: parent
                         visible: false
                         enabled: false
 
-                        background: Rectangle{
+                        background: Rectangle {
                             anchors.fill: parent
                             anchors.topMargin: sf(2)
                             anchors.bottomMargin: sf(3)
@@ -698,7 +685,7 @@ Item {
 
                         }
 
-                        Text{
+                        Text {
                             anchors.fill: parent
                             verticalAlignment: Text.AlignVCenter
                             horizontalAlignment: Text.AlignHCenter
@@ -734,18 +721,18 @@ Item {
                     Layout.preferredWidth: sf(50)
                     Accessible.role: Accessible.Pane
 
-                    Button{
+                    Button {
                         id: viewModeButton
                         anchors.fill: parent
                         ToolTip.visible: hovered
                         ToolTip.text: qsTr("View Mode")
 
-                        background: Rectangle{
+                        background: Rectangle {
                             color: "transparent"
                             anchors.fill: parent
                         }
 
-                        Image{
+                        Image {
                             id: viewModeButtonIcon
                             anchors.centerIn: parent
                             height: parent.height - sf(26)
@@ -753,7 +740,7 @@ Item {
                             source: "images/contrast.png"
                         }
 
-                        onClicked:{
+                        onClicked: {
                             nightMode = !nightMode ? true : false;
                         }
 
@@ -780,17 +767,17 @@ Item {
             opacity: .8
             visible: false
 
-                Text{
-                    id: infoText
-                    anchors.fill: parent
-                    color: "black"
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    text: "CAZ: %1 | Az2D: %2 | PDir: %3 | UC: %4"
-                    .arg(sensors.sensorAzimuth)
-                    .arg(currentPosition.azimuthToDestination)
-                    .arg(currentPosition.position !== undefined ? currentPosition.position.direction : "-")
-                    .arg(sensors.positionSource.zCounter);
-                }
+            Text {
+                id: infoText
+                anchors.fill: parent
+                color: "black"
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                text: "CAZ: %1 | Az2D: %2 | PDir: %3 | UC: %4"
+                .arg(sensors.sensorAzimuth)
+                .arg(currentPosition.azimuthToDestination)
+                .arg(currentPosition.position !== undefined ? currentPosition.position.direction : "-")
+                .arg(sensors.positionSource.zCounter);
+            }
         }
     }
 
@@ -917,66 +904,6 @@ Item {
 
     // COMPONENTS //////////////////////////////////////////////////////////////
 
-//    PositionSource {
-//        id: positionSource
-
-//        onPositionChanged: {
-//            if (position.coordinate.isValid === true) {
-//                console.log("lat: %1, long:%2".arg(position.coordinate.latitude).arg(position.coordinate.longitude));
-//                currentPosition.position = position;
-//                viewData.observerCoordinate = position.coordinate;
-//                console.log("OC----------------------------:", viewData.observerCoordinate);
-//                console.log("IC----------------------------:", viewData.itemCoordinate);
-//                console.log("DIS---------------------------:", viewData.observerCoordinate.distanceTo(viewData.itemCoordinate));
-//            }
-
-//            if(position.horizontalAccuracyValid){
-//                var accuracy = position.horizontalAccuracy;
-//                if(accuracy < 10){
-//                    currentAccuracy = 4;
-//                }
-//                else if(accuracy > 11 && accuracy < 55){
-//                    currentAccuracy = 3;
-//                }
-//                else if(accuracy > 56 && accuracy < 100){
-//                    currentAccuracy = 2;
-//                }
-//                else if(accuracy >= 100){
-//                    currentAccuracy = 1;
-//                }
-//                else{
-//                    currentAccuracy = 0;
-//                }
-
-//                currentAccuracyInUnits = usesMetric ? Math.ceil(accuracy) : Math.ceil(accuracy * 3.28084)
-//            }
-
-//           if(requestedDestination !== null){
-//                /*
-//                    TODO: On some Android devices position.directionValid must return
-//                    true so the statusMessage isn't shown when navigation first starts
-//                    in order to inform the user to move. This isn't an issue on iOS.
-//                    May need to evaluate reset() method that hides the status
-//                    message as well as the startNavigation method as well to fix this.
-//                */
-//                if (position.directionValid){
-//                    noPositionSource = false;
-//                    statusMessage.hide();
-//                }
-//                else{
-//                    noPositionSource = true;
-//                    directionArrow.opacity = 0.2;
-//                    statusMessage.show();
-//                }
-//           }
-//        }
-
-//        onSourceErrorChanged: {
-//        }
-//    }
-
-    //--------------------------------------------------------------------------
-
     CurrentPosition {
         id: currentPosition
 
@@ -1054,7 +981,7 @@ Item {
                     currentAccuracyInUnits = usesMetric ? Math.ceil(accuracy) : Math.ceil(accuracy * 3.28084)
                 }
 
-               if(requestedDestination !== null){
+               if (requestedDestination !== null) {
                     /*
                         TODO: On some Android devices position.directionValid must return
                         true so the statusMessage isn't shown when navigation first starts
@@ -1154,7 +1081,7 @@ Item {
         target: app
         onRequestedDestinationChanged: {
             console.log(requestedDestination);
-            if(requestedDestination !== null){
+            if (requestedDestination !== null) {
                 viewData.itemCoordinate = requestedDestination;
                 startNavigation();
             }
@@ -1187,7 +1114,7 @@ Item {
 
         onStopped: {
             toolbar.enabled = false;
-            if(hideToolbar.running===true){
+            if (hideToolbar.running) {
                 hideToolbar.stop();
             }
         }
@@ -1203,7 +1130,7 @@ Item {
         target: arrowView
 
         onStarted: {
-            if(showHUD){
+            if (showHUD) {
                 hudView.visible = true;
             }
             else {
@@ -1212,10 +1139,10 @@ Item {
         }
 
         onStopped: {
-            if(showHUD){
+            if (showHUD) {
                 arrowView.visible = false;
             }
-            else{
+            else {
                 hudView.visible = false;
             }
         }
