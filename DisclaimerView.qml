@@ -191,7 +191,7 @@ Item {
                               color: !nightMode ? "#ededed" : "#272727"
                               Rectangle {
                                   anchors.fill: parent
-                                  visible: control.checked
+                                  visible: parent.parent.checked
                                   color: !nightMode ? "#595959" : nightModeSettings.foreground
                                   radius: sf(9)
                                   anchors.margins: sf(4)

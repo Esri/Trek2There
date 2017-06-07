@@ -43,13 +43,10 @@ Item {
     property bool noPositionSource: false
     property bool showHUD: false
     property double currentDistance: 0.0
-    property double currentDegreesOffCourse: 0
+    //property double currentDegreesOffCourse: 0
     property int currentAccuracy: 0
     property int currentAccuracyInUnits: 0
     property int sideMargin: 14 * AppFramework.displayScaleFactor
-
-    property bool cpDistanceEqual: false
-    property bool cpAzimuthEqual: false
 
     signal arrived()
     signal reset()
@@ -66,7 +63,7 @@ Item {
     Component.onCompleted: {
         sensors.startOrientationSensor();
         camera.start();
-        //sensors.startCompass();
+        sensors.startCompass();
         //sensors.startTiltSensor();
         //sensors.startRotationSensor();
 
@@ -117,12 +114,12 @@ Item {
             visible: showHUD
 
             onVisibleChanged: {
-                if (!visible) {
-                    camera.stop();
-                }
-                else {
-                    camera.start();
-                }
+//                if (!visible) {
+//                    camera.stop();
+//                }
+//                else {
+//                    camera.start();
+//                }
             }
 
             //------------------------------------------------------------------
@@ -160,6 +157,8 @@ Item {
                 flash.mode: Camera.FlashRedEyeReduction
             }
 
+
+
             //------------------------------------------------------------------
 
             Canvas {
@@ -172,38 +171,39 @@ Item {
                 property int scalex
                 property int scaley
                 property var viewCoords: null
+                property var pointInPlane
 
-                Connections {
-                    target: viewData
+//                Connections {
+//                    target: viewData
 
-                    onObserverCoordinateChanged: {
-                        overlay.requestPaint();
-                    }
+//                    onObserverCoordinateChanged: {
+//                        overlay.requestPaint();
+//                    }
 
-                    onItemCoordinateChanged: {
-                        overlay.requestPaint();
-                    }
+//                    onItemCoordinateChanged: {
+//                        overlay.requestPaint();
+//                    }
 
-                    onDeviceBearingChanged: {
-                        overlay.requestPaint();
-                    }
+//                    onDeviceBearingChanged: {
+//                        overlay.requestPaint();
+//                    }
 
-                    onDevicePitchChanged: {
-                        overlay.requestPaint();
-                    }
+//                    onDevicePitchChanged: {
+//                        overlay.requestPaint();
+//                    }
 
-                    onDeviceRollChanged: {
-                        overlay.requestPaint();
-                    }
+//                    onDeviceRollChanged: {
+//                        overlay.requestPaint();
+//                    }
 
-                    onFieldOfViewXChanged: {
-                        overlay.requestPaint();
-                    }
+//                    onFieldOfViewXChanged: {
+//                        overlay.requestPaint();
+//                    }
 
-                    onFieldOfViewYChanged: {
-                        overlay.requestPaint();
-                    }
-                }
+//                    onFieldOfViewYChanged: {
+//                        overlay.requestPaint();
+//                    }
+//                }
 
                 //--------------------------------------------------------------
 
@@ -245,33 +245,37 @@ Item {
 
                 function updateViewModel(context) {
 
-                    var distance1 = viewData.observerCoordinate.distanceTo(viewData.itemCoordinate);
+                    var distance1 = viewData.observerCoordinate !== null ? viewData.observerCoordinate.distanceTo(viewData.itemCoordinate) : 0;
                     var distance = currentPosition.distanceToDestination;
-                    cpDistanceEqual = distance1 === distance;
 
-                    var azimuth1 = viewData.observerCoordinate.azimuthTo(viewData.itemCoordinate);
+                    var azimuth1 = viewData.observerCoordinate !== null ? viewData.observerCoordinate.azimuthTo(viewData.itemCoordinate) : 0;
                     var azimuth = currentPosition.azimuthToDestination;
-                    cpAzimuthEqual = azimuth1 === azimuth;
+
+                    var degreesOff = azimuth - sensors.sensorAzimuth;
+                    currentPosition.degreesOffCourse = degreesOff;
+                   // otherArrow.rotation = degreesOff;
+                   // directionArrow.rotation = degreesOff;
 
                     var inFoV = MathLib.inFieldOfView(azimuth, viewData.deviceBearing, viewData.deviceRoll, viewData.fieldOfViewX, viewData.fieldOfViewY);
                     if (!inFoV) {
                         console.log("Not in Field of view.");
                     }
 
-                    var pointInPlane = MathLib.transformAzimuthToCamera(azimuth, distance, viewData.itemHeight - viewData.observerHeight);
-                    console.log("-----------------pointInPlane:", pointInPlane);
+                    pointInPlane = MathLib.transformAzimuthToCamera(azimuth, distance, viewData.itemHeight - viewData.observerHeight);
                     if (!pointInPlane || pointInPlane.x < 0 || pointInPlane.x > 1 || pointInPlane.y < 0 || pointInPlane.y > 1) {
                         console.log("point is not in the plane");
                     }
 
                     var scale = (10000 - distance) / 10000 < .3 ? .3 : (10000 - distance) / 10000;
                     viewCoords = toScreenCoord(pointInPlane);
-                    drawSymbol(context, viewCoords, scale, "red");
+                    if(viewCoords !== null){
+                        drawSymbol(context, viewCoords, scale);
+                    }
                 }
 
                 //--------------------------------------------------------------------------
 
-                function drawSymbol(context, pt, scale, color) {
+                function drawSymbol(context, pt, scale) {
                     var height = Math.ceil(100 * scale);
                     var centeredY = pt.y - (height / 2);
                     context.drawImage(mapPin.source, pt.x, centeredY, height, height);
@@ -320,7 +324,6 @@ Item {
 
                             Item {
                                 anchors.fill: parent
-                                //color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                                 z: 99
                                 Accessible.role: Accessible.Pane
 
@@ -331,7 +334,7 @@ Item {
                                     width: isLandscape ? parent.width : parent.width - directionUI.imageScaleFactor
                                     source: "images/direction_of_travel_circle.png"
                                     fillMode: Image.PreserveAspectFit
-                                    visible: useDirectionOfTravelCircle && !noPositionSource
+                                    visible: useDirectionOfTravelCircle
                                     Accessible.ignored: true
                                 }
 
@@ -342,9 +345,8 @@ Item {
                                     width: isLandscape ? parent.width - directionUI.imageScaleFactor : parent.width - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
                                     height: isLandscape ? parent.height - directionUI.imageScaleFactor : parent.height - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
                                     fillMode: Image.PreserveAspectFit
-                                    rotation: currentDegreesOffCourse
-                                    opacity: 1
-                                    visible: !noPositionSource
+                                    rotation: 0
+                                    opacity: .3
                                     Accessible.role: Accessible.Indicator
                                     Accessible.name: qsTr("Direction of travel is: %1".arg(rotation.toString()))
                                     Accessible.description: qsTr("This arrow points toward the direction the user should travel. The degree is based off of the top of the device being the current bearing of travel.")
@@ -366,17 +368,17 @@ Item {
                                     Accessible.ignored: navigating
                                 }
 
-                                Image {
-                                    id: noSignalIndicator
-                                    anchors.centerIn: parent
-                                    height: isLandscape ? parent.height : parent.height - directionUI.imageScaleFactor
-                                    width: isLandscape ? parent.width : parent.width - directionUI.imageScaleFactor
-                                    source: "images/no_signal.png"
-                                    visible: noPositionSource && !arrivedAtDestination
-                                    fillMode: Image.PreserveAspectFit
-                                    Accessible.role: Accessible.Indicator
-                                    Accessible.name: qsTr("There is no signal")
-                                }
+//                                Image {
+//                                    id: noSignalIndicator
+//                                    anchors.centerIn: parent
+//                                    height: isLandscape ? parent.height : parent.height - directionUI.imageScaleFactor
+//                                    width: isLandscape ? parent.width : parent.width - directionUI.imageScaleFactor
+//                                    source: "images/no_signal.png"
+//                                    visible: noPositionSource && !arrivedAtDestination
+//                                    fillMode: Image.PreserveAspectFit
+//                                    Accessible.role: Accessible.Indicator
+//                                    Accessible.name: qsTr("There is no signal")
+//                                }
                             }
                         }
                     }
@@ -450,7 +452,7 @@ Item {
         // Status Message and Location Accuracy Indicator ----------------------
 
         Item {
-            id:statusMessageContianer
+            id: statusMessageContianer
             width: parent.width
             height: sf(40)
             anchors.top: parent.top
@@ -468,7 +470,6 @@ Item {
                     Layout.fillWidth: true
                     StatusIndicator {
                         id: statusMessage
-                        visible: false
                         anchors.fill: parent
                         containerHeight: parent.height
                         Layout.fillHeight: true
@@ -476,8 +477,8 @@ Item {
                         hideAutomatically: false
                         animateHide: false
                         messageType: statusMessage.warning
-                        message: qsTr("Start moving to determine direction.")
-
+                        message: viewData.observerCoordinate === null ? qsTr("Start moving to determine direction.") : qsTr("Continue moving for improved accuracy.")
+                        visible: navigating && viewData.observerCoordinate === null
                         Accessible.role: Accessible.AlertMessage
                         Accessible.name: message
                     }
@@ -549,7 +550,7 @@ Item {
                                 font.family: icons.name
                                 font.pointSize: 24
                                 Accessible.ignored: true
-                                z:100
+                                z: 100
                             }
                         }
 
@@ -578,7 +579,28 @@ Item {
 
         // Distance Readout ----------------------------------------------------
 
+        Rectangle{
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: distanceReadoutContainer.top
+            anchors.topMargin: sf(40)
+            visible: showHUD && requestedDestination !== null
+            color: "green"
+            width: 100
+            height: 100
+            radius: 5
+            transform: Rotation { origin.x: 25; origin.y: 25; axis { x: 1; y: 0 ; z: 0 } angle: 72 }
+
+            Image {
+                id: otherArrow
+                anchors.centerIn: parent
+                height: parent.height - 30
+                fillMode: Image.PreserveAspectFit
+                source: "images/arrow_night.png"
+            }
+        }
+
         Item {
+            id: distanceReadoutContainer
             width: parent.width
             height: sf(100)
             anchors.bottom: toolbar.top
@@ -682,7 +704,6 @@ Item {
                             border.width: sf(1)
                             border.color: !showHUD ? !nightMode ? dayModeSettings.buttonBorder : nightModeSettings.buttonBorder : buttonTextColor
                             radius: sf(5)
-
                         }
 
                         Text {
@@ -755,30 +776,31 @@ Item {
             }
         }
 
-        Rectangle {
-            id: zInfoBar
-            color: "white"
-            width: parent.width
-            height: sf(50)
-            anchors.margins: sf(4)
-            x: 0
-            y: 0 // parent.height / 2 - (height/2)
-            z: 10000
-            opacity: .8
-            visible: false
+//        Rectangle {
+//            id: zInfoBar
+//            color: "black"
+//            width: parent.width
+//            height: sf(80)
+//            anchors.margins: sf(4)
+//            x: 0
+//            y: 0 // parent.height / 2 - (height/2)
+//            z: 10000
+//            opacity: .8
+//            visible: true
 
-            Text {
-                id: infoText
-                anchors.fill: parent
-                color: "black"
-                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                text: "CAZ: %1 | Az2D: %2 | PDir: %3 | UC: %4"
-                .arg(sensors.sensorAzimuth)
-                .arg(currentPosition.azimuthToDestination)
-                .arg(currentPosition.position !== undefined ? currentPosition.position.direction : "-")
-                .arg(sensors.positionSource.zCounter);
-            }
-        }
+//            Text {
+//                id: infoText
+//                anchors.fill: parent
+//                color: "white"
+//                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+//                text: "r: %1 | x:%2 | /360: %3"
+//                .arg(otherArrow.rotation)
+//                .arg(overlay.pointInPlane !== null ? overlay.pointInPlane.x : "-")
+//                .arg(overlay.pointInPlane !== null ?  Math.floor(overlay.pointInPlane.x / 360).toString() : "-")
+//            }
+
+
+//        }
     }
 
     // SIGNALS /////////////////////////////////////////////////////////////////
@@ -786,7 +808,7 @@ Item {
     onArrived: {
         arrivedAtDestination = true;
         navigating = false;
-        positionSource.stop();
+        sensors.stopPositionSource();
         directionArrow.visible = false
         arrivedIcon.visible = true
         distanceReadout.text = qsTr("Arrived");
@@ -802,6 +824,8 @@ Item {
 
     onReset: {
         console.log('reseting navigation')
+        statusMessage.message = "reset"
+        viewData.observerCoordinate = null;
 
         navigating = false;
         sensors.stopPositionSource();
@@ -910,10 +934,6 @@ Item {
         sensorAzimuth: sensors.sensorAzimuth
         usingCompass: sensors.compass.active
 
-        onPositionChanged: {
-            console.log("--------------------",position);
-        }
-
         onDistanceToDestinationChanged: {
             if (navigating === true) {
                 distanceReadout.text = displayDistance(distanceToDestination);
@@ -921,15 +941,9 @@ Item {
         }
 
         onDegreesOffCourseChanged: {
-            if (degreesOffCourse === NaN || degreesOffCourse === 0) {
-                noPositionSource = true;
-                directionArrow.opacity = 0.2;
-            }
-            else {
-                noPositionSource = false;
-                directionArrow.opacity = 1;
-                directionArrow.rotation = degreesOffCourse;
-            }
+            directionArrow.opacity = 1;
+            directionArrow.rotation = degreesOffCourse;
+            otherArrow.rotation = degreesOffCourse;
         }
 
         onAtDestination: {
@@ -952,11 +966,27 @@ Item {
         attitudeFilterLength: 25
         magneticDeclination: 0.0
 
+        positionSource.onActiveChanged: {
+            if(positionSource.active && viewData.observerCoordinate === null){
+                directionArrow.opacity = .3;
+                statusMessage.message = qsTr("Start moving to determine direction.");
+                statusMessage.show();
+            }
+            else{
+                statusMessage.hide();
+            }
+        }
+
         onSensorPositionChanged: {
                 if (sensors.position.coordinate.isValid) {
                     if (position.latitudeValid && position.longitudeValid) {
                         currentPosition.position = sensors.position;
                         viewData.observerCoordinate = QtPositioning.coordinate(sensors.position.coordinate.latitude, sensors.position.coordinate.longitude, sensors.position.coordinate.altitude);
+                        statusMessage.hide();
+                    }
+                    else{
+                        statusMessage.message = qsTr("Continue moving to improve accuracy.");
+                        statusMessage.show();
                     }
                 }
 
@@ -980,25 +1010,6 @@ Item {
 
                     currentAccuracyInUnits = usesMetric ? Math.ceil(accuracy) : Math.ceil(accuracy * 3.28084)
                 }
-
-               if (requestedDestination !== null) {
-                    /*
-                        TODO: On some Android devices position.directionValid must return
-                        true so the statusMessage isn't shown when navigation first starts
-                        in order to inform the user to move. This isn't an issue on iOS.
-                        May need to evaluate reset() method that hides the status
-                        message as well as the startNavigation method as well to fix this.
-                    */
-                    if (position.directionValid){
-                        noPositionSource = false;
-                        statusMessage.hide();
-                    }
-                    else{
-                        noPositionSource = true;
-                        directionArrow.opacity = 0.2;
-                        statusMessage.show();
-                    }
-               }
         }
 
         onPositionChanged: {}
@@ -1049,10 +1060,40 @@ Item {
         property real devicePitch: 0
         property real deviceRoll: 0
 
-        property var observerCoordinate //: QtPositioning.coordinate
-        property var itemCoordinate     //: QtPositioning.coordinate
+        property var observerCoordinate: null
+        property var itemCoordinate: null
         property real observerHeight: 1.6
         property real itemHeight: 0.0
+
+        onObserverCoordinateChanged: {
+            overlay.requestPaint();
+        }
+
+        onItemCoordinateChanged: {
+            overlay.requestPaint();
+        }
+
+        onDeviceBearingChanged: {
+            if(observerCoordinate !== null){
+                overlay.requestPaint();
+            }
+        }
+
+        onDevicePitchChanged: {
+            overlay.requestPaint();
+        }
+
+        onDeviceRollChanged: {
+            overlay.requestPaint();
+        }
+
+        onFieldOfViewXChanged: {
+            overlay.requestPaint();
+        }
+
+        onFieldOfViewYChanged: {
+            overlay.requestPaint();
+        }
 
         //----------------------------------------------------------------------
 

@@ -1,17 +1,22 @@
 {
     "capabilities": {
         "audio": false,
+        "backgroundLocation": false,
         "bluetooth": false,
-        "camera": false,
+        "camera": true,
+        "localnotification": false,
         "location": true,
         "microphone": false,
         "network": true,
-        "storage": true
+        "storage": true,
+        "vibration": false
     },
     "deployment": {
         "android": {
             "packageName": "com.esri.trek2there"
         },
+        "arcgisRuntimeExtensionsLicense": "",
+        "arcgisRuntimeLicense": "",
         "clientId": "com.esri.trek2there",
         "ios": {
             "bundleId": "com.esri.trek2there",
@@ -62,7 +67,7 @@
     "urlScheme": "arcgis-trek2there",
     "version": {
         "major": 2,
-        "micro": 98,
+        "micro": 155,
         "minor": 0
     }
 }
