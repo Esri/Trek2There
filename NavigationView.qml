@@ -1009,8 +1009,8 @@ Rectangle {
     HUDSensors {
         id: sensors
 
-        azimuthFilterType: 0 // 0=rounding 1=smoothing
-        azimuthRounding: 2  // Nearest degree >> 2=0.5, 3=0.33, 4=0.25 ... 10=0.1
+        azimuthFilterType: Qt.platform.os === "android" ? 1 : 0 // 0=rounding 1=smoothing
+        azimuthRounding: Qt.platform.os === "android" ? 20 : 2  // Nearest degree >> 2=0.5, 3=0.33, 4=0.25 ... 10=0.1
         azimuthFilterLength: 10
         attitudeFilterType: 1 // 0=rounding 1=smoothing
         attitudeRounding: 2  // Nearest degree >> 2=0.5, 3=0.33, 4=0.25 ... 10=0.1
