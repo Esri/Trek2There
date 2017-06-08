@@ -630,7 +630,6 @@ Item {
                         Rectangle {
                             Layout.preferredHeight: sf(50)
                             Layout.fillWidth: true
-                            enabled: appSensors.hasCompass
                             color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                             Accessible.role: Accessible.Pane
                             Accessible.ignored: true
@@ -658,7 +657,7 @@ Item {
                                             anchors.centerIn: parent
                                             width: parent.width - sf(30)
                                             fillMode: Image.PreserveAspectFit
-                                            visible: useCompass
+                                            visible: useCompass && useHUD
                                             source: "images/checkmark.png"
                                             Accessible.ignored: true
                                         }
@@ -667,7 +666,8 @@ Item {
                                         Layout.fillHeight: true
                                         Layout.fillWidth: true
                                         Layout.leftMargin: sideMargin
-                                        text: qsTr("Use compass sensor for navigation")
+                                        text: qsTr("Use less battery [gps only, no compass, no camera]")
+                                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                         verticalAlignment: Text.AlignVCenter
                                         color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                         Accessible.ignored: true
@@ -676,10 +676,11 @@ Item {
 
                                 onClicked: {
                                     useCompass = useCompass ? false : true;
+                                    useHUD = useHUD ? false : true;
                                 }
 
                                 Accessible.role: Accessible.Button
-                                Accessible.name: qsTr("Use compass sensor for navigation.")
+                                Accessible.name: qsTr("Use less battery power. No compass or camera used.")
                                 Accessible.onPressAction: {
                                     clicked();
                                 }
@@ -688,62 +689,62 @@ Item {
 
                         //------------------------------------------------------
 
-                        Rectangle {
-                            Layout.preferredHeight: sf(50)
-                            Layout.fillWidth: true
-                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                            Accessible.role: Accessible.Pane
-                            Accessible.ignored: true
+//                        Rectangle {
+//                            Layout.preferredHeight: sf(50)
+//                            Layout.fillWidth: true
+//                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+//                            Accessible.role: Accessible.Pane
+//                            Accessible.ignored: true
 
-                            Button {
-                                anchors.fill: parent
-                                background: Rectangle {
-                                    anchors.fill: parent
-                                    color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                                }
+//                            Button {
+//                                anchors.fill: parent
+//                                background: Rectangle {
+//                                    anchors.fill: parent
+//                                    color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+//                                }
 
-                                RowLayout {
-                                    anchors.fill: parent
-                                    spacing: 0
-                                    anchors.leftMargin: sideMargin
-                                    anchors.rightMargin: sideMargin
+//                                RowLayout {
+//                                    anchors.fill: parent
+//                                    spacing: 0
+//                                    anchors.leftMargin: sideMargin
+//                                    anchors.rightMargin: sideMargin
 
-                                    Rectangle {
-                                        Layout.fillHeight: true
-                                        Layout.preferredWidth: sf(50)
-                                        color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+//                                    Rectangle {
+//                                        Layout.fillHeight: true
+//                                        Layout.preferredWidth: sf(50)
+//                                        color: !nightMode ? dayModeSettings.background : nightModeSettings.background
 
-                                        Image {
-                                            anchors.centerIn: parent
-                                            width: parent.width - sf(30)
-                                            fillMode: Image.PreserveAspectFit
-                                            visible: useHUD
-                                            source: "images/checkmark.png"
-                                            Accessible.ignored: true
-                                        }
-                                    }
-                                    Text {
-                                        Layout.fillHeight: true
-                                        Layout.fillWidth: true
-                                        Layout.leftMargin: sideMargin
-                                        text: qsTr("Use head up display navigation.")
-                                        verticalAlignment: Text.AlignVCenter
-                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                                        Accessible.ignored: true
-                                    }
-                                }
+//                                        Image {
+//                                            anchors.centerIn: parent
+//                                            width: parent.width - sf(30)
+//                                            fillMode: Image.PreserveAspectFit
+//                                            visible: useHUD
+//                                            source: "images/checkmark.png"
+//                                            Accessible.ignored: true
+//                                        }
+//                                    }
+//                                    Text {
+//                                        Layout.fillHeight: true
+//                                        Layout.fillWidth: true
+//                                        Layout.leftMargin: sideMargin
+//                                        text: qsTr("Use head up display navigation.")
+//                                        verticalAlignment: Text.AlignVCenter
+//                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+//                                        Accessible.ignored: true
+//                                    }
+//                                }
 
-                                onClicked: {
-                                    useHUD = useHUD ? false : true;
-                                }
+//                                onClicked: {
+//                                    useHUD = useHUD ? false : true;
+//                                }
 
-                                Accessible.role: Accessible.Button
-                                Accessible.name: qsTr("Use head up display navigation.")
-                                Accessible.onPressAction: {
-                                    clicked();
-                                }
-                            }
-                        }
+//                                Accessible.role: Accessible.Button
+//                                Accessible.name: qsTr("Use head up display navigation.")
+//                                Accessible.onPressAction: {
+//                                    clicked();
+//                                }
+//                            }
+//                        }
 
                         //------------------------------------------------------
 
