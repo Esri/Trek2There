@@ -110,17 +110,12 @@ QtObject {
             etaToDestination = new Date();
         }
 
-//        if (!usingCompass) {
-//            if (position.directionValid) {
-//                degreesOffCourse = !usingCompass ? (azimuthToDestination - position.direction) : (azimuthToDestination - sensorAzimuth) // Math.abs(sensorAzimuth - azimuthToDestination)
-//            }
-//            else {
-//                degreesOffCourse = 0;
-//            }
-//        }
-//        else {
-//            degreesOffCourse = azimuthToDestination - sensorAzimuth;
-//        }
+        if (position.directionValid) {
+            degreesOffCourse = azimuthToDestination - position.direction;
+        }
+        else {
+            degreesOffCourse = 0;
+        }
 
         if(logTreks){
             // [timestamp, pos_lat, pos_long, pos_dir, klat, klong, az_to, dist_to, degrees_off]

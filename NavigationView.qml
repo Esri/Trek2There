@@ -43,7 +43,6 @@ Item {
     property bool noPositionSource: false
     property bool showHUD: false
     property double currentDistance: 0.0
-    //property double currentDegreesOffCourse: 0
     property int currentAccuracy: 0
     property int currentAccuracyInUnits: 0
     property int sideMargin: 14 * AppFramework.displayScaleFactor
@@ -63,7 +62,11 @@ Item {
     Component.onCompleted: {
         sensors.startOrientationSensor();
         camera.start();
-        sensors.startCompass();
+        if(useCompass){
+            sensors.startCompass();
+        }
+        statusMessage.message = "CompassActive: %1".arg(sensors.compass.active);
+        statusMessage.show()
         //sensors.startTiltSensor();
         //sensors.startRotationSensor();
 
@@ -251,8 +254,10 @@ Item {
                     var azimuth1 = viewData.observerCoordinate !== null ? viewData.observerCoordinate.azimuthTo(viewData.itemCoordinate) : 0;
                     var azimuth = currentPosition.azimuthToDestination;
 
-                    var degreesOff = azimuth - sensors.sensorAzimuth;
-                    currentPosition.degreesOffCourse = degreesOff;
+                    if(useCompass){
+                        var degreesOff = azimuth - sensors.sensorAzimuth;
+                        currentPosition.degreesOffCourse = degreesOff;
+                    }
                    // otherArrow.rotation = degreesOff;
                    // directionArrow.rotation = degreesOff;
 
@@ -831,7 +836,7 @@ Item {
         sensors.stopPositionSource();
         sensors.stopCompass();
 
-        statusMessage.hide();
+        //statusMessage.hide();
 
         arrivedAtDestination = false;
         arrivedIcon.visible = false
@@ -931,8 +936,8 @@ Item {
     CurrentPosition {
         id: currentPosition
 
-        sensorAzimuth: sensors.sensorAzimuth
-        usingCompass: sensors.compass.active
+//        sensorAzimuth: sensors.sensorAzimuth
+//        usingCompass: sensors.compass.active
 
         onDistanceToDestinationChanged: {
             if (navigating === true) {
@@ -982,11 +987,11 @@ Item {
                     if (position.latitudeValid && position.longitudeValid) {
                         currentPosition.position = sensors.position;
                         viewData.observerCoordinate = QtPositioning.coordinate(sensors.position.coordinate.latitude, sensors.position.coordinate.longitude, sensors.position.coordinate.altitude);
-                        statusMessage.hide();
+                       // statusMessage.hide();
                     }
                     else{
                         statusMessage.message = qsTr("Continue moving to improve accuracy.");
-                        statusMessage.show();
+                        //statusMessage.show();
                     }
                 }
 
@@ -1065,11 +1070,15 @@ Item {
         property real observerHeight: 1.6
         property real itemHeight: 0.0
 
+        property int counterA: 0
+
         onObserverCoordinateChanged: {
+            statusMessage.message = "obsr coord change %1".arg(counterA++);
             overlay.requestPaint();
         }
 
         onItemCoordinateChanged: {
+            statusMessage.message = "item coord change";
             overlay.requestPaint();
         }
 

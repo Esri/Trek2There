@@ -87,6 +87,7 @@ Item {
     property bool debug: false
 
     signal sensorPositionChanged()
+    signal positionSourceActiveChanged()
 
     //--------------------------------------------------------------------------
 
@@ -182,6 +183,10 @@ Item {
 
     onPositionChanged: {
 
+    } 
+
+    positionSource.onActiveChanged: {
+        positionSourceActiveChanged();
     }
 
     //--------------------------------------------------------------------------

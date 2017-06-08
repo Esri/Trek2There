@@ -38,6 +38,8 @@ App {
     property bool showSafetyWarning: app.settings.boolValue("showSafetyWarning", true)
     property bool nightMode: app.settings.boolValue("nightMode", false)
     property bool listenToClipboard: app.settings.boolValue("listenToClipboard", true)
+    property bool useCompass: app.settings.boolValue("useCompass", true)
+    property bool useHUD: app.settings.boolValue("useHUD", true)
 
     property RegExpValidator latitudeValidator: RegExpValidator { regExp: /^[-]?90$|^[-]?[1-8][0-9](\.\d{1,})?$|^[-]?[1-9](\.\d{1,})?$/g }
     property RegExpValidator longitudeValidator: RegExpValidator { regExp: /^[-]?180$|^[-]?1[0-7][0-9](\.\d{1,})?$|^[-]?[1-9][0-9](\.\d{1,})?$|^[-]?[1-9](\.\d{1,})?$/g }
@@ -70,7 +72,7 @@ App {
 
     Component.onCompleted: {
         fileFolder.makePath(localStoragePath);
-        AppFramework.offlineStoragePath = fileFolder.path + "/ArcGIS/My Treks"
+        AppFramework.offlineStoragePath = fileFolder.path + "/ArcGIS/My Treks";
     }
 
     // COMPONENTS //////////////////////////////////////////////////////////////
@@ -154,6 +156,18 @@ App {
 
     onLogTreksChanged: {
         app.settings.setValue("logTreks", logTreks);
+    }
+
+    //--------------------------------------------------------------------------
+
+    onUseCompassChanged: {
+        app.settings.setValue("useCompass", useCompass);
+    }
+
+    //--------------------------------------------------------------------------
+
+    onUseHUDChanged: {
+        app.settings.setValue("useHUD", useHUD);
     }
 
     // FUNCTIONS ///////////////////////////////////////////////////////////////
