@@ -73,6 +73,8 @@ App {
     Component.onCompleted: {
         fileFolder.makePath(localStoragePath);
         AppFramework.offlineStoragePath = fileFolder.path + "/ArcGIS/My Treks";
+        useCompass = true;
+        useHUD = true;
     }
 
     // COMPONENTS //////////////////////////////////////////////////////////////

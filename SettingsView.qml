@@ -550,6 +550,7 @@ Item {
                             Layout.bottomMargin: sf(5)
                             color: "transparent"
                             Accessible.role: Accessible.Pane
+                            visible: false
 
                             Text {
                                 anchors.fill: parent
@@ -633,6 +634,7 @@ Item {
                             color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                             Accessible.role: Accessible.Pane
                             Accessible.ignored: true
+                            visible: false
 
                             Button {
                                 anchors.fill: parent

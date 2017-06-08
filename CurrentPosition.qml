@@ -32,6 +32,8 @@ QtObject {
     property var position
     property var positionCoordinate
 
+    property bool usingCompass: false
+
     property KalmanCoordinate kalmanCoord: KalmanCoordinate{}
     property double kalmanLat
     property double kalmanLong
@@ -108,11 +110,13 @@ QtObject {
             etaToDestination = new Date();
         }
 
-        if (position.directionValid) {
-            degreesOffCourse = (azimuthToDestination - position.direction);
-        }
-        else{
-            degreesOffCourse = 0;
+        if(!usingCompass){
+            if (position.directionValid) {
+                degreesOffCourse = (azimuthToDestination - position.direction);
+            }
+            else{
+                degreesOffCourse = 0;
+            }
         }
 
         if(logTreks){
