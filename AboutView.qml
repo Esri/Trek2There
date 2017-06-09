@@ -154,19 +154,36 @@ Item {
                         }
                     }
 
-                    TextArea{
-                        property string esriLabsText: qsTr("Trek2There is an Esri Labs project and not an official Esri product. Trek2There is provided on an as-is-basis and you assume all risks associated with using this app. Please refer to the license agreement for further details.")
+                    Item {
                         Layout.fillHeight: true
                         Layout.fillWidth: true
-                        readOnly: true
-                        wrapMode: TextArea.Wrap
-                        textFormat: Text.RichText
-                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                        text: "<p>%1</p><p>%2</p>".arg(app.info.description).arg(esriLabsText)
-                        Accessible.role: Accessible.StaticText
-                        Accessible.name: qsTr("Description text")
-                        Accessible.readOnly: true
-                        Accessible.multiLine: true
+
+                        Flickable {
+                            id: view
+                            anchors.fill: parent
+                            contentHeight: descriptionText.height
+                            clip: true
+                            flickableDirection: Flickable.VerticalFlick
+                            leftMargin: 0
+                            rightMargin: 0
+
+                            TextArea {
+                                id: descriptionText
+                                property string esriLabsText: qsTr("Trek2There is an Esri Labs project and not an official Esri product. Trek2There is provided on an as-is-basis and you assume all risks associated with using this app. Please refer to the license agreement for further details.")
+                                width: parent.width
+                                readOnly: true
+                                leftPadding: 0
+                                rightPadding: 0
+                                wrapMode: TextArea.Wrap
+                                textFormat: Text.RichText
+                                color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                                text: "<p>%1</p><p>%2</p>".arg(app.info.description).arg(esriLabsText)
+                                Accessible.role: Accessible.StaticText
+                                Accessible.name: qsTr("Description text")
+                                Accessible.readOnly: true
+                                Accessible.multiLine: true
+                            }
+                        }
                     }
 
                     //----------------------------------------------------------
@@ -191,7 +208,6 @@ Item {
 
                     Rectangle{
                         Layout.preferredHeight: sf(50)
-                        Layout.fillHeight: true
                         Layout.fillWidth: true
                         Layout.topMargin: 0
                         color: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground

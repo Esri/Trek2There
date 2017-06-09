@@ -80,30 +80,41 @@ Item {
                 color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                 Accessible.role: Accessible.Pane
 
-                TextArea{
-                    id: disclaimerText
-                    property string para1: qsTr("Do not attempt to use this directional information unless you are at a complete stop. Travel safely and use common sense when using Trek2There. Trek2There is not to be used for terrain avoidance as direction and distance information does not consider traveling around physical barriers such as cliffs, water bodies, roadways, moving vehicles, buildings, etc.")
-                    property string para2: qsTr("Do not follow any travel suggestions that appear to be hazardous, unsafe, or illegal.")
-                    property string para3: qsTr("Please refer to the license agreement for further details.")
-                    property string para4: qsTr("I understand that usage metrics may be gathered and used to make Trek2There a better application.")
-                    property string esriLabsText: qsTr("Trek2There is an Esri Labs project and not an official Esri product. Trek2There is provided on an as-is-basis and you assume all risks associated with using this app. Please refer to the license agreement for further details.")
-
-                    readOnly: true
+                Flickable {
+                    id: view
                     anchors.fill: parent
-                    textFormat: Text.RichText
-                    color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                    text: "<p>%1</p><p>%2</p><p>%3</p><p>%4</p><p>%5</p>".arg(para1).arg(para2).arg(para3).arg(para4).arg(esriLabsText)
-                    wrapMode: TextArea.Wrap
-                    onLinkActivated: {
-                         Qt.openUrlExternally(link);
+                    contentHeight: disclaimerText.height
+                    clip: true
+                    flickableDirection: Flickable.VerticalFlick
+
+                    TextArea {
+                        id: disclaimerText
+                        property string para1: qsTr("Do not attempt to use this directional information unless you are at a complete stop. Travel safely and use common sense when using Trek2There. Trek2There is not to be used for terrain avoidance as direction and distance information does not consider traveling around physical barriers such as cliffs, water bodies, roadways, moving vehicles, buildings, etc.")
+                        property string para2: qsTr("Do not follow any travel suggestions that appear to be hazardous, unsafe, or illegal.")
+                        property string para3: qsTr("Please refer to the license agreement for further details.")
+                        property string para4: qsTr("I understand that usage metrics may be gathered and used to make Trek2There a better application.")
+                        property string esriLabsText: qsTr("Trek2There is an Esri Labs project and not an official Esri product. Trek2There is provided on an as-is-basis and you assume all risks associated with using this app. Please refer to the license agreement for further details.")
+
+                        readOnly: true
+                        width: parent.width
+                        textFormat: Text.RichText
+                        leftPadding: 0
+                        rightPadding: 0
+                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                        text: "<p>%1</p><p>%2</p><p>%3</p><p>%4</p><p>%5</p>".arg(para1).arg(para2).arg(para3).arg(para4).arg(esriLabsText)
+                        wrapMode: TextArea.Wrap
+                        onLinkActivated: {
+                             Qt.openUrlExternally(link);
+                        }
+                        Accessible.role: Accessible.StaticText
+                        Accessible.name: qsTr("Disclaimer text")
+                        Accessible.readOnly: true
+                        Accessible.multiLine: true
+                        Accessible.focusable: true
                     }
-                    Accessible.role: Accessible.StaticText
-                    Accessible.name: qsTr("Disclaimer text")
-                    Accessible.readOnly: true
-                    Accessible.multiLine: true
-                    Accessible.focusable: true
                 }
             }
+
             //------------------------------------------------------------------
 
             Rectangle{
