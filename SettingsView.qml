@@ -550,17 +550,52 @@ Item {
                             Layout.bottomMargin: sf(5)
                             color: "transparent"
                             Accessible.role: Accessible.Pane
-                            visible: false
+                            visible: true
 
                             Text {
                                 anchors.fill: parent
                                 anchors.leftMargin: sideMargin
-                                text: qsTr("PREFERENCES")
+                                text: qsTr("AZIMUTH ROUNDING [DEV ONLY]")
                                 verticalAlignment: Text.AlignBottom
                                 color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                 Accessible.role: Accessible.Heading
                                 Accessible.name: text
                                 Accessible.description: qsTr("Select the desired unit of measure from the following choices.")
+                            }
+                        }
+
+                        Rectangle {
+                            Layout.preferredHeight: sf(50)
+                            Layout.fillWidth: true
+                            color: "green" //!nightMode ? dayModeSettings.background : nightModeSettings.background
+                            Accessible.role: Accessible.Pane
+                            Accessible.ignored: true
+
+                            RowLayout{
+                                anchors.fill: parent
+                                Slider {
+                                    id: azimuthRounding
+                                    from: 1
+                                    to: 20
+                                    stepSize: 1
+                                    snapMode: Slider.SnapAlways
+                                    Layout.fillHeight: true
+                                    Layout.preferredWidth: parent.width * .75
+                                    value: app.azimuthRounding
+                                    onValueChanged: {
+                                        app.azimuthRounding = Math.round(value);
+                                    }
+                                }
+                                Rectangle{
+                                    Layout.fillHeight: true
+                                    Layout.fillWidth: true
+                                    color: "purple"
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: azimuthRounding.value
+                                        color: !nightMode ? "#000" : "#fff"
+                                    }
+                                }
                             }
                         }
 

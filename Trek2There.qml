@@ -32,6 +32,8 @@ App {
 
     Accessible.role: Accessible.Window
 
+    property int azimuthRounding: app.settings.numberValue("azimuthRounding", Qt.platform.os === "android" ? 10 : 2)
+
     // PROPERTIES //////////////////////////////////////////////////////////////
 
     property bool safteyWarningAccepted: app.settings.boolValue("safteyWarningAccepted", false)
@@ -170,6 +172,10 @@ App {
 
     onUseHUDChanged: {
         app.settings.setValue("useHUD", useHUD);
+    }
+
+    onAzimuthRoundingChanged: {
+        app.settings.setValue("azimuthRounding", azimuthRounding);
     }
 
     // FUNCTIONS ///////////////////////////////////////////////////////////////

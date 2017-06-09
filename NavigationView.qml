@@ -53,7 +53,7 @@ Rectangle {
     //property bool showHUD: false
     property bool hudOn: false
     property bool stopUsingCompassForNavigation: currentSpeed > maximumSpeedForCompass && useCompass
-    property double maximumSpeedForCompass: 1.2 // meters per second
+    property double maximumSpeedForCompass: 0.8 // 1.2 // meters per second
     property double currentSpeed: 0.0
     property Image mapPin: Image {
          source: "images/map_pin_night.png"
@@ -1010,7 +1010,7 @@ Rectangle {
         id: sensors
 
         azimuthFilterType: Qt.platform.os === "android" ? 1 : 0 // 0=rounding 1=smoothing
-        azimuthRounding: Qt.platform.os === "android" ? 20 : 2  // Nearest degree >> 2=0.5, 3=0.33, 4=0.25 ... 10=0.1
+        azimuthRounding: app.azimuthRounding //Qt.platform.os === "android" ? 10 : 2  // Nearest degree >> 2=0.5, 3=0.33, 4=0.25 ... 10=0.1
         azimuthFilterLength: 10
         attitudeFilterType: 1 // 0=rounding 1=smoothing
         attitudeRounding: 2  // Nearest degree >> 2=0.5, 3=0.33, 4=0.25 ... 10=0.1
