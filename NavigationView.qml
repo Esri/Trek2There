@@ -53,7 +53,7 @@ Rectangle {
     //property bool showHUD: false
     property bool hudOn: false
     property bool stopUsingCompassForNavigation: currentSpeed > maximumSpeedForCompass && useCompass
-    property double maximumSpeedForCompass: 0.8 // 1.2 // meters per second
+    property double maximumSpeedForCompass: 1.0 // 1.2 // meters per second
     property double currentSpeed: 0.0
     property Image mapPin: Image {
          source: "images/map_pin_night.png"
@@ -270,6 +270,27 @@ Rectangle {
                     context.drawImage(mapPin.source, centeredX, centeredY, height, height);
                 }
             }
+
+            Rectangle{
+                y: distanceReadoutContainer.y - sf(150)
+                x: (distanceReadoutContainer.width / 2) - (width / 2)
+                z: 10000
+                visible: hudOn && requestedDestination !== null
+                color: "green"
+                width: sf(200)
+                height: sf(200)
+                radius: 5
+                opacity: .8
+                transform: Rotation { origin.x: 100; origin.y: 100; axis { x: 1; y: 0 ; z: 0 } angle: 75 }
+
+                Image {
+                    id: otherArrow
+                    anchors.centerIn: parent
+                    height: parent.height - sf(40)
+                    fillMode: Image.PreserveAspectFit
+                    source: "images/arrow_night.png"
+                }
+            }
         }
 
         // Compass View --------------------------------------------------------
@@ -278,6 +299,7 @@ Rectangle {
             id: arrowView
             anchors.fill: parent
             visible: true
+            opacity: 1
             color: !nightMode ? dayModeSettings.background : nightModeSettings.background
 
             ColumnLayout {
@@ -570,25 +592,7 @@ Rectangle {
 
         // Distance Readout ----------------------------------------------------
 
-        Rectangle{
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottom: distanceReadoutContainer.top
-            anchors.topMargin: sf(40)
-            visible: hudOn && requestedDestination !== null
-            color: "green"
-            width: 100
-            height: 100
-            radius: 5
-            transform: Rotation { origin.x: 25; origin.y: 25; axis { x: 1; y: 0 ; z: 0 } angle: 72 }
 
-            Image {
-                id: otherArrow
-                anchors.centerIn: parent
-                height: parent.height - 30
-                fillMode: Image.PreserveAspectFit
-                source: "images/arrow_night.png"
-            }
-        }
 
         Item {
             id: distanceReadoutContainer
@@ -754,9 +758,9 @@ Rectangle {
                         }
 
                         onClicked:{
-                            toggleHud();
+                           //toggleHud();
 
-                            //nightMode = !nightMode ? true : false;
+                            nightMode = !nightMode ? true : false;
                         }
 
                         Accessible.role: Accessible.Button
@@ -793,7 +797,7 @@ Rectangle {
         console.log('reseting navigation')
 
         navigating = false;
-        turnHudOff();
+        //turnHudOff();
         viewData.observerCoordinate = null;
         sensors.stopPositionSource();
         statusMessage.hide();
@@ -833,6 +837,7 @@ Rectangle {
 
     onStartNavigation:{
         console.log('starting navigation')
+        console.log("-----------------", sensors.azimuthRounding)
         reset(); // TODO: This may cause some hiccups as positoin source is stopped and started. even though update is called, not sure all devices allow the update immedieately.
         navigating = true;
 
@@ -1004,6 +1009,52 @@ Rectangle {
         }
     }
 
+    PropertyAnimation {
+        id: fadeArrowViewOut
+        duration: 700
+        property: "opacity"
+        running: false
+        target: arrowView
+        from: arrowView.opacity
+        to: 0
+
+        onStarted: {
+//            if(fadeArrowViewIn.running){
+//                fadeArrowViewIn.stop();
+//            }
+            hudView.visible = true;
+            camera.start();
+        }
+
+        onStopped: {
+            //arrowView.visible = false;
+            hudOn = true;
+        }
+    }
+
+    PropertyAnimation {
+        id: fadeArrowViewIn
+        duration: 700
+        property: "opacity"
+        running: false
+        target: arrowView
+        from: arrowView.opacity
+        to: 1
+
+        onStarted: {
+//            if(fadeArrowViewOut.running){
+//                fadeArrowViewOut.stop();
+//            }
+            arrowView.visible = true;
+        }
+
+        onStopped: {
+            //hudView.visible = false;
+            hudOn = false;
+            camera.stop();
+        }
+    }
+
     //--------------------------------------------------------------------------
 
     HUDSensors {
@@ -1067,6 +1118,12 @@ Rectangle {
                     currentSpeed = sensors.position.speed;
                 }
 
+                if(sensors.position.directionValid){
+                    if(!sensors.compass.active){
+                        viewData.deviceBearing = sensors.position.direction;
+                    }
+                }
+
                if(requestedDestination !== null){
                     /*
                         TODO: On some Android devices position.directionValid must return
@@ -1098,16 +1155,14 @@ Rectangle {
         onRollAngleChanged: updateRoll()
 
         onOrientationChanged: {
-//            if(useHUD){
-//                if (orientation !== OrientationReading.FaceUp && orientation !== OrientationReading.FaceDown && orientation !== OrientationReading.Undefined){
-//                    arrowView.visible = false;
-//                    hudView.visible = true;
-//                }
-//                else {
-//                    arrowView.visible = true;
-//                    hudView.visible = false
-//                }
-//            }
+            if(useHUD){
+                if (orientation !== OrientationReading.FaceUp && orientation !== OrientationReading.FaceDown && orientation !== OrientationReading.Undefined){
+                   turnHudOn();
+                }
+                else {
+                    turnHudOff();
+                }
+            }
 
             //showHUD = (orientation !== OrientationReading.FaceUp && orientation !== OrientationReading.FaceDown && orientation !== OrientationReading.Undefined);
         }
@@ -1204,16 +1259,20 @@ Rectangle {
     }
 
     function turnHudOff(){
-        hudView.visible = false;
-        hudOn = false;
-        arrowView.visible = true;
+        fadeArrowViewIn.start();
+//        hudView.visible = false;
+//        hudOn = false;
+//        arrowView.visible = true;
     }
 
     function turnHudOn(){
-        hudView.visible = true;
-        hudOn = true;
-        arrowView.visible = false;
+        fadeArrowViewOut.start();
+//        hudView.visible = true;
+//        hudOn = true;
+//        arrowView.visible = false;
     }
+
+
 
     function displayDistance(distance) {
 

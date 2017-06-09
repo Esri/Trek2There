@@ -593,7 +593,7 @@ Item {
                                     Text {
                                         anchors.centerIn: parent
                                         text: azimuthRounding.value
-                                        color: !nightMode ? "#000" : "#fff"
+                                        color: "#fff"
                                     }
                                 }
                             }
