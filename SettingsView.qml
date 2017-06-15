@@ -576,7 +576,7 @@ Item {
                                 Slider {
                                     id: azimuthRounding
                                     from: 1
-                                    to: 20
+                                    to: 40
                                     stepSize: 1
                                     snapMode: Slider.SnapAlways
                                     Layout.fillHeight: true

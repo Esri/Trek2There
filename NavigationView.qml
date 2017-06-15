@@ -22,7 +22,7 @@ import QtGraphicalEffects 1.0
 import QtPositioning 5.8
 import QtQuick.Dialogs 1.2
 import QtQuick.Window 2.2
-import QtMultimedia 5.5
+import QtMultimedia 5.8
 import QtSensors 5.5
 
 import ArcGIS.AppFramework 1.0
@@ -53,7 +53,7 @@ Rectangle {
     //property bool showHUD: false
     property bool hudOn: false
     property bool stopUsingCompassForNavigation: currentSpeed > maximumSpeedForCompass && useCompass
-    property double maximumSpeedForCompass: 1.0 // 1.2 // meters per second
+    property double maximumSpeedForCompass: 0.8 // 1.2 // meters per second
     property double currentSpeed: 0.0
     property Image mapPin: Image {
          source: "images/map_pin_night.png"
@@ -69,34 +69,38 @@ Rectangle {
 
     //--------------------------------------------------------------------------
 
-    Component.onCompleted: {
-        sensors.startOrientationSensor();
-
-        if (useCompass){
-            sensors.startCompass();
+        StackView.onDeactivated: {
+            sensors.stopCompass();
+            sensors.stopTiltSensor();
+            sensors.stopRotationSensor();
+            camera.stop();
         }
 
-        if(useHUD){
-            //camera.start();
+        StackView.onActivating: {
+            if(useHUD){
+                sensors.startTiltSensor();
+                sensors.startRotationSensor();
+            }
+
+            if (useCompass){
+                sensors.startCompass();
+            }
         }
 
-        if (requestedDestination !== null) {
-            viewData.itemCoordinate = requestedDestination;
-            startNavigation();
+        StackView.onActivated: {
+            if (requestedDestination !== null) {
+                viewData.itemCoordinate = requestedDestination;
+                startNavigation();
+            }
         }
-    }
 
     //--------------------------------------------------------------------------
 
     onStopUsingCompassForNavigationChanged: {
         if (stopUsingCompassForNavigation) {
-            statusMessage.message = qsTr("Using GPS");
-            statusMessage.show();
             sensors.stopCompass();
         }
         else {
-            statusMessage.message = qsTr("Using Compass");
-            statusMessage.show();
             sensors.startCompass();
         }
     }
@@ -130,13 +134,7 @@ Rectangle {
         Item {
             id: hudView
             anchors.fill: parent
-            visible: false
-
-//            onVisibleChanged: {
-//                if (!visible) {
-//                    camera.stop();
-//                }
-//            }
+            visible: true
 
             //------------------------------------------------------------------
 
@@ -272,7 +270,7 @@ Rectangle {
             }
 
             Rectangle{
-                y: distanceReadoutContainer.y - sf(150)
+                y: distanceReadoutContainer.y - sf(130)
                 x: (distanceReadoutContainer.width / 2) - (width / 2)
                 z: 10000
                 visible: hudOn && requestedDestination !== null
@@ -281,7 +279,7 @@ Rectangle {
                 height: sf(200)
                 radius: 5
                 opacity: .8
-                transform: Rotation { origin.x: 100; origin.y: 100; axis { x: 1; y: 0 ; z: 0 } angle: 75 }
+                transform: Rotation { origin.x: sf(100); origin.y: sf(100); axis { x: 1; y: 0 ; z: 0 } angle: 75 }
 
                 Image {
                     id: otherArrow
@@ -464,7 +462,7 @@ Rectangle {
         // Status Message and Location Accuracy Indicator ----------------------
 
         Item{
-            id:statusMessageContianer
+            id: statusMessageContianer
             width: parent.width
             height: sf(40)
             anchors.top: parent.top
@@ -494,6 +492,20 @@ Rectangle {
 
                         Accessible.role: Accessible.AlertMessage
                         Accessible.name: message
+                    }
+                }
+
+                Item {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: sf(20)
+
+                    Text{
+                        id: deviceIndicator
+                        anchors.fill: parent
+                        anchors.centerIn: parent
+                        text: sensors.compass.active ? "CMP" : "GPS"
+                        color: navigating ? buttonTextColor : "#aaa"
+                        font.pointSize: 10
                     }
                 }
 
@@ -591,8 +603,6 @@ Rectangle {
         }
 
         // Distance Readout ----------------------------------------------------
-
-
 
         Item {
             id: distanceReadoutContainer
@@ -1019,15 +1029,10 @@ Rectangle {
         to: 0
 
         onStarted: {
-//            if(fadeArrowViewIn.running){
-//                fadeArrowViewIn.stop();
-//            }
-            hudView.visible = true;
-            camera.start();
+            //camera.start();
         }
 
         onStopped: {
-            //arrowView.visible = false;
             hudOn = true;
         }
     }
@@ -1042,14 +1047,10 @@ Rectangle {
         to: 1
 
         onStarted: {
-//            if(fadeArrowViewOut.running){
-//                fadeArrowViewOut.stop();
-//            }
-            arrowView.visible = true;
+            //arrowView.visible = true;
         }
 
         onStopped: {
-            //hudView.visible = false;
             hudOn = false;
             camera.stop();
         }
@@ -1150,19 +1151,30 @@ Rectangle {
 
         onAzimuthFromTrueNorthChanged: updateBearing()
 
-        onPitchAngleChanged: updatePitch()
+        onPitchAngleChanged: {
+            if(useHUD){
+                if (Math.round(Math.abs(sensors.pitchAngle)) < 30){
+                    camera.start();
+                    turnHudOn();
+                }
+                else {
+                   turnHudOff();
+                }
+            }
+            updatePitch();
+        }
 
         onRollAngleChanged: updateRoll()
 
         onOrientationChanged: {
-            if(useHUD){
-                if (orientation !== OrientationReading.FaceUp && orientation !== OrientationReading.FaceDown && orientation !== OrientationReading.Undefined){
-                   turnHudOn();
-                }
-                else {
-                    turnHudOff();
-                }
-            }
+//            if(useHUD){
+//                if (orientation !== OrientationReading.FaceUp && orientation !== OrientationReading.FaceDown && orientation !== OrientationReading.Undefined){
+//                   turnHudOn();
+//                }
+//                else {
+//                    turnHudOff();
+//                }
+//            }
 
             //showHUD = (orientation !== OrientationReading.FaceUp && orientation !== OrientationReading.FaceDown && orientation !== OrientationReading.Undefined);
         }
@@ -1183,7 +1195,15 @@ Rectangle {
 
         function updatePitch() {
             if (sensors.pitchAngle) {
-                viewData.devicePitch = sensors.pitchAngle;
+                viewData.devicePitch = 0; // sensors.pitchAngle;
+//                if(useHUD){
+//                    if (Math.round(Math.abs(sensors.pitchAngle)) < 30){
+//                        turnHudOn();
+//                    }
+//                    else {
+//                       turnHudOff();
+//                    }
+//                }
             }
         }
 

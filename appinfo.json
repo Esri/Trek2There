@@ -1,4 +1,5 @@
 {
+    "arcgisRuntime": 0,
     "capabilities": {
         "audio": false,
         "backgroundLocation": false,
@@ -67,7 +68,7 @@
     "urlScheme": "arcgis-trek2there",
     "version": {
         "major": 2,
-        "micro": 197,
+        "micro": 249,
         "minor": 0
     }
 }
