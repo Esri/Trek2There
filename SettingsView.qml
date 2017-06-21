@@ -536,11 +536,10 @@ Item {
                                     anchors.fill: parent
                                     spacing: 0
 
-                                    Rectangle {
+                                    Item {
                                         Layout.fillHeight: true
                                         Layout.preferredWidth: sf(18)
                                         Layout.leftMargin: sideMargin
-                                        color: !nightMode ? dayModeSettings.background : nightModeSettings.background
 
                                         Rectangle {
                                             width: parent.width
@@ -553,7 +552,7 @@ Item {
                                                 anchors.centerIn: parent
                                                 width: parent.width - sf(8)
                                                 fillMode: Image.PreserveAspectFit
-                                                visible: useCompass && showHUDLocationMarker
+                                                visible: useExperimentalFeatures
                                                 source: "images/checkmark.png"
                                                 Accessible.ignored: true
                                             }
@@ -571,8 +570,7 @@ Item {
                                 }
 
                                 onClicked: {
-                                    useCompass = useCompass ? false : true;
-                                    showHUDLocationMarker = showHUDLocationMarker ? false : true;
+                                    useExperimentalFeatures = !useExperimentalFeatures ? true : false;
                                 }
 
                                 Accessible.role: Accessible.Button

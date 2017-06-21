@@ -166,6 +166,53 @@ Item {
             id: overlay
             anchors.fill: parent
             clip: true
+
+            property int offsetx: videoOutput.contentRect.x
+            property int offsety: videoOutput.contentRect.y
+            property int scalex: videoOutput.contentRect.width
+            property int scaley: videoOutput.contentRect.height
+            //property var viewCoords: null
+
+            onPaint: {
+
+                console.log("------------onPaint")
+                //var context = getContext("2d");
+                //context.save();
+                //context.clearRect(0, 0, width, height);
+
+//                context.beginPath();
+//                context.rect(offsetx, offsety, scalex, scaley);
+//                context.clip();
+
+//                MathLib.initializeTransformationMatrix(viewData.observerHeight, viewData.deviceBearing, viewData.devicePitch, viewData.deviceRoll, viewData.fieldOfViewX, viewData.fieldOfViewY);
+
+                //context.restore();
+
+                //drawSymbol(context, null, 1, "red");
+
+            }
+
+            function clearCanvas(){
+                requestPaint();
+                var context = getContext("2d");
+                context.clearRect(0, 0, width, height);
+                //context.restore();
+            }
+
+            function drawSymbol(context, pt, scale) {
+                clearCanvas();
+                requestPaint();
+
+                context.beginPath();
+                context.rect(offsetx, offsety, scalex, scaley);
+                context.clip();
+
+                var height = Math.ceil(100 * scale);
+                var centeredY = pt.y - (height / 2);
+                var centeredX = pt.x - (height / 2);
+                context.drawImage(mapPin.source, centeredX, centeredY, height, height);
+                context.restore();
+            }
         }
 
         //------------------------------------------------------------------
@@ -667,7 +714,6 @@ Item {
         arrivedAtDestination = true;
         navigating = false;
         sensors.positionSource.stop();
-        //positionSource.stop();
         directionArrow.visible = false
         arrivedIcon.visible = true
         distanceReadout.text = qsTr("Arrived");
@@ -684,11 +730,11 @@ Item {
     onReset: {
         console.log('reseting navigation')
 
+        overlay.clearCanvas();
+
         navigating = false;
         sensors.positionSource.active = false;
         sensors.positionSource.stop();
-//        positionSource.active = false;
-//        positionSource.stop();
 
         statusMessage.hide();
 
@@ -729,11 +775,8 @@ Item {
 
         sensors.positionSource.start();
         sensors.positionSource.update();
-//        positionSource.active = true;
-//        positionSource.update();
         currentPosition.destinationCoordinate = requestedDestination;
         sensors.positionSource.update();
-        //positionSource.update();
         endNavigationButton.visible = true;
         endNavigationButton.enabled = true;
 
@@ -787,61 +830,6 @@ Item {
     }
 
     // COMPONENTS //////////////////////////////////////////////////////////////
-
-//    PositionSource {
-//        id: positionSource
-
-//        onPositionChanged: {
-//            if (position.coordinate.isValid) {
-//                currentPosition.position = position;
-//            }
-
-//            if (position.horizontalAccuracyValid) {
-//                var accuracy = position.horizontalAccuracy;
-//                if(accuracy < 10){
-//                    currentAccuracy = 4;
-//                }
-//                else if(accuracy > 11 && accuracy < 55){
-//                    currentAccuracy = 3;
-//                }
-//                else if(accuracy > 56 && accuracy < 100){
-//                    currentAccuracy = 2;
-//                }
-//                else if(accuracy >= 100){
-//                    currentAccuracy = 1;
-//                }
-//                else{
-//                    currentAccuracy = 0;
-//                }
-
-//                currentAccuracyInUnits = usesMetric ? Math.ceil(accuracy) : Math.ceil(accuracy * 3.28084)
-//            }
-
-//           if (requestedDestination !== null) {
-//                /*
-//                    TODO: On some Android devices position.directionValid must return
-//                    true so the statusMessage isn't shown when navigation first starts
-//                    in order to inform the user to move. This isn't an issue on iOS.
-//                    May need to evaluate reset() method that hides the status
-//                    message as well as the startNavigation method as well to fix this.
-//                */
-//                if (position.directionValid){
-//                    noPositionSource = false;
-//                    statusMessage.hide();
-//                }
-//                else{
-//                    noPositionSource = true;
-//                    directionArrow.opacity = 0.2;
-//                    statusMessage.show();
-//                }
-//           }
-//        }
-
-//        onSourceErrorChanged: {
-//        }
-//    }
-
-    //--------------------------------------------------------------------------
 
     CurrentPosition {
         id: currentPosition
@@ -900,12 +888,13 @@ Item {
         magneticDeclination: 0.0
 
         positionSource.onActiveChanged: {
-            if(positionSource.active && viewData.observerCoordinate === null){
+            if (positionSource.active && viewData.observerCoordinate === null) {
                 statusMessage.show();
             }
         }
 
         onSensorPositionChanged: {
+
             currentPosition.position = sensors.position;
 
             if (currentPosition.position.coordinate.isValid) {
@@ -933,15 +922,9 @@ Item {
                 currentAccuracyInUnits = usesMetric ? Math.ceil(accuracy) : Math.ceil(accuracy * 3.28084)
             }
 
-//            if (currentPosition.position.speedValid) {
-//                currentSpeed = currentPosition.position.speed;
-//            }
-
-//            if(currentPosition.position.directionValid){
-//                if(!useCompass || (useCompass && !sensors.compass.active)){
-//                    viewData.deviceBearing = currentPosition.position.direction;
-//                }
-//            }
+            if (currentPosition.position.speedValid) {
+                currentSpeed = currentPosition.position.speed;
+            }
 
            if (requestedDestination !== null) {
                 /*
@@ -954,8 +937,11 @@ Item {
                 if (currentPosition.position.directionValid){
                     noPositionSource = false;
                     statusMessage.hide();
+                    if (!useCompass || (useCompass && !sensors.compass.active)) {
+                        viewData.deviceBearing = currentPosition.position.direction;
+                    }
                 }
-                else{
+                else {
                     noPositionSource = true;
                     directionArrow.opacity = 0.2;
                     statusMessage.show();
@@ -982,15 +968,9 @@ Item {
 
         onOrientationChanged: {}
 
-        function updatePosition() {
-            if (position.latitudeValid && position.longitudeValid) {
-                //viewData.setPosition(position, currentPosition.arrivalThresholdInMeters);
-            }
-        }
-
         function updateBearing() {
             if (sensors.azimuthFromTrueNorth) {
-                if(viewData.observerCoordinate !== null){
+                if (viewData.observerCoordinate !== null /* && useCompass */) {
                     viewData.deviceBearing = sensors.azimuthFromTrueNorth;
                 }
             }
@@ -1026,40 +1006,33 @@ Item {
         property real itemHeight: 0.0
 
         onObserverCoordinateChanged: {
-            //updateViewModel();
-            //overlay.requestPaint();
+            updateViewModel();
         }
 
         onItemCoordinateChanged: {
-            //updateViewModel();
-            //overlay.requestPaint();
+            updateViewModel();
         }
 
         onDeviceBearingChanged: {
-//            if(observerCoordinate !== null){
-//                updateViewModel();
-//                //overlay.requestPaint();
-//            }
+            if(observerCoordinate !== null){
+                updateViewModel();
+            }
         }
 
         onDevicePitchChanged: {
-            //updateViewModel();
-            //overlay.requestPaint();
+            updateViewModel();
         }
 
         onDeviceRollChanged: {
-            //updateViewModel();
-            //overlay.requestPaint();
+            updateViewModel();
         }
 
         onFieldOfViewXChanged: {
-            //updateViewModel();
-            //overlay.requestPaint();
+            updateViewModel();
         }
 
         onFieldOfViewYChanged: {
-            //updateViewModel();
-            //overlay.requestPaint();
+            updateViewModel();
         }
     }
 
@@ -1135,6 +1108,48 @@ Item {
     }
 
     // METHODS /////////////////////////////////////////////////////////////////
+
+    function updateViewModel() {
+
+        MathLib.initializeTransformationMatrix(viewData.observerHeight, viewData.deviceBearing, viewData.devicePitch, viewData.deviceRoll, viewData.fieldOfViewX, viewData.fieldOfViewY);
+
+        var distance = currentPosition.distanceToDestination;
+        var azimuth = currentPosition.azimuthToDestination;
+
+        if (useCompass && currentPosition.usingCompass) {
+            var degreesOff = viewData.observerCoordinate !==null ? azimuth - sensors.sensorAzimuth : 0;
+//            directionArrow.opacity = viewData.observerCoordinate !==null ? 1 : .4;
+            currentPosition.degreesOffCourse = degreesOff;
+        }
+
+        var inFoV = MathLib.inFieldOfView(azimuth, viewData.deviceBearing, viewData.deviceRoll, viewData.fieldOfViewX, viewData.fieldOfViewY);
+        if (!inFoV) {
+            console.log("Not in Field of view.")
+        }
+
+        var pointInPlane = MathLib.transformAzimuthToCamera(azimuth, distance, viewData.itemHeight - viewData.observerHeight);
+        if (!pointInPlane || pointInPlane.x < 0 || pointInPlane.x > 1 || pointInPlane.y < 0 || pointInPlane.y > 1) {
+            console.log("point is not in the plane");
+        }
+
+        if (showHUDLocationMarker) {
+            overlay.clearCanvas();
+            var scale = (10000 - distance) / 10000 < .3 ? .3 : (10000 - distance) / 10000;
+            var viewCoords = toScreenCoord(pointInPlane);
+            if (viewCoords !== null) {
+               overlay.drawSymbol(overlay.getContext("2d"), viewCoords, scale);
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
+    function toScreenCoord(pt) {
+        console.log(pt);
+        return (pt ? Qt.vector2d(overlay.scalex * pt.x + overlay.offsetx, overlay.scaley * pt.y + overlay.offsety) : null);
+    }
+
+    // -------------------------------------------------------------------------
 
     function displayDistance(distance) {
 

@@ -82,7 +82,7 @@ QtObject {
 
         positionCoordinate = position.coordinate;
 
-        if(useKalman === true){
+        if (useKalman === true) {
             var accuracy = (position.horizontalAccuracyValid === true) ? position.horizontalAccuracy : 0;
             var newCoord = kalmanCoord.process(positionCoordinate.latitude, positionCoordinate.longitude, accuracy, new Date().valueOf());
             kalmanLat = newCoord[0];
@@ -92,35 +92,38 @@ QtObject {
 
         distanceToDestination = positionCoordinate.distanceTo(destinationCoordinate);
 
-        if(distanceToDestination < arrivalThresholdInMeters ){
+        if (distanceToDestination < arrivalThresholdInMeters ) {
             atDestination();
         }
 
         azimuthToDestination = positionCoordinate.azimuthTo(destinationCoordinate);
 
-        if (position.speedValid && position.speed > 0) {
-            etaSeconds = distanceToDestination / position.speed;
-            arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * (position.speed / minimumAnticipatedSpeed);
-            etaToDestination = new Date((new Date().valueOf()) + etaSeconds * 1000);
-            if(etaSeconds < arrivalThresholdInSeconds){
-                atDestination();
-            }
-        } else {
-            etaSeconds = -1;
-            arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * 2;
-            etaToDestination = new Date();
-        }
+        // Removed arrival by speed logic for now.
 
-        if(!usingCompass){
+//        if (position.speedValid && position.speed > 0) {
+//            etaSeconds = distanceToDestination / position.speed;
+//            arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * (position.speed / minimumAnticipatedSpeed);
+//            etaToDestination = new Date((new Date().valueOf()) + etaSeconds * 1000);
+//            if (etaSeconds < arrivalThresholdInSeconds) {
+//                atDestination();
+//            }
+//        }
+//        else {
+//            etaSeconds = -1;
+//            arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * 2;
+//            etaToDestination = new Date();
+//        }
+
+        if (!usingCompass) {
             if (position.directionValid) {
                 degreesOffCourse = (azimuthToDestination - position.direction);
             }
-            else{
+            else {
                 degreesOffCourse = 0;
             }
         }
 
-        if(logTreks){
+        if (logTreks) {
             // [timestamp, pos_lat, pos_long, pos_dir, klat, klong, az_to, dist_to, degrees_off]
             trekLogger.recordPosition([
                                           Date().valueOf(),
