@@ -69,19 +69,10 @@ Item {
 
     //--------------------------------------------------------------------------
 
-//    Component.onCompleted: {
-
-//        testOrientation.active = true;
-
-//        if (requestedDestination !== null) {
-//            startNavigation();
-//        }
-//    }
-
     StackView.onDeactivated: {
-//        if (useCompass) {
-//            sensors.stopCompass();
-//        }
+        if (useCompass) {
+            sensors.stopCompass();
+        }
         sensors.stopTiltSensor();
         sensors.stopRotationSensor();
         camera.stop();
@@ -91,9 +82,9 @@ Item {
         sensors.startTiltSensor();
         sensors.startRotationSensor();
 
-//        if (useCompass){
-//            sensors.startCompass();
-//        }
+        if (useCompass){
+            sensors.startCompass();
+        }
     }
 
     StackView.onActivated: {
@@ -179,11 +170,11 @@ Item {
 
         //------------------------------------------------------------------
 
-        Rectangle{
+        Rectangle {
             y: distanceReadoutContainer.y - sf(130)
             x: (distanceReadoutContainer.width / 2) - (width / 2)
             z: 10000
-            visible: hudOn && requestedDestination !== null
+            visible: requestedDestination !== null
             color: "green"
             width: sf(200)
             height: sf(200)
@@ -417,7 +408,7 @@ Item {
                     id: deviceIndicator
                     anchors.fill: parent
                     anchors.centerIn: parent
-                    text: "GPS" //sensors.compass.active ? "CMP" : "GPS"
+                    text: useCompass && sensors.compass.active ? "CMP" : "GPS"
                     color: navigating ? buttonTextColor : "#aaa"
                     font.pointSize: 10
                 }
@@ -675,7 +666,8 @@ Item {
     onArrived: {
         arrivedAtDestination = true;
         navigating = false;
-        positionSource.stop();
+        sensors.positionSource.stop();
+        //positionSource.stop();
         directionArrow.visible = false
         arrivedIcon.visible = true
         distanceReadout.text = qsTr("Arrived");
@@ -693,8 +685,10 @@ Item {
         console.log('reseting navigation')
 
         navigating = false;
-        positionSource.active = false;
-        positionSource.stop();
+        sensors.positionSource.active = false;
+        sensors.positionSource.stop();
+//        positionSource.active = false;
+//        positionSource.stop();
 
         statusMessage.hide();
 
@@ -732,10 +726,14 @@ Item {
         console.log('starting navigation')
         reset(); // TODO: This may cause some hiccups as positoin source is stopped and started. even though update is called, not sure all devices allow the update immedieately.
         navigating = true;
-        positionSource.active = true;
-        positionSource.update();
+
+        sensors.positionSource.start();
+        sensors.positionSource.update();
+//        positionSource.active = true;
+//        positionSource.update();
         currentPosition.destinationCoordinate = requestedDestination;
-        positionSource.update();
+        sensors.positionSource.update();
+        //positionSource.update();
         endNavigationButton.visible = true;
         endNavigationButton.enabled = true;
 
@@ -790,63 +788,65 @@ Item {
 
     // COMPONENTS //////////////////////////////////////////////////////////////
 
-    PositionSource {
-        id: positionSource
+//    PositionSource {
+//        id: positionSource
 
-        onPositionChanged: {
-            if (position.coordinate.isValid) {
-                currentPosition.position = position;
-            }
+//        onPositionChanged: {
+//            if (position.coordinate.isValid) {
+//                currentPosition.position = position;
+//            }
 
-            if (position.horizontalAccuracyValid) {
-                var accuracy = position.horizontalAccuracy;
-                if(accuracy < 10){
-                    currentAccuracy = 4;
-                }
-                else if(accuracy > 11 && accuracy < 55){
-                    currentAccuracy = 3;
-                }
-                else if(accuracy > 56 && accuracy < 100){
-                    currentAccuracy = 2;
-                }
-                else if(accuracy >= 100){
-                    currentAccuracy = 1;
-                }
-                else{
-                    currentAccuracy = 0;
-                }
+//            if (position.horizontalAccuracyValid) {
+//                var accuracy = position.horizontalAccuracy;
+//                if(accuracy < 10){
+//                    currentAccuracy = 4;
+//                }
+//                else if(accuracy > 11 && accuracy < 55){
+//                    currentAccuracy = 3;
+//                }
+//                else if(accuracy > 56 && accuracy < 100){
+//                    currentAccuracy = 2;
+//                }
+//                else if(accuracy >= 100){
+//                    currentAccuracy = 1;
+//                }
+//                else{
+//                    currentAccuracy = 0;
+//                }
 
-                currentAccuracyInUnits = usesMetric ? Math.ceil(accuracy) : Math.ceil(accuracy * 3.28084)
-            }
+//                currentAccuracyInUnits = usesMetric ? Math.ceil(accuracy) : Math.ceil(accuracy * 3.28084)
+//            }
 
-           if (requestedDestination !== null) {
-                /*
-                    TODO: On some Android devices position.directionValid must return
-                    true so the statusMessage isn't shown when navigation first starts
-                    in order to inform the user to move. This isn't an issue on iOS.
-                    May need to evaluate reset() method that hides the status
-                    message as well as the startNavigation method as well to fix this.
-                */
-                if (position.directionValid){
-                    noPositionSource = false;
-                    statusMessage.hide();
-                }
-                else{
-                    noPositionSource = true;
-                    directionArrow.opacity = 0.2;
-                    statusMessage.show();
-                }
-           }
-        }
+//           if (requestedDestination !== null) {
+//                /*
+//                    TODO: On some Android devices position.directionValid must return
+//                    true so the statusMessage isn't shown when navigation first starts
+//                    in order to inform the user to move. This isn't an issue on iOS.
+//                    May need to evaluate reset() method that hides the status
+//                    message as well as the startNavigation method as well to fix this.
+//                */
+//                if (position.directionValid){
+//                    noPositionSource = false;
+//                    statusMessage.hide();
+//                }
+//                else{
+//                    noPositionSource = true;
+//                    directionArrow.opacity = 0.2;
+//                    statusMessage.show();
+//                }
+//           }
+//        }
 
-        onSourceErrorChanged: {
-        }
-    }
+//        onSourceErrorChanged: {
+//        }
+//    }
 
     //--------------------------------------------------------------------------
 
     CurrentPosition {
         id: currentPosition
+
+        usingCompass: useCompass && (sensors.hasCompass && sensors.compass.active)
 
         onDistanceToDestinationChanged: {
             if (navigating) {
@@ -899,48 +899,39 @@ Item {
         attitudeFilterLength: 25
         magneticDeclination: 0.0
 
-//        positionSource.onActiveChanged: {
-//            if(positionSource.active && viewData.observerCoordinate === null){
-//                statusMessage.message = qsTr("Start moving to determine direction.");
-//                statusMessage.show();
-//            }
-//            else{
-//                statusMessage.hide();
-//            }
-//        }
+        positionSource.onActiveChanged: {
+            if(positionSource.active && viewData.observerCoordinate === null){
+                statusMessage.show();
+            }
+        }
 
         onSensorPositionChanged: {
-//            currentPosition.position = sensors.position;
+            currentPosition.position = sensors.position;
 
-//            if (currentPosition.position.coordinate.isValid) {
-//                viewData.observerCoordinate = QtPositioning.coordinate(sensors.position.coordinate.latitude, sensors.position.coordinate.longitude, sensors.position.coordinate.altitude);
-//                statusMessage.hide();
-//            }
-//            else{
-//                statusMessage.message = qsTr("Continue moving to improve accuracy.");
-//                statusMessage.show();
-//            }
+            if (currentPosition.position.coordinate.isValid) {
+                viewData.observerCoordinate = QtPositioning.coordinate(currentPosition.position.coordinate.latitude, currentPosition.position.coordinate.longitude, currentPosition.position.coordinate.altitude);
+            }
 
-//            if (currentPosition.position.horizontalAccuracyValid) {
-//                var accuracy = currentPosition.position.horizontalAccuracy;
-//                if(accuracy < 10){
-//                    currentAccuracy = 4;
-//                }
-//                else if(accuracy > 11 && accuracy < 55){
-//                    currentAccuracy = 3;
-//                }
-//                else if(accuracy > 56 && accuracy < 100){
-//                    currentAccuracy = 2;
-//                }
-//                else if(accuracy >= 100){
-//                    currentAccuracy = 1;
-//                }
-//                else{
-//                    currentAccuracy = 0;
-//                }
+            if (currentPosition.position.horizontalAccuracyValid) {
+                var accuracy = currentPosition.position.horizontalAccuracy;
+                if(accuracy < 10){
+                    currentAccuracy = 4;
+                }
+                else if(accuracy > 11 && accuracy < 55){
+                    currentAccuracy = 3;
+                }
+                else if(accuracy > 56 && accuracy < 100){
+                    currentAccuracy = 2;
+                }
+                else if(accuracy >= 100){
+                    currentAccuracy = 1;
+                }
+                else{
+                    currentAccuracy = 0;
+                }
 
-//                currentAccuracyInUnits = usesMetric ? Math.ceil(accuracy) : Math.ceil(accuracy * 3.28084)
-//            }
+                currentAccuracyInUnits = usesMetric ? Math.ceil(accuracy) : Math.ceil(accuracy * 3.28084)
+            }
 
 //            if (currentPosition.position.speedValid) {
 //                currentSpeed = currentPosition.position.speed;
@@ -952,26 +943,24 @@ Item {
 //                }
 //            }
 
-//           if(requestedDestination !== null){
-//                /*
-//                    TODO: On some Android devices position.directionValid must return
-//                    true so the statusMessage isn't shown when navigation first starts
-//                    in order to inform the user to move. This isn't an issue on iOS.
-//                    May need to evaluate reset() method that hides the status
-//                    message as well as the startNavigation method as well to fix this.
-//                */
-//                if (!currentPosition.usingCompass){
-//                    if (currentPosition.position.directionValid){
-//                        noPositionSource = false;
-//                        statusMessage.hide();
-//                    }
-//                    else{
-//                        noPositionSource = true;
-//                        directionArrow.opacity = 0.2;
-//                        statusMessage.show();
-//                    }
-//                }
-//           }
+           if (requestedDestination !== null) {
+                /*
+                    TODO: On some Android devices position.directionValid must return
+                    true so the statusMessage isn't shown when navigation first starts
+                    in order to inform the user to move. This isn't an issue on iOS.
+                    May need to evaluate reset() method that hides the status
+                    message as well as the startNavigation method as well to fix this.
+                */
+                if (currentPosition.position.directionValid){
+                    noPositionSource = false;
+                    statusMessage.hide();
+                }
+                else{
+                    noPositionSource = true;
+                    directionArrow.opacity = 0.2;
+                    statusMessage.show();
+                }
+           }
         }
 
         onPositionChanged: {}
