@@ -397,6 +397,10 @@ Item {
                             }
                         }
 
+                        ButtonGroup {
+                            id: distanceMeasurementGroup
+                        }
+
                         //------------------------------------------------------
 
                         Rectangle {
@@ -405,66 +409,41 @@ Item {
                             color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                             Accessible.role: Accessible.Pane
 
-                            Button {
+                            RadioButton{
+                                id: metricChecked
                                 anchors.fill: parent
-                                background: Rectangle {
-                                    anchors.fill: parent
-                                    color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                                checked: usesMetric
+                                Accessible.ignored: true
+                                ButtonGroup.group: distanceMeasurementGroup
+
+                                indicator: Rectangle {
+                                  implicitWidth: sf(20)
+                                  implicitHeight: sf(20)
+                                  x: sideMargin
+                                  y: parent.height / 2 - height / 2
+                                  radius: sf(10)
+                                  border.width: sf(2)
+                                  border.color: !nightMode ? "#595959" : nightModeSettings.foreground
+                                  color: !nightMode ? "#ededed" : "#272727"
+                                      Rectangle {
+                                          anchors.fill: parent
+                                          visible: parent.parent.checked
+                                          color: !nightMode ? "#595959" : nightModeSettings.foreground
+                                          radius: sf(9)
+                                          anchors.margins: sf(4)
+                                      }
                                 }
-                                RowLayout {
-                                    anchors.fill: parent
-                                    spacing: 0
-                                    anchors.leftMargin: sideMargin
-                                    anchors.rightMargin: sideMargin
-
-                                    Rectangle {
-                                        Layout.fillHeight: true
-                                        Layout.preferredWidth: sf(50)
-                                        color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-
-                                        RadioButton{
-                                            id: metricChecked
-                                            anchors.centerIn: parent
-                                            width: parent.width - sf(30)
-                                            checked: usesMetric === true
-                                            Accessible.ignored: true
-                                            indicator: Rectangle {
-                                              implicitWidth: sf(20)
-                                              implicitHeight: sf(20)
-                                              radius: sf(10)
-                                              border.width: sf(2)
-                                              border.color: !nightMode ? "#595959" : nightModeSettings.foreground
-                                              color: !nightMode ? "#ededed" : "#272727"
-                                              Rectangle {
-                                                  anchors.fill: parent
-                                                  visible: parent.parent.checked
-                                                  color: !nightMode ? "#595959" : nightModeSettings.foreground
-                                                  radius: sf(9)
-                                                  anchors.margins: sf(4)
-                                                }
-                                            }
-                                        }
-                                    }
-                                    Text {
-                                        Layout.fillHeight: true
-                                        Layout.fillWidth: true
-                                        Layout.leftMargin: sideMargin
+                                contentItem: Text {
+                                        opacity: enabled ? 1.0 : 0.3
+                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                         text: qsTr("Metric")
                                         verticalAlignment: Text.AlignVCenter
-                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                                        Accessible.ignored: true
+                                        leftPadding: metricChecked.indicator.width + metricChecked.spacing + sideMargin
+                               }
+                                onCheckedChanged: {
+                                    if (checked){
+                                        usesMetric = true;
                                     }
-                                }
-
-                                onClicked: {
-                                    usesMetric = true;
-                                }
-
-                                Accessible.role: Accessible.Button
-                                Accessible.name: qsTr("Use Metric")
-                                Accessible.description: qsTr("Use metric system for the distance unit displayed")
-                                Accessible.onPressAction: {
-                                    clicked();
                                 }
                             }
                         }
@@ -477,66 +456,41 @@ Item {
                             color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                             Accessible.role: Accessible.Pane
 
-                            Button {
+                            RadioButton{
+                                id: imperialChecked
                                 anchors.fill: parent
-                                background: Rectangle {
-                                    anchors.fill: parent
-                                    color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                                checked: !usesMetric
+                                Accessible.ignored: true
+                                ButtonGroup.group: distanceMeasurementGroup
+
+                                indicator: Rectangle {
+                                  implicitWidth: sf(20)
+                                  implicitHeight: sf(20)
+                                  x: sideMargin
+                                  y: parent.height / 2 - height / 2
+                                  radius: sf(10)
+                                  border.width: sf(2)
+                                  border.color: !nightMode ? "#595959" : nightModeSettings.foreground
+                                  color: !nightMode ? "#ededed" : "#272727"
+                                      Rectangle {
+                                          anchors.fill: parent
+                                          visible: parent.parent.checked
+                                          color: !nightMode ? "#595959" : nightModeSettings.foreground
+                                          radius: sf(9)
+                                          anchors.margins: sf(4)
+                                      }
                                 }
-                                RowLayout {
-                                    anchors.fill: parent
-                                    spacing: 0
-                                    anchors.leftMargin: sideMargin
-                                    anchors.rightMargin: sideMargin
-
-                                    Rectangle {
-                                        Layout.fillHeight: true
-                                        Layout.preferredWidth: sf(50)
-                                        color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-
-                                        RadioButton{
-                                            id: imperialChecked
-                                            anchors.centerIn: parent
-                                            width: parent.width - sf(30)
-                                            checked: usesMetric === false
-                                            Accessible.ignored: true
-                                            indicator: Rectangle {
-                                              implicitWidth: sf(20)
-                                              implicitHeight: sf(20)
-                                              radius: sf(10)
-                                              border.width: sf(2)
-                                              border.color: !nightMode ? "#595959" : nightModeSettings.foreground
-                                              color: !nightMode ? "#ededed" : "#272727"
-                                              Rectangle {
-                                                  anchors.fill: parent
-                                                  visible: parent.parent.checked
-                                                  color: !nightMode ? "#595959" : nightModeSettings.foreground
-                                                  radius: sf(9)
-                                                  anchors.margins: sf(4)
-                                              }
-                                            }
-                                        }
-                                    }
-                                    Text {
-                                        Layout.fillHeight: true
-                                        Layout.fillWidth: true
-                                        Layout.leftMargin: sideMargin
+                                contentItem: Text {
+                                        opacity: enabled ? 1.0 : 0.3
+                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                         text: qsTr("Imperial")
                                         verticalAlignment: Text.AlignVCenter
-                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                                        Accessible.ignored: true
+                                        leftPadding: imperialChecked.indicator.width + imperialChecked.spacing + sideMargin
+                               }
+                                onCheckedChanged: {
+                                    if (checked){
+                                        usesMetric = false;
                                     }
-                                }
-
-                                onClicked: {
-                                    usesMetric = false;
-                                }
-
-                                Accessible.role: Accessible.Button
-                                Accessible.name: qsTr("Use Imperial")
-                                Accessible.description: qsTr("Use the imperial system for the distance unit displayed")
-                                Accessible.onPressAction: {
-                                    clicked();
                                 }
                             }
                         }
@@ -555,57 +509,18 @@ Item {
                             Text {
                                 anchors.fill: parent
                                 anchors.leftMargin: sideMargin
-                                text: qsTr("AZIMUTH ROUNDING [DEV ONLY]")
+                                text: qsTr("EXPERIMENTAL FEATURES")
                                 verticalAlignment: Text.AlignBottom
                                 color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                 Accessible.role: Accessible.Heading
                                 Accessible.name: text
-                                Accessible.description: qsTr("Select the desired unit of measure from the following choices.")
+                                Accessible.description: qsTr("Turn experimental features on or off. This will enable compass assisted navigation for walking and provide a visual marker on the head up display horizon that denotes yoru destination.")
                             }
                         }
 
                         Rectangle {
-                            Layout.preferredHeight: sf(50)
+                            Layout.preferredHeight: sf(40)
                             Layout.fillWidth: true
-                            color: "green" //!nightMode ? dayModeSettings.background : nightModeSettings.background
-                            Accessible.role: Accessible.Pane
-                            Accessible.ignored: true
-
-                            RowLayout{
-                                anchors.fill: parent
-                                Slider {
-                                    id: azimuthRounding
-                                    from: 1
-                                    to: 40
-                                    stepSize: 1
-                                    snapMode: Slider.SnapAlways
-                                    Layout.fillHeight: true
-                                    Layout.preferredWidth: parent.width * .75
-                                    value: app.azimuthRounding
-                                    onValueChanged: {
-                                        app.azimuthRounding = Math.round(value);
-                                    }
-                                }
-                                Rectangle{
-                                    Layout.fillHeight: true
-                                    Layout.fillWidth: true
-                                    color: "purple"
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: azimuthRounding.value
-                                        color: "#fff"
-                                    }
-                                }
-                            }
-                        }
-
-                        //------------------------------------------------------
-
-                        Rectangle {
-                            Layout.preferredHeight: sf(50)
-                            Layout.fillWidth: true
-                            visible: false
-                            enabled: false
                             color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                             Accessible.role: Accessible.Pane
                             Accessible.ignored: true
@@ -620,91 +535,35 @@ Item {
                                 RowLayout {
                                     anchors.fill: parent
                                     spacing: 0
-                                    anchors.leftMargin: sideMargin
-                                    anchors.rightMargin: sideMargin
 
                                     Rectangle {
                                         Layout.fillHeight: true
-                                        Layout.preferredWidth: sf(50)
+                                        Layout.preferredWidth: sf(18)
+                                        Layout.leftMargin: sideMargin
                                         color: !nightMode ? dayModeSettings.background : nightModeSettings.background
 
-                                        Image {
-                                            id: useOuterArrowCheckmark
-                                            anchors.centerIn: parent
-                                            width: parent.width - sf(30)
-                                            fillMode: Image.PreserveAspectFit
-                                            visible: useDirectionOfTravelCircle === true ? true : false
-                                            source: "images/checkmark.png"
-                                            Accessible.ignored: true
+                                        Rectangle {
+                                            width: parent.width
+                                            height: width
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            color: !nightMode ? "#ededed" : "#272727"
+                                            border.width: sf(2)
+                                            border.color: !nightMode ? "#595959" : nightModeSettings.foreground
+                                            Image {
+                                                anchors.centerIn: parent
+                                                width: parent.width - sf(8)
+                                                fillMode: Image.PreserveAspectFit
+                                                visible: useCompass && showHUDLocationMarker
+                                                source: "images/checkmark.png"
+                                                Accessible.ignored: true
+                                            }
                                         }
                                     }
                                     Text {
                                         Layout.fillHeight: true
                                         Layout.fillWidth: true
                                         Layout.leftMargin: sideMargin
-                                        text: qsTr("Use outer arrow")
-                                        verticalAlignment: Text.AlignVCenter
-                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                                        Accessible.ignored: true
-                                    }
-                                }
-
-                                onClicked: {
-                                    useDirectionOfTravelCircle = (useDirectionOfTravelCircle === false) ? true : false;
-                                }
-
-                                Accessible.role: Accessible.Button
-                                Accessible.name: qsTr("Toggle outer arrow on or off")
-                                Accessible.onPressAction: {
-                                    clicked();
-                                }
-                            }
-                        }
-
-                        //------------------------------------------------------
-
-                        Rectangle {
-                            Layout.preferredHeight: sf(50)
-                            Layout.fillWidth: true
-                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                            Accessible.role: Accessible.Pane
-                            Accessible.ignored: true
-                            visible: false
-
-                            Button {
-                                anchors.fill: parent
-                                background: Rectangle {
-                                    anchors.fill: parent
-                                    color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                                }
-
-                                RowLayout {
-                                    anchors.fill: parent
-                                    spacing: 0
-                                    anchors.leftMargin: sideMargin
-                                    anchors.rightMargin: sideMargin
-
-                                    Rectangle {
-                                        Layout.fillHeight: true
-                                        Layout.preferredWidth: sf(50)
-                                        color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-
-                                        Image {
-                                            id: useCompasCheck
-                                            anchors.centerIn: parent
-                                            width: parent.width - sf(30)
-                                            fillMode: Image.PreserveAspectFit
-                                            visible: useCompass && useHUD
-                                            source: "images/checkmark.png"
-                                            Accessible.ignored: true
-                                        }
-                                    }
-                                    Text {
-                                        Layout.fillHeight: true
-                                        Layout.fillWidth: true
-                                        Layout.leftMargin: sideMargin
-                                        text: qsTr("Use less battery [gps only, no compass, no camera]")
-                                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                        text: qsTr("Use experimental features")
                                         verticalAlignment: Text.AlignVCenter
                                         color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                         Accessible.ignored: true
@@ -713,75 +572,74 @@ Item {
 
                                 onClicked: {
                                     useCompass = useCompass ? false : true;
-                                    useHUD = useHUD ? false : true;
+                                    showHUDLocationMarker = showHUDLocationMarker ? false : true;
                                 }
 
                                 Accessible.role: Accessible.Button
-                                Accessible.name: qsTr("Use less battery power. No compass or camera used.")
+                                Accessible.name: qsTr("Use experimental features")
                                 Accessible.onPressAction: {
                                     clicked();
                                 }
                             }
                         }
 
-                        //------------------------------------------------------
+                        Rectangle {
+                            Layout.preferredHeight: xFeaturesText.contentHeight
+                            Layout.fillWidth: true
+                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                            Accessible.role: Accessible.Pane
+                            Accessible.ignored: true
 
-//                        Rectangle {
-//                            Layout.preferredHeight: sf(50)
-//                            Layout.fillWidth: true
-//                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-//                            Accessible.role: Accessible.Pane
-//                            Accessible.ignored: true
+                                RowLayout {
+                                    anchors.fill: parent
+                                    spacing: 0
+                                    anchors.leftMargin: sideMargin
+                                    anchors.rightMargin: sideMargin
 
-//                            Button {
-//                                anchors.fill: parent
-//                                background: Rectangle {
-//                                    anchors.fill: parent
-//                                    color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-//                                }
+                                    Item {
+                                        Layout.fillHeight: true
+                                        Layout.preferredWidth: sf(18)
+                                    }
 
-//                                RowLayout {
-//                                    anchors.fill: parent
-//                                    spacing: 0
-//                                    anchors.leftMargin: sideMargin
-//                                    anchors.rightMargin: sideMargin
+                                    Text {
+                                        id: xFeaturesText
 
-//                                    Rectangle {
-//                                        Layout.fillHeight: true
-//                                        Layout.preferredWidth: sf(50)
-//                                        color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                                        property var feedbackEmail: (function(){
+                                            if (Qt.platform.os === "ios") {
+                                                return "support+f9c5dcb8b61d48e88b9a784ce59feac2@feedback.hockeyapp.net";
+                                            }
+                                            else if (Qt.platform.os === "android") {
+                                                return "support+244a6f679d574cbab4532849cdbf9e06@feedback.hockeyapp.net";
+                                            }
+                                            else if (Qt.platform.os === "windows" || Qt.platform.os === "winrt") {
+                                                return "support+270310d21ec14a93acf5a41cf1bad33d@feedback.hockeyapp.net";
+                                            }
+                                            else {
+                                                return "jayson_ward@esri.com";
+                                            }
+                                        })()
 
-//                                        Image {
-//                                            anchors.centerIn: parent
-//                                            width: parent.width - sf(30)
-//                                            fillMode: Image.PreserveAspectFit
-//                                            visible: useHUD
-//                                            source: "images/checkmark.png"
-//                                            Accessible.ignored: true
-//                                        }
-//                                    }
-//                                    Text {
-//                                        Layout.fillHeight: true
-//                                        Layout.fillWidth: true
-//                                        Layout.leftMargin: sideMargin
-//                                        text: qsTr("Use head up display navigation.")
-//                                        verticalAlignment: Text.AlignVCenter
-//                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-//                                        Accessible.ignored: true
-//                                    }
-//                                }
+                                        Layout.fillHeight: true
+                                        Layout.fillWidth: true
+                                        Layout.bottomMargin: sf(20)
+                                        Layout.leftMargin: sideMargin
+                                        text: "Current experimental features include use of compass to establish course correction at walking speed and display of location pin on the head up display horizon. Esri Labs encourages users to use these features and provide feedback.<br><br>Please <a href='mailto:%1'>email us</a> with your feedback.<br>".arg(feedbackEmail)
+                                        verticalAlignment: Text.AlignVCenter
+                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                                        opacity: .8
+                                        Accessible.ignored: true
+                                        font.pointSize: 10
+                                        wrapMode: Text.Wrap
+                                        textFormat: Text.StyledText
+                                        linkColor: "#007ac2"
 
-//                                onClicked: {
-//                                    useHUD = useHUD ? false : true;
-//                                }
-
-//                                Accessible.role: Accessible.Button
-//                                Accessible.name: qsTr("Use head up display navigation.")
-//                                Accessible.onPressAction: {
-//                                    clicked();
-//                                }
-//                            }
-//                        }
+                                        onLinkActivated: {
+                                            console.log(link);
+                                            Qt.openUrlExternally(link);
+                                        }
+                                    }
+                                }
+                        }
 
                         //------------------------------------------------------
 

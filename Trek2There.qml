@@ -32,16 +32,14 @@ App {
 
     Accessible.role: Accessible.Window
 
-    property int azimuthRounding: app.settings.numberValue("azimuthRounding", Qt.platform.os === "android" ? 10 : 2)
-
     // PROPERTIES //////////////////////////////////////////////////////////////
 
     property bool safteyWarningAccepted: app.settings.boolValue("safteyWarningAccepted", false)
     property bool showSafetyWarning: app.settings.boolValue("showSafetyWarning", true)
     property bool nightMode: app.settings.boolValue("nightMode", false)
     property bool listenToClipboard: app.settings.boolValue("listenToClipboard", true)
-    property bool useCompass: app.settings.boolValue("useCompass", true)
-    property bool useHUD: app.settings.boolValue("useHUD", true)
+    property bool useCompass: app.settings.boolValue("useCompass", false)
+    property bool showHUDLocationMarker: app.settings.boolValue("showHUDLocationMarker", false)
 
     property RegExpValidator latitudeValidator: RegExpValidator { regExp: /^[-]?90$|^[-]?[1-8][0-9](\.\d{1,})?$|^[-]?[1-9](\.\d{1,})?$/g }
     property RegExpValidator longitudeValidator: RegExpValidator { regExp: /^[-]?180$|^[-]?1[0-7][0-9](\.\d{1,})?$|^[-]?[1-9][0-9](\.\d{1,})?$|^[-]?[1-9](\.\d{1,})?$/g }
@@ -75,8 +73,6 @@ App {
     Component.onCompleted: {
         fileFolder.makePath(localStoragePath);
         AppFramework.offlineStoragePath = fileFolder.path + "/ArcGIS/My Treks";
-        useCompass = true;
-        useHUD = true;
     }
 
     // COMPONENTS //////////////////////////////////////////////////////////////
@@ -170,12 +166,8 @@ App {
 
     //--------------------------------------------------------------------------
 
-    onUseHUDChanged: {
-        app.settings.setValue("useHUD", useHUD);
-    }
-
-    onAzimuthRoundingChanged: {
-        app.settings.setValue("azimuthRounding", azimuthRounding);
+    onShowHUDLocationMarkerChanged: {
+        app.settings.setValue("showHUDLocationMarker", showHUDLocationMarker);
     }
 
     // FUNCTIONS ///////////////////////////////////////////////////////////////
@@ -194,10 +186,10 @@ App {
     //--------------------------------------------------------------------------
 
     function validCoordinates(lat,lon){
-        if(lon.search(longitudeValidator.regExp) > -1 && lat.search(latitudeValidator.regExp) > -1){
+        if (lon.search(longitudeValidator.regExp) > -1 && lat.search(latitudeValidator.regExp) > -1){
             return true;
         }
-        else{
+        else {
             return false;
         }
     }

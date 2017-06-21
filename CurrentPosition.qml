@@ -57,8 +57,9 @@ QtObject {
     // SIGNALS /////////////////////////////////////////////////////////////////
 
     onPositionChanged: {
-        console.log("position changee");
-        calculate();
+        if(position.coordinate.isValid){
+            calculate();
+        }
     }
 
     //--------------------------------------------------------------------------
