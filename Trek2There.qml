@@ -38,8 +38,6 @@ App {
     property bool showSafetyWarning: app.settings.boolValue("showSafetyWarning", true)
     property bool nightMode: app.settings.boolValue("nightMode", false)
     property bool listenToClipboard: app.settings.boolValue("listenToClipboard", true)
-    property bool useCompass: app.settings.boolValue("useCompass", false)
-    property bool showHUDLocationMarker: app.settings.boolValue("showHUDLocationMarker", false)
     property bool useExperimentalFeatures: app.settings.boolValue("useExperimentalFeatures", false)
 
     property RegExpValidator latitudeValidator: RegExpValidator { regExp: /^[-]?90$|^[-]?[1-8][0-9](\.\d{1,})?$|^[-]?[1-9](\.\d{1,})?$/g }
@@ -74,6 +72,7 @@ App {
     Component.onCompleted: {
         fileFolder.makePath(localStoragePath);
         AppFramework.offlineStoragePath = fileFolder.path + "/ArcGIS/My Treks";
+        console.log("------------------------------- Component.onCompleted useExperimentalFeatures: ", useExperimentalFeatures);
     }
 
     // COMPONENTS //////////////////////////////////////////////////////////////
@@ -161,29 +160,8 @@ App {
 
     //--------------------------------------------------------------------------
 
-    onUseCompassChanged: {
-//        console.log("-------------useCompass: ", useCompass);
-        app.settings.setValue("useCompass", useCompass);
-    }
-
-    //--------------------------------------------------------------------------
-
-    onShowHUDLocationMarkerChanged: {
-//        console.log("-------------showHUDLocationMarker: ", showHUDLocationMarker);
-        app.settings.setValue("showHUDLocationMarker", showHUDLocationMarker);
-    }
-
-    //--------------------------------------------------------------------------
-
     onUseExperimentalFeaturesChanged: {
-        if (useExperimentalFeatures) {
-            useCompass = true;
-            showHUDLocationMarker = true;
-        }
-        else {
-            useCompass = false;
-            showHUDLocationMarker = false;
-        }
+        app.settings.setValue("useExperimentalFeatures", useExperimentalFeatures);
     }
 
     // FUNCTIONS ///////////////////////////////////////////////////////////////

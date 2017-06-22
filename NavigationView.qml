@@ -70,8 +70,11 @@ Item {
     //--------------------------------------------------------------------------
 
     StackView.onDeactivated: {
-        if (useCompass) {
+        if (useExperimentalFeatures) {
+            console.log("---------------- StackView.onDeactivated stopCompass");
+            console.log("--------------------- compass.active: ", sensors.compass.active);
             sensors.stopCompass();
+            console.log("--------------------- compass.active: ", sensors.compass.active);
         }
         sensors.stopTiltSensor();
         sensors.stopRotationSensor();
@@ -82,8 +85,11 @@ Item {
         sensors.startTiltSensor();
         sensors.startRotationSensor();
 
-        if (useCompass){
+        if (useExperimentalFeatures){
+            console.log("---------------- StackView.onActivating startCompass");
+            console.log("--------------------- compass.active: ", sensors.compass.active);
             sensors.startCompass();
+            console.log("--------------------- compass.active: ", sensors.compass.active);
         }
     }
 
@@ -98,14 +104,27 @@ Item {
     //--------------------------------------------------------------------------
 
     onStopUsingCompassForNavigationChanged: {
-        if(useCompass){
+        console.log("-------------------onStopUsingCompassForNavigationChanged")
+        if(useExperimentalFeatures){
+             console.log("-------------------if useCompass")
             if (stopUsingCompassForNavigation) {
+                console.log("-------------------stopUsingCompassForNavigation")
+                console.log("--------------------- compass.active: ", sensors.compass.active);
                 sensors.stopCompass();
+                console.log("--------------------- compass.active: ", sensors.compass.active);
             }
             else {
-                sensors.startCompass();
+                console.log("------------------- !stopUsingCompassForNavigation")
+                console.log("--------------------- compass.active: ", sensors.compass.active);
+               sensors.startCompass();
+                console.log("--------------------- compass.active: ", sensors.compass.active);
+
             }
         }
+    }
+
+    onCurrentSpeedChanged: {
+        console.log("--------------currentSppeed: ", currentSpeed);
     }
 
 
@@ -451,7 +470,7 @@ Item {
                     id: deviceIndicator
                     anchors.fill: parent
                     anchors.centerIn: parent
-                    text: useCompass && sensors.compass.active ? "CMP" : "GPS"
+                    text: useExperimentalFeatures && sensors.compass.active ? "CMP" : "GPS"
                     color: navigating ? buttonTextColor : "#aaa"
                     font.pointSize: 10
                 }
@@ -830,7 +849,7 @@ Item {
     CurrentPosition {
         id: currentPosition
 
-        usingCompass: useCompass && (sensors.hasCompass && sensors.compass.active)
+        usingCompass: useExperimentalFeatures && (sensors.hasCompass && sensors.compass.active)
 
         onDistanceToDestinationChanged: {
             if (navigating) {
@@ -863,7 +882,7 @@ Item {
     Connections{
         target: app
         onRequestedDestinationChanged: {
-            console.log(requestedDestination);
+            console.log("requested Destination: ", requestedDestination);
             if (requestedDestination !== null) {
                 startNavigation();
             }
@@ -933,7 +952,7 @@ Item {
                 if (currentPosition.position.directionValid){
                     noPositionSource = false;
                     statusMessage.hide();
-                    if (!useCompass || (useCompass && !sensors.compass.active)) {
+                    if (!useExperimentalFeatures || (useExperimentalFeatures && !sensors.compass.active)) {
                         viewData.deviceBearing = currentPosition.position.direction;
                     }
                 }
@@ -1112,7 +1131,7 @@ Item {
         var distance = currentPosition.distanceToDestination;
         var azimuth = currentPosition.azimuthToDestination;
 
-        if (useCompass && currentPosition.usingCompass) {
+        if (useExperimentalFeatures && currentPosition.usingCompass) {
             var degreesOff = viewData.observerCoordinate !==null ? azimuth - sensors.sensorAzimuth : 0;
 //            directionArrow.opacity = viewData.observerCoordinate !==null ? 1 : .4;
             currentPosition.degreesOffCourse = degreesOff;
@@ -1120,15 +1139,15 @@ Item {
 
         var inFoV = MathLib.inFieldOfView(azimuth, viewData.deviceBearing, viewData.deviceRoll, viewData.fieldOfViewX, viewData.fieldOfViewY);
         if (!inFoV) {
-            console.log("Not in Field of view.")
+            //console.log("Not in Field of view.")
         }
 
         var pointInPlane = MathLib.transformAzimuthToCamera(azimuth, distance, viewData.itemHeight - viewData.observerHeight);
         if (!pointInPlane || pointInPlane.x < 0 || pointInPlane.x > 1 || pointInPlane.y < 0 || pointInPlane.y > 1) {
-            console.log("point is not in the plane");
+            //console.log("point is not in the plane");
         }
 
-        if (showHUDLocationMarker) {
+        if (useExperimentalFeatures) {
             overlay.clearCanvas();
             var scale = (10000 - distance) / 10000 < .3 ? .3 : (10000 - distance) / 10000;
             var viewCoords = toScreenCoord(pointInPlane);
@@ -1141,7 +1160,6 @@ Item {
     // -------------------------------------------------------------------------
 
     function toScreenCoord(pt) {
-        console.log(pt);
         return (pt ? Qt.vector2d(overlay.scalex * pt.x + overlay.offsetx, overlay.scaley * pt.y + overlay.offsety) : null);
     }
 
