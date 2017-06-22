@@ -162,14 +162,14 @@ App {
     //--------------------------------------------------------------------------
 
     onUseCompassChanged: {
-        console.log("-------------useCompass: ", useCompass);
+//        console.log("-------------useCompass: ", useCompass);
         app.settings.setValue("useCompass", useCompass);
     }
 
     //--------------------------------------------------------------------------
 
     onShowHUDLocationMarkerChanged: {
-        console.log("-------------showHUDLocationMarker: ", showHUDLocationMarker);
+//        console.log("-------------showHUDLocationMarker: ", showHUDLocationMarker);
         app.settings.setValue("showHUDLocationMarker", showHUDLocationMarker);
     }
 
