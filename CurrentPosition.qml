@@ -49,7 +49,7 @@ QtObject {
     property double minimumAnticipatedSpeed: 1.4 // m/s
     property double maximumAnticipatedSpeed: 28 // m/s
 
-    property int arrivalThresholdInMeters: 1 // TODO: Update arrival logic, Set to 1 which is effectively 0 so user will most likely never recieve the Arrived message and icon.
+    property int arrivalThresholdInMeters: 20 // TODO: Update arrival logic
     property int arrivalThresholdInSeconds: minimumArrivalTimeInSeconds
 
     signal atDestination()
@@ -92,13 +92,15 @@ QtObject {
 
         distanceToDestination = positionCoordinate.distanceTo(destinationCoordinate);
 
-        if (distanceToDestination < arrivalThresholdInMeters ) {
-            atDestination();
-        }
+        // Disabled arrival by distance logic for this version.
+
+//        if (distanceToDestination < arrivalThresholdInMeters ) {
+//            atDestination();
+//        }
 
         azimuthToDestination = positionCoordinate.azimuthTo(destinationCoordinate);
 
-        // Removed arrival by speed logic for now.
+        // Disabled arrival by speed logic for this version.
 
 //        if (position.speedValid && position.speed > 0) {
 //            etaSeconds = distanceToDestination / position.speed;
