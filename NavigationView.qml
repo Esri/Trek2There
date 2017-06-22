@@ -51,7 +51,7 @@ Item {
     // 2.0 Experimental Properties ---------------------------------------------
 
     property bool stopUsingCompassForNavigation: currentSpeed > maximumSpeedForCompass
-    property double maximumSpeedForCompass: 0.8 // meters per second
+    property double maximumSpeedForCompass: 0.9 // meters per second
     property double currentSpeed: 0.0
     property int kAzimuthRounding: 1
     property int kAzimuthFilterLength: 25
@@ -94,6 +94,20 @@ Item {
         }
 
     }
+
+    //--------------------------------------------------------------------------
+
+    onStopUsingCompassForNavigationChanged: {
+        if(useCompass){
+            if (stopUsingCompassForNavigation) {
+                sensors.stopCompass();
+            }
+            else {
+                sensors.startCompass();
+            }
+        }
+    }
+
 
     // UI //////////////////////////////////////////////////////////////////////
 
