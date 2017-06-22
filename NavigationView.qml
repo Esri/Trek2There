@@ -171,32 +171,14 @@ Item {
             property int offsety: videoOutput.contentRect.y
             property int scalex: videoOutput.contentRect.width
             property int scaley: videoOutput.contentRect.height
-            //property var viewCoords: null
 
             onPaint: {
-
-                console.log("------------onPaint")
-                //var context = getContext("2d");
-                //context.save();
-                //context.clearRect(0, 0, width, height);
-
-//                context.beginPath();
-//                context.rect(offsetx, offsety, scalex, scaley);
-//                context.clip();
-
-//                MathLib.initializeTransformationMatrix(viewData.observerHeight, viewData.deviceBearing, viewData.devicePitch, viewData.deviceRoll, viewData.fieldOfViewX, viewData.fieldOfViewY);
-
-                //context.restore();
-
-                //drawSymbol(context, null, 1, "red");
-
             }
 
             function clearCanvas(){
                 requestPaint();
                 var context = getContext("2d");
                 context.clearRect(0, 0, width, height);
-                //context.restore();
             }
 
             function drawSymbol(context, pt, scale) {
