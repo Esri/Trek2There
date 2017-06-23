@@ -71,10 +71,7 @@ Item {
 
     StackView.onDeactivated: {
         if (useExperimentalFeatures) {
-            console.log("---------------- StackView.onDeactivated stopCompass");
-            console.log("--------------------- compass.active: ", sensors.compass.active);
             sensors.stopCompass();
-            console.log("--------------------- compass.active: ", sensors.compass.active);
         }
         sensors.stopTiltSensor();
         sensors.stopRotationSensor();
@@ -86,10 +83,7 @@ Item {
         sensors.startRotationSensor();
 
         if (useExperimentalFeatures){
-            console.log("---------------- StackView.onActivating startCompass");
-            console.log("--------------------- compass.active: ", sensors.compass.active);
             sensors.startCompass();
-            console.log("--------------------- compass.active: ", sensors.compass.active);
         }
     }
 
@@ -104,29 +98,15 @@ Item {
     //--------------------------------------------------------------------------
 
     onStopUsingCompassForNavigationChanged: {
-        console.log("-------------------onStopUsingCompassForNavigationChanged")
         if(useExperimentalFeatures){
-             console.log("-------------------if useCompass")
             if (stopUsingCompassForNavigation) {
-                console.log("-------------------stopUsingCompassForNavigation")
-                console.log("--------------------- compass.active: ", sensors.compass.active);
                 sensors.stopCompass();
-                console.log("--------------------- compass.active: ", sensors.compass.active);
             }
             else {
-                console.log("------------------- !stopUsingCompassForNavigation")
-                console.log("--------------------- compass.active: ", sensors.compass.active);
                sensors.startCompass();
-                console.log("--------------------- compass.active: ", sensors.compass.active);
-
             }
         }
     }
-
-    onCurrentSpeedChanged: {
-        console.log("--------------currentSppeed: ", currentSpeed);
-    }
-
 
     // UI //////////////////////////////////////////////////////////////////////
 
@@ -222,7 +202,7 @@ Item {
                 context.rect(offsetx, offsety, scalex, scaley);
                 context.clip();
 
-                var height = Math.ceil(100 * scale);
+                var height = Math.ceil(sf(70) * scale);
                 var centeredY = pt.y - (height / 2);
                 var centeredX = pt.x - (height / 2);
                 context.drawImage(mapPin.source, centeredX, centeredY, height, height);
@@ -1149,7 +1129,7 @@ Item {
 
         if (useExperimentalFeatures) {
             overlay.clearCanvas();
-            var scale = (10000 - distance) / 10000 < .3 ? .3 : (10000 - distance) / 10000;
+            var scale = (10000 - distance) / 10000 < .4 ? .4 : (10000 - distance) / 10000;
             var viewCoords = toScreenCoord(pointInPlane);
             if (viewCoords !== null) {
                overlay.drawSymbol(overlay.getContext("2d"), viewCoords, scale);
