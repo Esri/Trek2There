@@ -202,8 +202,8 @@ Item {
                 context.rect(offsetx, offsety, scalex, scaley);
                 context.clip();
 
-                var height = Math.ceil(sf(70) * scale);
-                var centeredY = pt.y - (height / 2);
+                var height = Math.ceil(sf(50) * scale);
+                var centeredY = overlay.height / 2 - height; // pt.y - height;
                 var centeredX = pt.x - (height / 2);
                 context.drawImage(mapPin.source, centeredX, centeredY, height, height);
                 context.restore();
