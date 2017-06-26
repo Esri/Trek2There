@@ -74,12 +74,14 @@ Item {
             sensors.stopCompass();
         }
         sensors.stopTiltSensor();
+        sensors.stopOrientationSensor();
         sensors.stopRotationSensor();
         camera.stop();
     }
 
     StackView.onActivating: {
         sensors.startTiltSensor();
+        sensors.startOrientationSensor();
         sensors.startRotationSensor();
 
         if (useExperimentalFeatures){
@@ -198,9 +200,9 @@ Item {
                 clearCanvas();
                 requestPaint();
 
-                context.beginPath();
-                context.rect(offsetx, offsety, scalex, scaley);
-                context.clip();
+//                context.beginPath();
+//                context.rect(offsetx, offsety, scalex, scaley);
+//                context.clip();
 
                 var height = Math.ceil(sf(50) * scale);
                 var centeredY = overlay.height / 2 - height; // pt.y - height;
@@ -961,7 +963,10 @@ Item {
 
         onRollAngleChanged: updateRoll()
 
-        onOrientationChanged: {}
+        onOrientationChanged: {
+
+
+        }
 
         function updateBearing() {
             if (sensors.azimuthFromTrueNorth) {
@@ -973,6 +978,7 @@ Item {
 
         function updatePitch() {
             if (sensors.pitchAngle) {
+                //viewData.devicePitch =  sensors.pitchAngle;
                 viewData.devicePitch = 0; // sensors.pitchAngle;
             }
         }
