@@ -27,8 +27,11 @@ import "IconFont"
 App {
 
     id: app
-    width: 480
-    height: 640
+
+    readonly property real windowScaleFactor: !(Qt.platform.os === "windows" || Qt.platform.os === "unix" || Qt.platform.os === "linux") ? 1 : AppFramework.displayScaleFactor
+
+    width: 480 * windowScaleFactor
+    height: 640 * windowScaleFactor
 
     Accessible.role: Accessible.Window
 
