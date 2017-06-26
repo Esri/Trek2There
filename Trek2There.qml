@@ -213,26 +213,26 @@ App {
             var lat = "";
             var lon = "";
 
-            if(AppFramework.clipboard.dataAvailable && listenToClipboard){
-                try{
+            if (AppFramework.clipboard.dataAvailable && listenToClipboard) {
+                try {
                     var inJson = JSON.parse(AppFramework.clipboard.text);
-                    if(inJson.hasOwnProperty("latitude") && inJson.hasOwnProperty("longitude")){
+                    if (inJson.hasOwnProperty("latitude") && inJson.hasOwnProperty("longitude")) {
                         lat = inJson.latitude.toString().trim();
                         lon = inJson.longitude.toString().trim();
                     }
                 }
-                catch(e){
-                    if(e.toString().indexOf("JSON.parse: Parse error") > -1){
+                catch(e) {
+                    if (e.toString().indexOf("JSON.parse: Parse error") > -1) {
                         var incoords = AppFramework.clipboard.text.split(',');
-                        if(incoords.length === 2){
+                        if (incoords.length === 2) {
                             lat = incoords[0].toString().trim();
                             lon = incoords[1].toString().trim();
                         }
                     }
                 }
-                finally{
-                    if(lat !== "" && lon !== ""){
-                        if(validCoordinates(lat, lon)){
+                finally {
+                    if (lat !== "" && lon !== "") {
+                        if (validCoordinates(lat, lon)) {
                             appClipboard.inLat = lat;
                             appClipboard.inLon = lon;
                             clipboardDialog.clipLat = lat;

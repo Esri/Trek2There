@@ -69,6 +69,10 @@ Item {
 
     //--------------------------------------------------------------------------
 
+    Component.onCompleted: {
+        selectBackCamera();
+    }
+
     StackView.onDeactivated: {
         if (useExperimentalFeatures) {
             sensors.stopCompass();
@@ -173,6 +177,8 @@ Item {
 
             captureMode: Camera.CaptureStillImage
             flash.mode: Camera.FlashRedEyeReduction
+
+            position: Camera.BackFace
         }
 
         //------------------------------------------------------------------
@@ -1189,5 +1195,30 @@ Item {
 
     function turnHudOn(){
         fadeArrowViewOut.start();
+    }
+
+    // -------------------------------------------------------------------------
+
+    function selectBackCamera() {
+        var cameras = QtMultimedia.availableCameras;
+
+        for (var i = 0; i < cameras.length; i++) {
+            var cameraInfo = cameras[i];
+
+            // console.log("cameraInfo:", i, JSON.stringify(cameraInfo, undefined, 2));
+
+            var displayName = cameraInfo.displayName.toLowerCase();
+            var deviceId = cameraInfo.deviceId.toLowerCase();
+
+            if (cameraInfo.position === Camera.BackFace ||
+                    displayName.indexOf("rear") >= 0 ||
+                    displayName.indexOf("back") >= 0 ||
+                    deviceId.indexOf("rear") >= 0 ||
+                    deviceId.indexOf("back") >= 0) {
+                camera.deviceId = cameraInfo.deviceId;
+
+                break;
+            }
+        }
     }
 }
