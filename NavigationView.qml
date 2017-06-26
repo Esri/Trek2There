@@ -964,7 +964,12 @@ Item {
         onRollAngleChanged: updateRoll()
 
         onOrientationChanged: {
-
+            if(sensors.orientation === OrientationReading.LeftUp || sensors.orientation === OrientationReading.RightUp){
+                overlay.visible = false;
+            }
+            else {
+                overlay.visible = true;
+            }
 
         }
 
