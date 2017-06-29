@@ -1,17 +1,23 @@
 {
+    "arcgisRuntime": 0,
     "capabilities": {
         "audio": false,
+        "backgroundLocation": false,
         "bluetooth": false,
-        "camera": false,
+        "camera": true,
+        "localnotification": false,
         "location": true,
         "microphone": false,
         "network": true,
-        "storage": true
+        "storage": true,
+        "vibration": false
     },
     "deployment": {
         "android": {
             "packageName": "com.esri.trek2there"
         },
+        "arcgisRuntimeExtensionsLicense": "",
+        "arcgisRuntimeLicense": "",
         "clientId": "com.esri.trek2there",
         "ios": {
             "bundleId": "com.esri.trek2there",
@@ -47,6 +53,15 @@
         "APPSTUDIO_POSITION_ACTIVITY_MODE": "NAVIGATION",
         "APPSTUDIO_POSITION_DESIRED_ACCURACY": "HIGHEST"
     },
+    "launchUrlSchemes": [
+        "arcgis-appstudio-player",
+        "arcgis-collector",
+        "arcgis-trek2there",
+        "arcgis-explorer",
+        "arcgis-navigator",
+        "arcgis-workforce",
+        "arcgis-survey123"
+    ],
     "mainFile": "Trek2There.qml",
     "projectFile": "Trek2There.qmlproject",
     "properties": {
@@ -61,8 +76,8 @@
     "type": "app",
     "urlScheme": "arcgis-trek2there",
     "version": {
-        "major": 1,
-        "micro": 13,
-        "minor": 1
+        "major": 2,
+        "micro": 301,
+        "minor": 0
     }
 }

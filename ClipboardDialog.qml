@@ -14,7 +14,7 @@
  *
  */
 
-import QtQuick 2.5
+import QtQuick 2.8
 import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.4
 import QtQuick.Dialogs 1.2
@@ -38,8 +38,8 @@ Dialog {
 
     contentItem:  Rectangle{
 
-        width: 300 * AppFramework.displayScaleFactor
-        height: 250 * AppFramework.displayScaleFactor
+        width: sf(300)
+        height: sf(250)
         color: "#fff"
 
         ColumnLayout{
@@ -51,7 +51,7 @@ Dialog {
                 Accessible.role: Accessible.Pane
                 Text{
                     anchors.fill: parent
-                    anchors.margins: 5 * AppFramework.displayScaleFactor
+                    anchors.margins: sf(5)
                     text: qsTr("It looks like you copied coordinates to the clipboard. Do you want to use them in Trek2There?")
                     wrapMode: Text.WordWrap
                     font.pointSize: 15
@@ -68,7 +68,7 @@ Dialog {
 
                 RowLayout{
                     anchors.fill: parent
-                    anchors.margins: 5 * AppFramework.displayScaleFactor
+                    anchors.margins: sf(5)
                     spacing: 0
 
                     Rectangle{
@@ -103,7 +103,7 @@ Dialog {
                                 id: swapError
                                 Layout.fillHeight: true
                                 Layout.fillWidth: true
-                                Layout.margins: 5 * AppFramework.displayScaleFactor
+                                Layout.margins: sf(5)
                                 Layout.bottomMargin: 0
                                 messageType: swapError.error
                                 message: qsTr("Invalid coordinate swap.")
@@ -120,8 +120,8 @@ Dialog {
 
                     Rectangle{
                         Layout.fillHeight: true
-                        Layout.preferredWidth: 50 * AppFramework.displayScaleFactor
-                        radius: 5 * AppFramework.displayScaleFactor
+                        Layout.preferredWidth: sf(50)
+                        radius: sf(5)
                         Accessible.role: Accessible.Pane
 
                         Button{
@@ -131,8 +131,8 @@ Dialog {
                                 background: Rectangle{
                                     color: "transparent"
                                     anchors.fill: parent
-                                    radius: 5 * AppFramework.displayScaleFactor
-                                    border.width: 1 * AppFramework.displayScaleFactor
+                                    radius: sf(5)
+                                    border.width: sf(1)
                                     border.color: buttonTextColor
                                 }
                             }
@@ -173,8 +173,8 @@ Dialog {
 
             Rectangle{
                 Layout.fillWidth: true
-                Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
-                Layout.margins: 5 * AppFramework.displayScaleFactor
+                Layout.preferredHeight: sf(50)
+                Layout.margins: sf(5)
                 Accessible.role: Accessible.Pane
 
                 RowLayout{
@@ -188,8 +188,8 @@ Dialog {
                             background: Rectangle{
                                 color: "transparent"
                                 anchors.fill: parent
-                                radius: 5 * AppFramework.displayScaleFactor
-                                border.width: 1 * AppFramework.displayScaleFactor
+                                radius: sf(5)
+                                border.width: sf(1)
                                 border.color: buttonTextColor
                             }
                         }
@@ -218,8 +218,8 @@ Dialog {
                             background: Rectangle{
                                 color: "transparent"
                                 anchors.fill: parent
-                                radius: 5 * AppFramework.displayScaleFactor
-                                border.width: 1 * AppFramework.displayScaleFactor
+                                radius: sf(5)
+                                border.width: sf(1)
                                 border.color: buttonTextColor
                             }
                         }

@@ -14,7 +14,7 @@
  *
  */
 
-import QtQuick 2.5
+import QtQuick 2.8
 import QtQuick.Window 2.0
 import QtPositioning 5.4
 //------------------------------------------------------------------------------
@@ -27,8 +27,11 @@ import "IconFont"
 App {
 
     id: app
-    width: 480
-    height: 640
+
+    readonly property real windowScaleFactor: !(Qt.platform.os === "windows" || Qt.platform.os === "unix" || Qt.platform.os === "linux") ? 1 : AppFramework.displayScaleFactor
+
+    width: 480 * windowScaleFactor
+    height: 640 * windowScaleFactor
 
     Accessible.role: Accessible.Window
 
@@ -38,6 +41,7 @@ App {
     property bool showSafetyWarning: app.settings.boolValue("showSafetyWarning", true)
     property bool nightMode: app.settings.boolValue("nightMode", false)
     property bool listenToClipboard: app.settings.boolValue("listenToClipboard", true)
+    property bool useExperimentalFeatures: app.settings.boolValue("useExperimentalFeatures", false)
 
     property RegExpValidator latitudeValidator: RegExpValidator { regExp: /^[-]?90$|^[-]?[1-8][0-9](\.\d{1,})?$|^[-]?[1-9](\.\d{1,})?$/g }
     property RegExpValidator longitudeValidator: RegExpValidator { regExp: /^[-]?180$|^[-]?1[0-7][0-9](\.\d{1,})?$|^[-]?[1-9][0-9](\.\d{1,})?$|^[-]?[1-9](\.\d{1,})?$/g }
@@ -53,7 +57,7 @@ App {
     property bool isLandscape: (Screen.primaryOrientation === 2) ? true : false
     property bool useDirectionOfTravelCircle: true
 
-    property var requestedDestination: null
+    property var requestedDestination: null //QtPositioning.coordinate(23,45) //null
     property var openParameters: null
     property string callingApplication: ""
     property string applicationCallback: ""
@@ -70,7 +74,8 @@ App {
 
     Component.onCompleted: {
         fileFolder.makePath(localStoragePath);
-        AppFramework.offlineStoragePath = fileFolder.path + "/ArcGIS/My Treks"
+        AppFramework.offlineStoragePath = fileFolder.path + "/ArcGIS/My Treks";
+        console.log("------------------------------- Component.onCompleted useExperimentalFeatures: ", useExperimentalFeatures);
     }
 
     // COMPONENTS //////////////////////////////////////////////////////////////
@@ -97,8 +102,8 @@ App {
     ClipboardDialog{
         id: clipboardDialog
 
-        width: 300 * AppFramework.displayScaleFactor
-        height: 200 * AppFramework.displayScaleFactor
+        width: sf(300)
+        height: sf(200)
 
         clipLat: appClipboard.inLat
         clipLon: appClipboard.inLon
@@ -156,6 +161,12 @@ App {
         app.settings.setValue("logTreks", logTreks);
     }
 
+    //--------------------------------------------------------------------------
+
+    onUseExperimentalFeaturesChanged: {
+        app.settings.setValue("useExperimentalFeatures", useExperimentalFeatures);
+    }
+
     // FUNCTIONS ///////////////////////////////////////////////////////////////
 
     function localeIsMetric(){
@@ -172,12 +183,18 @@ App {
     //--------------------------------------------------------------------------
 
     function validCoordinates(lat,lon){
-        if(lon.search(longitudeValidator.regExp) > -1 && lat.search(latitudeValidator.regExp) > -1){
+        if (lon.search(longitudeValidator.regExp) > -1 && lat.search(latitudeValidator.regExp) > -1){
             return true;
         }
-        else{
+        else {
             return false;
         }
+    }
+
+    //--------------------------------------------------------------------------
+
+    function sf(val){
+        return val * AppFramework.displayScaleFactor;
     }
 
     // CONNECTIONS /////////////////////////////////////////////////////////////
@@ -196,26 +213,26 @@ App {
             var lat = "";
             var lon = "";
 
-            if(AppFramework.clipboard.dataAvailable && listenToClipboard){
-                try{
+            if (AppFramework.clipboard.dataAvailable && listenToClipboard) {
+                try {
                     var inJson = JSON.parse(AppFramework.clipboard.text);
-                    if(inJson.hasOwnProperty("latitude") && inJson.hasOwnProperty("longitude")){
+                    if (inJson.hasOwnProperty("latitude") && inJson.hasOwnProperty("longitude")) {
                         lat = inJson.latitude.toString().trim();
                         lon = inJson.longitude.toString().trim();
                     }
                 }
-                catch(e){
-                    if(e.toString().indexOf("JSON.parse: Parse error") > -1){
+                catch(e) {
+                    if (e.toString().indexOf("JSON.parse: Parse error") > -1) {
                         var incoords = AppFramework.clipboard.text.split(',');
-                        if(incoords.length === 2){
+                        if (incoords.length === 2) {
                             lat = incoords[0].toString().trim();
                             lon = incoords[1].toString().trim();
                         }
                     }
                 }
-                finally{
-                    if(lat !== "" && lon !== ""){
-                        if(validCoordinates(lat, lon)){
+                finally {
+                    if (lat !== "" && lon !== "") {
+                        if (validCoordinates(lat, lon)) {
                             appClipboard.inLat = lat;
                             appClipboard.inLon = lon;
                             clipboardDialog.clipLat = lat;

@@ -14,7 +14,7 @@
  *
  */
 
-import QtQuick 2.5
+import QtQuick 2.8
 import QtQuick.Window 2.0
 
 Item {

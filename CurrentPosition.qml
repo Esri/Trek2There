@@ -14,11 +14,9 @@
  *
  */
 
-import QtQuick 2.5
-import QtQuick.Controls 1.4
-import QtQuick.Layouts 1.1
-import QtPositioning 5.3
-import QtLocation 5.3
+import QtQuick 2.8
+import QtPositioning 5.8
+import QtLocation 5.8
 
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Controls 1.0
@@ -33,6 +31,8 @@ QtObject {
     property var destinationCoordinate: null
     property var position
     property var positionCoordinate
+
+    property bool usingCompass: false
 
     property KalmanCoordinate kalmanCoord: KalmanCoordinate{}
     property double kalmanLat
@@ -57,7 +57,9 @@ QtObject {
     // SIGNALS /////////////////////////////////////////////////////////////////
 
     onPositionChanged: {
-        calculate();
+        if(position.coordinate.isValid){
+            calculate();
+        }
     }
 
     //--------------------------------------------------------------------------
@@ -80,7 +82,7 @@ QtObject {
 
         positionCoordinate = position.coordinate;
 
-        if(useKalman === true){
+        if (useKalman === true) {
             var accuracy = (position.horizontalAccuracyValid === true) ? position.horizontalAccuracy : 0;
             var newCoord = kalmanCoord.process(positionCoordinate.latitude, positionCoordinate.longitude, accuracy, new Date().valueOf());
             kalmanLat = newCoord[0];
@@ -90,33 +92,40 @@ QtObject {
 
         distanceToDestination = positionCoordinate.distanceTo(destinationCoordinate);
 
-        if(distanceToDestination < arrivalThresholdInMeters ){
-            atDestination();
-        }
+        // Disabled arrival by distance logic for this version.
+
+//        if (distanceToDestination < arrivalThresholdInMeters ) {
+//            atDestination();
+//        }
 
         azimuthToDestination = positionCoordinate.azimuthTo(destinationCoordinate);
 
-        if (position.speedValid && position.speed > 0) {
-            etaSeconds = distanceToDestination / position.speed;
-            arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * (position.speed / minimumAnticipatedSpeed);
-            etaToDestination = new Date((new Date().valueOf()) + etaSeconds * 1000);
-            if(etaSeconds < arrivalThresholdInSeconds){
-                atDestination();
+        // Disabled arrival by speed logic for this version.
+
+//        if (position.speedValid && position.speed > 0) {
+//            etaSeconds = distanceToDestination / position.speed;
+//            arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * (position.speed / minimumAnticipatedSpeed);
+//            etaToDestination = new Date((new Date().valueOf()) + etaSeconds * 1000);
+//            if (etaSeconds < arrivalThresholdInSeconds) {
+//                atDestination();
+//            }
+//        }
+//        else {
+//            etaSeconds = -1;
+//            arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * 2;
+//            etaToDestination = new Date();
+//        }
+
+        if (!usingCompass) {
+            if (position.directionValid) {
+                degreesOffCourse = (azimuthToDestination - position.direction);
             }
-        } else {
-            etaSeconds = -1;
-            arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * 2;
-            etaToDestination = new Date();
+            else {
+                degreesOffCourse = 0;
+            }
         }
 
-        if (position.directionValid) {
-            degreesOffCourse = (azimuthToDestination - position.direction);
-        }
-        else{
-            degreesOffCourse = 0;
-        }
-
-        if(logTreks){
+        if (logTreks) {
             // [timestamp, pos_lat, pos_long, pos_dir, klat, klong, az_to, dist_to, degrees_off]
             trekLogger.recordPosition([
                                           Date().valueOf(),
