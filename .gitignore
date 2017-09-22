@@ -46,3 +46,4 @@ appinfo.user
 appmetrics.json
 
 *.qmlc
+*.jsc
