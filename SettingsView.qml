@@ -88,13 +88,12 @@ Item {
                             }
 
                             onClicked: {
-                                var previousItem = mainStackView.get( settingsView.StackView.index - 1 );
                                 if(destinationLatitude.acceptableInput && destinationLongitude.acceptableInput){
                                     requestedDestination = (destinationLatitude.length > 0  && destinationLongitude.length > 0) ? QtPositioning.coordinate(destinationLatitude.text, destinationLongitude.text) : null;
                                 }
                                 Qt.inputMethod.hide();
 
-                                mainStackView.push( previousItem );
+                                mainStackView.pop();
                             }
 
                             Accessible.role: Accessible.Button

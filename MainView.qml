@@ -26,28 +26,21 @@ Item {
 
     StackView {
         id: mainStackView
+
         anchors.fill: parent
         Layout.fillWidth: true
         Layout.fillHeight: true
+
         // initialItem: (showSafetyWarning === true || safteyWarningAccepted === false) ? disclaimerView : navigationView // disabled for v1.0
         initialItem: disclaimerView
     }
 
     //--------------------------------------------------------------------------
 
-    Component{
-          id: navigationView
-          NavigationView{
-              Layout.fillHeight: true
-              Layout.fillWidth: true
-          }
-      }
-
-    //--------------------------------------------------------------------------
-
-    Component{
+    Component {
           id: disclaimerView
-          DisclaimerView{
+
+          DisclaimerView {
               Layout.fillHeight: true
               Layout.fillWidth: true
           }
@@ -55,9 +48,21 @@ Item {
 
     //--------------------------------------------------------------------------
 
-    Component{
+    Component {
+          id: navigationView
+
+          NavigationView {
+              Layout.fillHeight: true
+              Layout.fillWidth: true
+          }
+      }
+
+    //--------------------------------------------------------------------------
+
+    Component {
         id: settingsView
-        SettingsView{
+
+        SettingsView {
             Layout.fillHeight: true
             Layout.fillWidth: true
         }
@@ -65,14 +70,14 @@ Item {
 
     //--------------------------------------------------------------------------
 
-    Component{
+    Component {
         id: aboutView
-        AboutView{
+
+        AboutView {
             Layout.fillHeight: true
             Layout.fillWidth: true
         }
     }
 
     //--------------------------------------------------------------------------
-
 }
