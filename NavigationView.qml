@@ -259,99 +259,86 @@ Item {
             visible: requestedDestination !== null
 
             Item {
-                Layout.fillWidth: true
+                Layout.preferredHeight: statusMessageContainer.height
+            }
+
+            // ---------------------------------------------------------
+
+            Item {
+                id: directionUI
                 Layout.fillHeight: true
+                Layout.fillWidth: true
+                property int imageScaleFactor: 40 * AppFramework.displayScaleFactor
                 Accessible.role: Accessible.Pane
 
-                ColumnLayout {
+                Item {
                     anchors.fill: parent
-                    spacing: 0
+                    z: 99
                     Accessible.role: Accessible.Pane
 
-                    Item {
-                        Layout.preferredHeight: statusMessageContainer.height
+                    Image {
+                        id: directionOfTravel
+                        anchors.centerIn: parent
+                        height: isLandscape ? parent.height : parent.height - directionUI.imageScaleFactor
+                        width: isLandscape ? parent.width : parent.width - directionUI.imageScaleFactor
+                        source: "images/direction_of_travel_circle.png"
+                        fillMode: Image.PreserveAspectFit
+                        visible: useDirectionOfTravelCircle && !noPositionSource
+                        Accessible.ignored: true
                     }
 
-                    // ---------------------------------------------------------
-
-                    Item {
-                        id: directionUI
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        property int imageScaleFactor: 40 * AppFramework.displayScaleFactor
-                        Accessible.role: Accessible.Pane
-
-                        Item {
-                            anchors.fill: parent
-                            z: 99
-                            Accessible.role: Accessible.Pane
-
-                            Image {
-                                id: directionOfTravel
-                                anchors.centerIn: parent
-                                height: isLandscape ? parent.height : parent.height - directionUI.imageScaleFactor
-                                width: isLandscape ? parent.width : parent.width - directionUI.imageScaleFactor
-                                source: "images/direction_of_travel_circle.png"
-                                fillMode: Image.PreserveAspectFit
-                                visible: useDirectionOfTravelCircle && !noPositionSource
-                                Accessible.ignored: true
-                            }
-
-                            Image {
-                                id: directionArrow
-                                anchors.centerIn: parent
-                                source: !nightMode ? "images/arrow_day.png" : "images/arrow_night.png"
-                                width: isLandscape ? parent.width - directionUI.imageScaleFactor : parent.width - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
-                                height: isLandscape ? parent.height - directionUI.imageScaleFactor : parent.height - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
-                                fillMode: Image.PreserveAspectFit
-                                rotation: currentDegreesOffCourse
-                                opacity: 1
-                                visible: !noPositionSource
-                                Accessible.role: Accessible.Indicator
-                                Accessible.name: qsTr("Direction of travel is: %1".arg(rotation.toString()))
-                                Accessible.description: qsTr("This arrow points toward the direction the user should travel. The degree is based off of the top of the device being the current bearing of travel.")
-                                Accessible.ignored: arrivedAtDestination
-                            }
-
-                            Image {
-                                id: arrivedIcon
-                                anchors.centerIn: parent
-                                source: !nightMode ? "images/map_pin_day.png" : "images/map_pin_night.png"
-                                width: isLandscape ? parent.width - directionUI.imageScaleFactor : parent.width - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
-                                height: isLandscape ? parent.height - directionUI.imageScaleFactor : parent.height - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
-                                fillMode: Image.PreserveAspectFit
-                                rotation: 0
-                                visible: false
-                                Accessible.role: Accessible.AlertMessage
-                                Accessible.name: qsTr("Arrived at destination")
-                                Accessible.description: qsTr("You have arrived at your destination")
-                                Accessible.ignored: navigating
-                            }
-
-                            Image {
-                                id: noSignalIndicator
-                                anchors.centerIn: parent
-                                height: isLandscape ? parent.height : parent.height - directionUI.imageScaleFactor
-                                width: isLandscape ? parent.width : parent.width - directionUI.imageScaleFactor
-                                source: "images/no_signal.png"
-                                visible: noPositionSource && !arrivedAtDestination
-                                fillMode: Image.PreserveAspectFit
-                                Accessible.role: Accessible.Indicator
-                                Accessible.name: qsTr("There is no signal")
-                            }
-                        }
+                    Image {
+                        id: directionArrow
+                        anchors.centerIn: parent
+                        source: !nightMode ? "images/arrow_day.png" : "images/arrow_night.png"
+                        width: isLandscape ? parent.width - directionUI.imageScaleFactor : parent.width - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
+                        height: isLandscape ? parent.height - directionUI.imageScaleFactor : parent.height - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
+                        fillMode: Image.PreserveAspectFit
+                        rotation: currentDegreesOffCourse
+                        opacity: 1
+                        visible: !noPositionSource
+                        Accessible.role: Accessible.Indicator
+                        Accessible.name: qsTr("Direction of travel is: %1".arg(rotation.toString()))
+                        Accessible.description: qsTr("This arrow points toward the direction the user should travel. The degree is based off of the top of the device being the current bearing of travel.")
+                        Accessible.ignored: arrivedAtDestination
                     }
 
-                    // ---------------------------------------------------------
-
-                    Item {
-                        Layout.preferredHeight: distanceReadoutContainer.height + toolbar.height
+                    Image {
+                        id: arrivedIcon
+                        anchors.centerIn: parent
+                        source: !nightMode ? "images/map_pin_day.png" : "images/map_pin_night.png"
+                        width: isLandscape ? parent.width - directionUI.imageScaleFactor : parent.width - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
+                        height: isLandscape ? parent.height - directionUI.imageScaleFactor : parent.height - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
+                        fillMode: Image.PreserveAspectFit
+                        rotation: 0
+                        visible: false
+                        Accessible.role: Accessible.AlertMessage
+                        Accessible.name: qsTr("Arrived at destination")
+                        Accessible.description: qsTr("You have arrived at your destination")
+                        Accessible.ignored: navigating
                     }
 
-                    // ---------------------------------------------------------
-
+                    Image {
+                        id: noSignalIndicator
+                        anchors.centerIn: parent
+                        height: isLandscape ? parent.height : parent.height - directionUI.imageScaleFactor
+                        width: isLandscape ? parent.width : parent.width - directionUI.imageScaleFactor
+                        source: "images/no_signal.png"
+                        visible: noPositionSource && !arrivedAtDestination
+                        fillMode: Image.PreserveAspectFit
+                        Accessible.role: Accessible.Indicator
+                        Accessible.name: qsTr("There is no signal")
+                    }
                 }
             }
+
+            // ---------------------------------------------------------
+
+            Item {
+                Layout.preferredHeight: distanceReadoutContainer.height + toolbar.height
+            }
+
+            // ---------------------------------------------------------
         }
     }
 
