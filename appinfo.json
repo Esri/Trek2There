@@ -41,6 +41,7 @@
         }
     },
     "devicesTypes": [
+        "desktop",
         "tablet",
         "phone"
     ],
