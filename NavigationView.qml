@@ -42,7 +42,6 @@ Item {
     property bool autohideToolbar: true
     property bool noPositionSource: false
     property double currentDistance: 0.0
-    property double currentDegreesOffCourse: 0
     property int currentAccuracy: 0
     property int currentAccuracyInUnits: 0
     property int sideMargin: 14 * AppFramework.displayScaleFactor
@@ -277,7 +276,7 @@ Item {
                     Accessible.role: Accessible.Pane
 
                     Image {
-                        id: directionOfTravel
+                        id: directionOfTravelCircle
                         anchors.centerIn: parent
                         height: isLandscape ? parent.height : parent.height - directionUI.imageScaleFactor
                         width: isLandscape ? parent.width : parent.width - directionUI.imageScaleFactor
@@ -294,7 +293,7 @@ Item {
                         width: isLandscape ? parent.width - directionUI.imageScaleFactor : parent.width - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
                         height: isLandscape ? parent.height - directionUI.imageScaleFactor : parent.height - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
                         fillMode: Image.PreserveAspectFit
-                        rotation: currentDegreesOffCourse
+                        rotation: 0
                         opacity: 1
                         visible: !noPositionSource
                         Accessible.role: Accessible.Indicator
