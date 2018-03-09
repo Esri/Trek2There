@@ -75,7 +75,7 @@
         "arcgis-survey123"
     ],
     "mainFile": "Trek2There.qml",
-    "multipleInstances": true,
+    "multipleInstances": false,
     "projectFile": "Trek2There.qmlproject",
     "properties": {
     },
