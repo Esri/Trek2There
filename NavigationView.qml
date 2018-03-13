@@ -435,85 +435,6 @@ Item {
                     Accessible.name: message
                 }
             }
-
-            Item {
-                Layout.fillHeight: true
-                Layout.preferredWidth: sf(20)
-
-                Text {
-                    id: deviceIndicator
-                    anchors.fill: parent
-                    anchors.centerIn: parent
-                    text: useExperimentalFeatures && sensors.compass.active ? "CMP" : "GPS"
-                    color: navigating ? buttonTextColor : "#aaa"
-                    font.pointSize: 10
-                }
-            }
-
-            Item {
-                id: locationAccuracyContainer
-                Layout.preferredWidth: sf(30)
-                Layout.leftMargin: sf(10)
-                Layout.fillHeight: true
-
-                Accessible.role: Accessible.Indicator
-                Accessible.name: qsTr("Location Accuracy Indicator")
-                Accessible.description: qsTr("Location accuracy is denoted on a scale of 1 to 5, with 1 being lowest and 5 being highest. Current location accuracy is rated %1".arg(currentAccuracy))
-
-                ColumnLayout {
-                    anchors.fill: parent
-
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        color: "transparent"
-
-                        Text {
-                            id: locationAccuracyIndicator
-                            text: currentAccuracy > 0 ? icons.getIconByName("accuracy" + currentAccuracy.toString()) : ""
-                            color: buttonTextColor
-                            opacity: 1
-                            anchors.centerIn: parent
-                            font.family: icons.name
-                            font.pointSize: 24
-                            visible: currentAccuracy > 0
-                            z: locationAccuracyBaseline.z + 1
-                            Accessible.ignored: true
-                        }
-
-                        Text {
-                            id: locationAccuracyBaseline
-                            text: icons.accuracy_indicator
-                            color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
-                            opacity: .4
-                            anchors.centerIn: parent
-                            font.family: icons.name
-                            font.pointSize: 24
-                            Accessible.ignored: true
-                            z: 100
-                        }
-                    }
-
-                    Item {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: sf(15)
-                        Text {
-                            id: accuracyInUnits
-                            text: currentAccuracy > 0 ? "<p>&plusmn;%1%2</p>".arg(currentAccuracyInUnits.toString()).arg(usesMetric ? "m" : "ft") : "----"
-                            color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
-                            font.pointSize: 10
-                            opacity: currentAccuracy > 0 ? 1 : .4
-                            anchors.centerIn: parent
-                            textFormat: Text.RichText
-
-                            Accessible.role: Accessible.Indicator
-                            Accessible.name: qsTr("Accuracy in units is: %1".arg(text))
-                            Accessible.description: qsTr("This denotes the current location accuracy in units rounded upward to the nearest %1".arg(usesMetric ? "meter" : "foot"))
-                        }
-                    }
-
-                }
-            }
         }
     }
 
@@ -521,26 +442,133 @@ Item {
 
     Item {
         id: distanceReadoutContainer
+
         width: parent.width
         height: sf(100)
         anchors.bottom: toolbar.top
         Accessible.role: Accessible.Pane
 
-        Text {
-            id: distanceReadout
+        ColumnLayout {
             anchors.fill: parent
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            text: displayDistance(currentDistance.toString())
-            font.pointSize: extraLargeFontSize
-            font.weight: Font.Light
-            fontSizeMode: Text.Fit
-            minimumPointSize: largeFontSize
-            color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-            visible: requestedDestination !== null
-            Accessible.role: Accessible.Indicator
-            Accessible.name: text
-            Accessible.description: qsTr("This value is the distance remaining between you and the destination")
+
+            Text {
+                id: distanceReadout
+
+                visible: requestedDestination !== null
+
+                Layout.fillWidth: true
+
+                text: displayDistance(currentDistance.toString())
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                font.pointSize: extraLargeFontSize
+                font.weight: Font.Light
+                fontSizeMode: Text.Fit
+                minimumPointSize: largeFontSize
+                color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+
+                Accessible.role: Accessible.Indicator
+                Accessible.name: text
+                Accessible.description: qsTr("This value is the distance remaining between you and the destination")
+            }
+
+            Item {
+                id: locationAccuracyContainer
+
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                Accessible.role: Accessible.Indicator
+                Accessible.name: qsTr("Location Accuracy Indicator")
+                Accessible.description: qsTr("Location accuracy is denoted on a scale of 1 to 5, with 1 being lowest and 5 being highest. Current location accuracy is rated %1".arg(currentAccuracy))
+
+                RowLayout {
+                    anchors.centerIn: parent
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    spacing: sf(0)
+
+                    Text {
+                        id: bearingReadout
+
+                        visible: requestedDestination !== null
+
+                        Layout.fillHeight: true
+
+                        text: qsTr("%1° %2").arg(Math.round((currentPosition.degreesOffCourse+360) % 360).toFixed(0)).arg(cardinalDirection(directionArrow.rotation))
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        font.pointSize: largeFontSize
+                        minimumPointSize: largeFontSize
+//                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                        color: buttonTextColor
+
+                        Accessible.role: Accessible.Indicator
+                        Accessible.name: text
+                        Accessible.description: qsTr("Bearing in degrees")
+                    }
+
+                    Rectangle {
+                        Layout.preferredWidth: sf(40)
+                        Layout.fillHeight: true
+                        color: "transparent"
+
+                        Text {
+                            id: locationAccuracyBaseline
+
+                            visible: requestedDestination !== null
+                            anchors.centerIn: parent
+
+                            text: icons.accuracy_indicator
+                            font.family: icons.name
+                            font.pointSize: 24
+                            color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
+                            opacity: .4
+                            z: 100
+
+                            Accessible.ignored: true
+                        }
+
+                        Text {
+                            id: locationAccuracyIndicator
+
+                            visible: locationAccuracyBaseline && currentAccuracy > 0
+                            anchors.centerIn: parent
+
+                            text: currentAccuracy > 0 ? icons.getIconByName("accuracy" + currentAccuracy.toString()) : ""
+                            font.family: icons.name
+                            font.pointSize: 24
+                            color: buttonTextColor
+                            opacity: 1
+                            z: locationAccuracyBaseline.z + 1
+
+                            Accessible.ignored: true
+                        }
+                    }
+
+                    Text {
+                        id: accuracyInUnits
+
+                        visible: requestedDestination !== null
+
+                        anchors.right: parent.right
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+
+                        text: currentAccuracy > 0 ? "<p>&plusmn;%1%2</p>".arg(currentAccuracyInUnits.toString()).arg(usesMetric ? "m" : "ft") : "----"
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        font.pointSize: largeFontSize
+                        opacity: currentAccuracy > 0 ? 1 : .4
+                        color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
+                        textFormat: Text.RichText
+
+                        Accessible.role: Accessible.Indicator
+                        Accessible.name: qsTr("Accuracy in units is: %1".arg(text))
+                        Accessible.description: qsTr("This denotes the current location accuracy in units rounded upward to the nearest %1".arg(usesMetric ? "meter" : "foot"))
+                    }
+                }
+            }
         }
     }
 
@@ -1169,6 +1197,48 @@ Item {
                 return "%1 km".arg((Math.round(distanceKm * 10) / 10).toLocaleString(locale, "f", distanceKm < 10 ? 1 : 0))
             }
         }
+    }
+
+    // -------------------------------------------------------------------------
+
+    function cardinalDirection(azimuth) {
+        var az = (azimuth + 360) % 360;
+
+        if (az > 348.75 || az <= 11.25) {
+            return qsTr("N");
+        } else if (az >  11.25 && az <=  33.75) {
+                return qsTr("NNE");
+        } else if (az >  33.75 && az <=  56.25) {
+                return qsTr("NE");
+        } else if (az >  56.25 && az <=  78.75) {
+                return qsTr("ENE");
+        } else if (az >  78.75 && az <= 101.25) {
+                return qsTr("E");
+        } else if (az > 101.25 && az <= 123.75) {
+                return qsTr("ESE");
+        } else if (az > 123.75 && az <= 146.25) {
+                return qsTr("SE");
+        } else if (az > 146.25 && az <= 168.75) {
+                return qsTr("SSE");
+        } else if (az > 168.75 && az <= 191.25) {
+                return qsTr("S");
+        } else if (az > 191.25 && az <= 213.75) {
+                return qsTr("SSW");
+        } else if (az > 213.75 && az <= 236.25) {
+                return qsTr("SW");
+        } else if (az > 236.25 && az <= 258.75) {
+                return qsTr("WSW");
+        } else if (az > 258.75 && az <= 281.25) {
+                return qsTr("W");
+        } else if (az > 281.25 && az <= 303.75) {
+                return qsTr("WNW");
+        } else if (az > 303.75 && az <= 326.25) {
+                return qsTr("NW");
+        } else if (az > 326.25 && az <= 348.75) {
+                return qsTr("NNW");
+        }
+
+        return "";
     }
 
     // -------------------------------------------------------------------------
