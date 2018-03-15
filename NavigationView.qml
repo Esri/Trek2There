@@ -54,9 +54,7 @@ Item {
     property double currentSpeed: 0.0
     property int kAzimuthRounding: 1
     property int kAzimuthFilterLength: 25
-    property Image mapPin: Image {
-         source: "images/map_pin_night.png"
-     }
+    property Image mapPin: Image { source: "images/map_pin_night.png" }
 
     // Signals /////////////////////////////////////////////////////////////////
 
@@ -69,6 +67,7 @@ Item {
     //--------------------------------------------------------------------------
 
     Component.onCompleted: {
+        Screen.orientationUpdateMask = Qt.PortraitOrientation | Qt.InvertedPortraitOrientation | Qt.LandscapeOrientation | Qt.InvertedLandscapeOrientation
         selectBackCamera();
     }
 
@@ -116,7 +115,7 @@ Item {
     // UI //////////////////////////////////////////////////////////////////////
 
     MouseArea {
-        id: viewTouchArea
+        id: mouseArea
         anchors.fill: parent
         enabled: autohideToolbar ? true : false
 
@@ -125,6 +124,16 @@ Item {
                 toolbar.opacity = 1;
                 toolbar.enabled = true;
                 hideToolbar.start();
+            }
+        }
+
+        onPressAndHold: {
+            if (!isAndroid && !isIOS) {
+                if (hudOn) {
+                    turnHudOff();
+                } else {
+                    turnHudOn();
+                }
             }
         }
 
@@ -137,27 +146,32 @@ Item {
         }
     }
 
-    // HUD View ------------------------------------------------------------
+    // Main View Container -----------------------------------------------------
 
-    Item {
-        id: hudView
+    Rectangle {
+        id: mainViewContainer
+
         anchors.fill: parent
-        visible: true
 
-        //------------------------------------------------------------------
+        color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+        Accessible.role: Accessible.Pane
+
+        // Background video in experimental mode -------------------------------
 
         VideoOutput {
             id: videoOutput
+
             anchors.fill: parent
+            visible: hudOn
+            enabled: useExperimentalFeatures
 
             source: camera
-
             fillMode: VideoOutput.PreserveAspectCrop
             autoOrientation: Qt.platform.os === "windows" ? false : true
             focus : visible
         }
 
-        //------------------------------------------------------------------
+        //----------------------------------------------------------------------
 
         Camera {
             id: camera
@@ -178,124 +192,181 @@ Item {
             flash.mode: Camera.FlashRedEyeReduction
 
             position: Camera.BackFace
+
+            onCameraStatusChanged: {
+                if (cameraStatus === Camera.ActiveStatus) {
+                    fadeHudIn.start();
+                }
+            }
+
+            Component.onCompleted: camera.stop()
         }
 
-        //------------------------------------------------------------------
+        // Resizable View Container ------------------------------------------------
 
-        Canvas {
-            id: overlay
-            anchors.fill: parent
-            clip: true
+        Item {
+            id: viewContainer
 
-            property int offsetx: videoOutput.contentRect.x
-            property int offsety: videoOutput.contentRect.y
-            property int scalex: videoOutput.contentRect.width
-            property int scaley: videoOutput.contentRect.height
+            x: 0
+            y: 0
+            width: parent.width
+            height: parent.height
 
-            onPaint: {
+            states: State {
+                name: "landscape"
+                when: isLandscape
+
+                PropertyChanges {
+                    target: viewContainer
+                    width: parent.width/2
+                }
             }
 
-            function clearCanvas(){
-                requestPaint();
-                var context = getContext("2d");
-                context.clearRect(0, 0, width, height);
+            transitions: Transition {
+                from: ""
+                to: "landscape"
+                reversible: true
+
+                NumberAnimation { properties: "width"; duration: 500; easing.type: Easing.InOutQuad }
             }
 
-            function drawSymbol(context, pt, scale) {
-                clearCanvas();
-                requestPaint();
-
-//                context.beginPath();
-//                context.rect(offsetx, offsety, scalex, scaley);
-//                context.clip();
-
-                var height = Math.ceil(sf(50) * scale);
-                var centeredY = overlay.height / 2 - height; // pt.y - height;
-                var centeredX = pt.x - (height / 2);
-                context.drawImage(mapPin.source, centeredX, centeredY, height, height);
-                context.restore();
-            }
-        }
-
-        //------------------------------------------------------------------
-
-        Rectangle {
-            y: distanceReadoutContainer.y - sf(130)
-            x: (distanceReadoutContainer.width / 2) - (width / 2)
-            z: 10000
-            visible: requestedDestination !== null
-            color: "green"
-            width: sf(200)
-            height: sf(200)
-            radius: 5
-            opacity: .8
-            transform: Rotation { origin.x: sf(100); origin.y: sf(100); axis { x: 1; y: 0 ; z: 0 } angle: 75 }
-
-            Image {
-                id: hudDirectionArrow
-                anchors.centerIn: parent
-                height: parent.height - sf(40)
-                fillMode: Image.PreserveAspectFit
-                source: "images/arrow_night.png"
-            }
-        }
-    }
-
-    // Arrow View --------------------------------------------------------------
-
-    Rectangle {
-        id: arrowView
-        anchors.fill: parent
-        visible: true
-        opacity: 1
-        color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-        Accessible.role: Accessible.Pane
-
-        ColumnLayout {
-            anchors.fill: parent
-            spacing: 0
-            Accessible.role: Accessible.Pane
-            visible: requestedDestination !== null
+            // HUD View ------------------------------------------------------------
 
             Item {
-                Layout.preferredHeight: statusMessageContainer.height
+                id: hudView
+
+                visible: useExperimentalFeatures
+                anchors.fill: parent
+
+                //------------------------------------------------------------------
+
+                Canvas {
+                    id: overlay
+
+                    visible: hudOn && requestedDestination !== null
+                    enabled: visible
+
+                    anchors.fill: parent
+                    clip: true
+
+                    property int offsetx: videoOutput.contentRect.x
+                    property int offsety: videoOutput.contentRect.y
+                    property int scalex: videoOutput.contentRect.width
+                    property int scaley: videoOutput.contentRect.height
+
+                    onPaint: {
+                    }
+
+                    function clearCanvas() {
+                        if (enabled) {
+                            requestPaint();
+                            var context = getContext("2d");
+                            context.clearRect(0, 0, width, height);
+                        }
+                    }
+
+                    function drawSymbol(context, pt, scale) {
+                        if (enabled) {
+                            clearCanvas();
+                            requestPaint();
+
+                            var size = Math.ceil(sf(50) * scale);
+                            var centeredY = overlay.height / 2 - size; // pt.y - size;
+                            var centeredX = pt.x - width / 2 - size/2;
+                            context.drawImage(mapPin.source, centeredX, centeredY, size, size);
+                            context.restore();
+                            console.log(offsetx, offsety, scalex, scaley, width, height, overlay.width, overlay.height, size)
+                        }
+                    }
+                }
+
+                //------------------------------------------------------------------
+
+                Rectangle {
+                    id: rect
+                    visible: hudOn && requestedDestination !== null
+                    enabled: visible
+
+                    width: sf(200)
+                    height: sf(200)
+
+                    x: parent.width/2 - width/2
+                    y: parent.height - height*0.66 - toolbar.height - (!isLandscape ? distanceReadoutContainer.height : 0)
+                    z: 10000
+
+                    radius: 5
+                    opacity: .8
+                    color: "green"
+                    transform: Rotation { origin.x: sf(100); origin.y: sf(100); axis { x: 1; y: 0 ; z: 0 } angle: 75 }
+
+                    Image {
+                        id: hudDirectionArrow
+
+                        anchors.centerIn: parent
+                        height: parent.height - sf(40)
+
+                        source: "images/arrow_night.png"
+                        fillMode: Image.PreserveAspectFit
+                    }
+                }
             }
 
-            // ---------------------------------------------------------
+            // Arrow View --------------------------------------------------------------
 
-            Item {
-                id: directionUI
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                property int imageScaleFactor: 40 * AppFramework.displayScaleFactor
+            ColumnLayout {
+                id: arrowView
+
+                anchors.fill: parent
+                visible: requestedDestination !== null
+                spacing: 0
+
                 Accessible.role: Accessible.Pane
 
+                // ---------------------------------------------------------
+
                 Item {
-                    anchors.fill: parent
-                    z: 99
+                    Layout.preferredHeight: statusMessageContainer.height
+                }
+
+                // ---------------------------------------------------------
+
+                Item {
+                    id: directionUI
+
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
                     Accessible.role: Accessible.Pane
+
+                    z: 99
+
+                    property int imageScaleFactor: 40 * AppFramework.displayScaleFactor
 
                     Image {
                         id: directionOfTravelCircle
+
+                        visible: useDirectionOfTravelCircle && !noPositionSource
                         anchors.centerIn: parent
                         height: isLandscape ? parent.height : parent.height - directionUI.imageScaleFactor
                         width: isLandscape ? parent.width : parent.width - directionUI.imageScaleFactor
+
                         source: "images/direction_of_travel_circle.png"
                         fillMode: Image.PreserveAspectFit
-                        visible: useDirectionOfTravelCircle && !noPositionSource
                         Accessible.ignored: true
                     }
 
                     Image {
                         id: directionArrow
+
+                        visible: !noPositionSource
                         anchors.centerIn: parent
-                        source: !nightMode ? "images/arrow_day.png" : "images/arrow_night.png"
                         width: isLandscape ? parent.width - directionUI.imageScaleFactor : parent.width - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
                         height: isLandscape ? parent.height - directionUI.imageScaleFactor : parent.height - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
+
+                        source: !nightMode ? "images/arrow_day.png" : "images/arrow_night.png"
                         fillMode: Image.PreserveAspectFit
                         rotation: 0
                         opacity: 1
-                        visible: !noPositionSource
+
                         Accessible.role: Accessible.Indicator
                         Accessible.name: qsTr("Direction of travel is: %1".arg(rotation.toString()))
                         Accessible.description: qsTr("This arrow points toward the direction the user should travel. The degree is based off of the top of the device being the current bearing of travel.")
@@ -304,13 +375,16 @@ Item {
 
                     Image {
                         id: arrivedIcon
+
                         anchors.centerIn: parent
-                        source: !nightMode ? "images/map_pin_day.png" : "images/map_pin_night.png"
                         width: isLandscape ? parent.width - directionUI.imageScaleFactor : parent.width - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
                         height: isLandscape ? parent.height - directionUI.imageScaleFactor : parent.height - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
+
+                        source: !nightMode ? "images/map_pin_day.png" : "images/map_pin_night.png"
                         fillMode: Image.PreserveAspectFit
                         rotation: 0
                         visible: false
+
                         Accessible.role: Accessible.AlertMessage
                         Accessible.name: qsTr("Arrived at destination")
                         Accessible.description: qsTr("You have arrived at your destination")
@@ -319,88 +393,231 @@ Item {
 
                     Image {
                         id: noSignalIndicator
+
                         anchors.centerIn: parent
                         height: isLandscape ? parent.height : parent.height - directionUI.imageScaleFactor
                         width: isLandscape ? parent.width : parent.width - directionUI.imageScaleFactor
+
                         source: "images/no_signal.png"
                         visible: noPositionSource && !arrivedAtDestination
                         fillMode: Image.PreserveAspectFit
+
                         Accessible.role: Accessible.Indicator
                         Accessible.name: qsTr("There is no signal")
                     }
                 }
+
+                // ---------------------------------------------------------
+
+                Item {
+                    Layout.preferredHeight: toolbar.height + (!isLandscape ? distanceReadoutContainer.height : 0)
+                }
+
+                // ---------------------------------------------------------
             }
-
-            // ---------------------------------------------------------
-
-            Item {
-                Layout.preferredHeight: distanceReadoutContainer.height + toolbar.height
-            }
-
-            // ---------------------------------------------------------
         }
-    }
 
-    // No Destination Message --------------------------------------------------
+        // Distance Readout ----------------------------------------------------
 
-    Item {
-        id: noDestinationSet
-        anchors.fill: parent
-        anchors.leftMargin: sideMargin
-        anchors.rightMargin: sideMargin
-        z: 100
-        visible: (requestedDestination === null) ? true : false
-        Accessible.role: Accessible.Pane
+        Item {
+            id: distanceReadoutContainer
 
-        Rectangle {
-            anchors.centerIn: parent
-            height: sf(80)
-            width: parent.width
-            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-            radius: sf(6)
             Accessible.role: Accessible.Pane
 
+            x: 0
+            y: parent.height - height - toolbar.height
+            width: parent.width
+            height: sf(100)
+
+            states: State {
+                name: "landscape"
+                when: isLandscape
+
+                PropertyChanges {
+                    target: distanceReadoutContainer
+                    x: parent.width/2
+                    y: parent.height/2 - distanceReadoutContainer.height/2
+                    width: parent.width/2
+                }
+            }
+
+            transitions: Transition {
+                from: ""
+                to: "landscape"
+                reversible: true
+                NumberAnimation { properties: "x,y,width"; duration: 500; easing.type: Easing.InOutQuad }
+            }
+
             ColumnLayout {
-                anchors.fill: parent
-                spacing: 0
-                Accessible.role: Accessible.Pane
+                visible: requestedDestination !== null
+
+                anchors.centerIn: parent
+                Layout.fillWidth: true
+                Layout.fillHeight: true
 
                 Text {
+                    id: distanceReadout
+
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                    fontSizeMode: Text.Fit
-                    wrapMode: Text.Wrap
-                    font.pointSize: largeFontSize
-                    minimumPointSize: 9
-                    font.weight: Font.Black
+
+                    text: displayDistance(currentDistance.toString())
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    text: qsTr("No destination set!")
-                    Accessible.role: Accessible.AlertMessage
+                    font.pointSize: extraLargeFontSize
+                    font.weight: Font.Light
+                    fontSizeMode: Text.Fit
+                    minimumPointSize: largeFontSize
+                    color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+
+                    Accessible.role: Accessible.Indicator
                     Accessible.name: text
+                    Accessible.description: qsTr("This value is the distance remaining between you and the destination")
                 }
 
-                Text {
+                RowLayout {
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                    fontSizeMode: Text.Fit
-                    wrapMode: Text.Wrap
-                    font.pointSize: baseFontSize
-                    minimumPointSize: 9
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    textFormat: Text.RichText
-                    text: qsTr("Go to <span style='font-family:%1; font-size:%2pt; color:%3' alt='settings'>%4</span> to set your destination.".arg(icons.name).arg(font.pointSize * 1.2).arg(buttonTextColor).arg(icons.settings))
-                    Accessible.role: Accessible.AlertMessage
-                    Accessible.name: qsTr("Click the settings button in the bottom toolbar to set your destination")
+                    spacing: sf(0)
+
+                    Text {
+                        id: bearingReadout
+
+                        text: qsTr("%1° %2").arg(Math.round((currentPosition.degreesOffCourse+360) % 360).toFixed(0)).arg(cardinalDirection(directionArrow.rotation))
+                        horizontalAlignment: Text.AlignRight
+                        verticalAlignment: Text.AlignVCenter
+                        font.pointSize: largeFontSize
+                        minimumPointSize: largeFontSize
+                        color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
+
+                        Accessible.role: Accessible.Indicator
+                        Accessible.name: text
+                        Accessible.description: qsTr("Bearing in degrees")
+                    }
+
+                    Rectangle {
+                        Layout.preferredWidth: sf(40)
+
+                        color: "transparent"
+                        Accessible.role: Accessible.Indicator
+                        Accessible.name: qsTr("Location Accuracy Indicator")
+                        Accessible.description: qsTr("Location accuracy is denoted on a scale of 1 to 5, with 1 being lowest and 5 being highest. Current location accuracy is rated %1".arg(currentAccuracy))
+
+                        Text {
+                            id: locationAccuracyBaseline
+
+                            anchors.centerIn: parent
+
+                            text: icons.accuracy_indicator
+                            font.family: icons.name
+                            font.pointSize: 24
+                            color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
+                            opacity: .4
+                            z: 100
+
+                            Accessible.ignored: true
+                        }
+
+                        Text {
+                            id: locationAccuracyIndicator
+
+                            visible: locationAccuracyBaseline && currentAccuracy > 0
+
+                            anchors.centerIn: parent
+
+                            text: currentAccuracy > 0 ? icons.getIconByName("accuracy" + currentAccuracy.toString()) : ""
+                            font.family: icons.name
+                            font.pointSize: 24
+                            color: buttonTextColor
+                            opacity: 1
+                            z: locationAccuracyBaseline.z + 1
+
+                            Accessible.ignored: true
+                        }
+                    }
+
+                    Text {
+                        id: accuracyInUnits
+
+                        text: currentAccuracy > 0 ? qsTr("<p>&plusmn;%1%2</p>").arg(currentAccuracyInUnits.toString()).arg(usesMetric ? "m" : "ft") : "----"
+                        horizontalAlignment: Text.AlignLeft
+                        verticalAlignment: Text.AlignVCenter
+                        font.pointSize: largeFontSize
+                        minimumPointSize: largeFontSize
+                        color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
+                        opacity: currentAccuracy > 0 ? 1 : .4
+                        textFormat: Text.RichText
+
+                        Accessible.role: Accessible.Indicator
+                        Accessible.name: qsTr("Accuracy in units is: %1".arg(text))
+                        Accessible.description: qsTr("This denotes the current location accuracy in units rounded upward to the nearest %1".arg(usesMetric ? "meter" : "foot"))
+                    }
+                }
+            }
+        }
+
+        // No Destination Message ----------------------------------------------
+
+        Item {
+            id: noDestinationSet
+
+            visible: (requestedDestination === null) ? true : false
+
+            anchors.fill: parent
+            anchors.leftMargin: sideMargin
+            anchors.rightMargin: sideMargin
+            z: 100
+
+            Accessible.role: Accessible.Pane
+
+            Rectangle {
+                anchors.centerIn: parent
+                height: sf(80)
+                width: parent.width
+                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                radius: sf(6)
+                Accessible.role: Accessible.Pane
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    spacing: 0
+                    Accessible.role: Accessible.Pane
+
+                    Text {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                        fontSizeMode: Text.Fit
+                        wrapMode: Text.Wrap
+                        font.pointSize: largeFontSize
+                        minimumPointSize: 9
+                        font.weight: Font.Black
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        text: qsTr("No destination set!")
+                        Accessible.role: Accessible.AlertMessage
+                        Accessible.name: text
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                        fontSizeMode: Text.Fit
+                        wrapMode: Text.Wrap
+                        font.pointSize: baseFontSize
+                        minimumPointSize: 9
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        textFormat: Text.RichText
+                        text: qsTr("Go to <span style='font-family:%1; font-size:%2pt; color:%3' alt='settings'>%4</span> to set your destination.".arg(icons.name).arg(font.pointSize * 1.2).arg(buttonTextColor).arg(icons.settings))
+                        Accessible.role: Accessible.AlertMessage
+                        Accessible.name: qsTr("Click the settings button in the bottom toolbar to set your destination")
+                    }
                 }
             }
         }
     }
 
-    // Status Message and Location Accuracy Indicator --------------------------
+    // Status Message ----------------------------------------------------------
 
     Item {
         id: statusMessageContainer
@@ -438,141 +655,7 @@ Item {
         }
     }
 
-    // Distance Readout ----------------------------------------------------
-
-    Item {
-        id: distanceReadoutContainer
-
-        width: parent.width
-        height: sf(100)
-        anchors.bottom: toolbar.top
-        Accessible.role: Accessible.Pane
-
-        ColumnLayout {
-            anchors.fill: parent
-
-            Text {
-                id: distanceReadout
-
-                visible: requestedDestination !== null
-
-                Layout.fillWidth: true
-
-                text: displayDistance(currentDistance.toString())
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-                font.pointSize: extraLargeFontSize
-                font.weight: Font.Light
-                fontSizeMode: Text.Fit
-                minimumPointSize: largeFontSize
-                color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-
-                Accessible.role: Accessible.Indicator
-                Accessible.name: text
-                Accessible.description: qsTr("This value is the distance remaining between you and the destination")
-            }
-
-            Item {
-                id: locationAccuracyContainer
-
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-
-                Accessible.role: Accessible.Indicator
-                Accessible.name: qsTr("Location Accuracy Indicator")
-                Accessible.description: qsTr("Location accuracy is denoted on a scale of 1 to 5, with 1 being lowest and 5 being highest. Current location accuracy is rated %1".arg(currentAccuracy))
-
-                RowLayout {
-                    anchors.centerIn: parent
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    spacing: sf(0)
-
-                    Text {
-                        id: bearingReadout
-
-                        visible: requestedDestination !== null
-
-                        Layout.fillHeight: true
-
-                        text: qsTr("%1° %2").arg(Math.round((currentPosition.degreesOffCourse+360) % 360).toFixed(0)).arg(cardinalDirection(directionArrow.rotation))
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        font.pointSize: largeFontSize
-                        minimumPointSize: largeFontSize
-//                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                        color: buttonTextColor
-
-                        Accessible.role: Accessible.Indicator
-                        Accessible.name: text
-                        Accessible.description: qsTr("Bearing in degrees")
-                    }
-
-                    Rectangle {
-                        Layout.preferredWidth: sf(40)
-                        Layout.fillHeight: true
-                        color: "transparent"
-
-                        Text {
-                            id: locationAccuracyBaseline
-
-                            visible: requestedDestination !== null
-                            anchors.centerIn: parent
-
-                            text: icons.accuracy_indicator
-                            font.family: icons.name
-                            font.pointSize: 24
-                            color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
-                            opacity: .4
-                            z: 100
-
-                            Accessible.ignored: true
-                        }
-
-                        Text {
-                            id: locationAccuracyIndicator
-
-                            visible: locationAccuracyBaseline && currentAccuracy > 0
-                            anchors.centerIn: parent
-
-                            text: currentAccuracy > 0 ? icons.getIconByName("accuracy" + currentAccuracy.toString()) : ""
-                            font.family: icons.name
-                            font.pointSize: 24
-                            color: buttonTextColor
-                            opacity: 1
-                            z: locationAccuracyBaseline.z + 1
-
-                            Accessible.ignored: true
-                        }
-                    }
-
-                    Text {
-                        id: accuracyInUnits
-
-                        visible: requestedDestination !== null
-
-                        anchors.right: parent.right
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-
-                        text: currentAccuracy > 0 ? "<p>&plusmn;%1%2</p>".arg(currentAccuracyInUnits.toString()).arg(usesMetric ? "m" : "ft") : "----"
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        font.pointSize: largeFontSize
-                        opacity: currentAccuracy > 0 ? 1 : .4
-                        color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
-                        textFormat: Text.RichText
-
-                        Accessible.role: Accessible.Indicator
-                        Accessible.name: qsTr("Accuracy in units is: %1".arg(text))
-                        Accessible.description: qsTr("This denotes the current location accuracy in units rounded upward to the nearest %1".arg(usesMetric ? "meter" : "foot"))
-                    }
-                }
-            }
-        }
-    }
-
-    // Toolbar -------------------------------------------------------------
+    // Toolbar -----------------------------------------------------------------
 
     Item {
         id: toolbar
@@ -881,8 +964,9 @@ Item {
 
     //--------------------------------------------------------------------------
 
-    Connections{
+    Connections {
         target: app
+
         onRequestedDestinationChanged: {
             console.log("requested Destination: ", requestedDestination);
             if (requestedDestination !== null) {
@@ -972,7 +1056,6 @@ Item {
 
         onPitchAngleChanged: {
             if (Math.round(Math.abs(sensors.pitchAngle)) < 30){
-                camera.start();
                 turnHudOn();
             }
             else {
@@ -1096,44 +1179,87 @@ Item {
 
     //--------------------------------------------------------------------------
 
-    PropertyAnimation {
-        id: fadeArrowViewOut
-        duration: 700
-        property: "opacity"
-        running: false
-        target: arrowView
-        from: arrowView.opacity
-        to: 0
+    ParallelAnimation {
+        id: fadeHudIn
 
-        onStarted: {
+        running: false
+
+        OpacityAnimator {
+            target: arrowView
+            from: arrowView.opacity
+            to: 0
+            duration: 700
         }
 
-        onStopped: {
+        OpacityAnimator {
+            target: videoOutput
+            from: videoOutput.opacity
+            to: 1
+            duration: 700
+        }
+
+        OpacityAnimator {
+            target: hudView
+            from: hudView.opacity
+            to: 1
+            duration: 700
+        }
+
+        onStarted: {
             hudOn = true;
         }
     }
 
     //--------------------------------------------------------------------------
 
-    PropertyAnimation {
-        id: fadeArrowViewIn
-        duration: 700
-        property: "opacity"
-        running: false
-        target: arrowView
-        from: arrowView.opacity
-        to: 1
+    ParallelAnimation {
+        id: fadeHudOut
 
-        onStarted: {
+        running: false
+
+        OpacityAnimator {
+            target: arrowView
+            from: arrowView.opacity
+            to: 1
+            duration: 700
+        }
+
+        OpacityAnimator {
+            target: videoOutput
+            from: videoOutput.opacity
+            to: 0
+            duration: 700
+        }
+
+        OpacityAnimator {
+            target: hudView
+            from: hudView.opacity
+            to: 0
+            duration: 700
         }
 
         onStopped: {
-            hudOn = false;
             camera.stop();
+            hudOn = false;
         }
     }
 
     // METHODS /////////////////////////////////////////////////////////////////
+
+    // -------------------------------------------------------------------------
+
+    function turnHudOn() {
+        // this will call fadeHudIn.start() once the camera is ready
+        camera.start();
+    }
+
+    // -------------------------------------------------------------------------
+
+    function turnHudOff() {
+        fadeHudOut.start();
+    }
+
+    // -------------------------------------------------------------------------
 
     function updateViewModel() {
 
@@ -1239,18 +1365,6 @@ Item {
         }
 
         return "";
-    }
-
-    // -------------------------------------------------------------------------
-
-    function turnHudOff(){
-        fadeArrowViewIn.start();
-    }
-
-    // -------------------------------------------------------------------------
-
-    function turnHudOn(){
-        fadeArrowViewOut.start();
     }
 
     // -------------------------------------------------------------------------

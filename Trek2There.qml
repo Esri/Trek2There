@@ -54,7 +54,7 @@ App {
     property FileFolder fileFolder: FileFolder{ path: AppFramework.userHomePath }
     property string localStoragePath: fileFolder.path + "/ArcGIS/My Treks"
 
-    property bool isLandscape: (Screen.primaryOrientation === 2) ? true : false
+    property bool isLandscape: isLandscapeOrientation() //(Screen.primaryOrientation === 2) ? true : false
     property bool useDirectionOfTravelCircle: true
 
     property var requestedDestination: null //QtPositioning.coordinate(23,45) //null
@@ -71,6 +71,9 @@ App {
     readonly property var nightModeSettings: { "background": "#000", "foreground": "#f8f8f8", "secondaryBackground": "#2c2c2c", "buttonBorder": "#2c2c2c" }
     readonly property var dayModeSettings: { "background": "#f8f8f8", "foreground": "#000", "secondaryBackground": "#efefef", "buttonBorder": "#ddd" }
     readonly property string buttonTextColor: "#007ac2"
+
+    readonly property bool isAndroid: Qt.platform.os === "android"
+    readonly property bool isIOS: Qt.platform.os === "ios"
 
     Component.onCompleted: {
         fileFolder.makePath(localStoragePath);
@@ -189,6 +192,20 @@ App {
         else {
             return false;
         }
+    }
+
+    //--------------------------------------------------------------------------
+
+    function isLandscapeOrientation() {
+        var isLandscape = false;
+
+        if (isAndroid || isIOS) {
+            isLandscape = Screen.orientation === Qt.LandscapeOrientation || Screen.orientation === Qt.InvertedLandscapeOrientation;
+        } else {
+            isLandscape = app.width > app.height;
+        }
+
+        return isLandscape;
     }
 
     //--------------------------------------------------------------------------
