@@ -128,7 +128,7 @@ Item {
         }
 
         onPressAndHold: {
-            if (!isAndroid && !isIOS) {
+            if (!isAndroid && !isIOS && useExperimentalFeatures) {
                 if (hudOn) {
                     turnHudOff();
                 } else {
@@ -275,7 +275,6 @@ Item {
                             var centeredX = pt.x - width / 2 - size/2;
                             context.drawImage(mapPin.source, centeredX, centeredY, size, size);
                             context.restore();
-                            console.log(offsetx, offsety, scalex, scaley, width, height, overlay.width, overlay.height, size)
                         }
                     }
                 }
@@ -1055,11 +1054,13 @@ Item {
         onAzimuthFromTrueNorthChanged: updateBearing()
 
         onPitchAngleChanged: {
-            if (Math.round(Math.abs(sensors.pitchAngle)) < 30){
-                turnHudOn();
-            }
-            else {
-               turnHudOff();
+            if (useExperimentalFeatures) {
+                if (Math.round(Math.abs(sensors.pitchAngle)) < 30){
+                    turnHudOn();
+                }
+                else {
+                    turnHudOff();
+                }
             }
             updatePitch();
         }
