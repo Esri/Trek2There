@@ -558,44 +558,6 @@ Item {
             }
         }
 
-        // Status Message ----------------------------------------------------------
-
-        Item {
-            id: statusMessageContainer
-            width: parent.width
-            height: sf(50)
-            anchors.top: parent.top
-            visible: true
-            Accessible.role: Accessible.Pane
-
-            RowLayout {
-                anchors.fill: parent
-                anchors.rightMargin: sf(10)
-                anchors.leftMargin: sf(10)
-                anchors.topMargin: sf(10)
-
-                Item {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    StatusIndicator {
-                        id: statusMessage
-                        visible: false
-                        anchors.fill: parent
-                        containerHeight: parent.height
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        hideAutomatically: false
-                        animateHide: false
-                        messageType: statusMessage.warning
-                        message: qsTr("Start moving to determine direction.")
-
-                        Accessible.role: Accessible.AlertMessage
-                        Accessible.name: message
-                    }
-                }
-            }
-        }
-
         // No Destination Message ----------------------------------------------
 
         Item {
@@ -654,6 +616,44 @@ Item {
                         Accessible.role: Accessible.AlertMessage
                         Accessible.name: qsTr("Click the settings button in the bottom toolbar to set your destination")
                     }
+                }
+            }
+        }
+    }
+
+    // Status Message ----------------------------------------------------------
+
+    Item {
+        id: statusMessageContainer
+        width: parent.width
+        height: sf(50)
+        anchors.top: parent.top
+        visible: true
+        Accessible.role: Accessible.Pane
+
+        RowLayout {
+            anchors.fill: parent
+            anchors.rightMargin: sf(10)
+            anchors.leftMargin: sf(10)
+            anchors.topMargin: sf(10)
+
+            Item {
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                StatusIndicator {
+                    id: statusMessage
+                    visible: false
+                    anchors.fill: parent
+                    containerHeight: parent.height
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    hideAutomatically: false
+                    animateHide: false
+                    messageType: statusMessage.warning
+                    message: qsTr("Start moving to determine direction.")
+
+                    Accessible.role: Accessible.AlertMessage
+                    Accessible.name: message
                 }
             }
         }
