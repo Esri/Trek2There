@@ -340,7 +340,7 @@ Item {
 
                     z: 99
 
-                    property int imageScaleFactor: 40 * AppFramework.displayScaleFactor
+                    property int imageBorder: 40 * AppFramework.displayScaleFactor
 
                     Image {
                         id: directionOfTravelCircle
@@ -348,8 +348,8 @@ Item {
                         visible: useDirectionOfTravelCircle && !noPositionSource
 
                         anchors.centerIn: parent
-                        height: isLandscape ? parent.height : parent.height - directionUI.imageScaleFactor
-                        width: isLandscape ? parent.width : parent.width - directionUI.imageScaleFactor
+                        height: directionUI.height - directionUI.imageBorder
+                        width: directionUI.width - directionUI.imageBorder
 
                         source: "images/direction_of_travel_circle.png"
                         fillMode: Image.PreserveAspectFit
@@ -362,8 +362,8 @@ Item {
                         visible: !noPositionSource
 
                         anchors.centerIn: parent
-                        width: isLandscape ? parent.width - directionUI.imageScaleFactor : parent.width - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
-                        height: isLandscape ? parent.height - directionUI.imageScaleFactor : parent.height - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
+                        width: 0.9 * directionOfTravelCircle.width
+                        height: 0.9 * directionOfTravelCircle.height
 
                         source: !nightMode ? "images/arrow_day.png" : "images/arrow_night.png"
                         fillMode: Image.PreserveAspectFit
@@ -382,8 +382,8 @@ Item {
                         visible: false
 
                         anchors.centerIn: parent
-                        width: isLandscape ? parent.width - directionUI.imageScaleFactor : parent.width - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
-                        height: isLandscape ? parent.height - directionUI.imageScaleFactor : parent.height - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
+                        width: 0.9 * directionOfTravelCircle.width
+                        height: 0.9 * directionOfTravelCircle.height
 
                         source: !nightMode ? "images/map_pin_day.png" : "images/map_pin_night.png"
                         fillMode: Image.PreserveAspectFit
@@ -400,8 +400,8 @@ Item {
                         visible: noPositionSource && !arrivedAtDestination
 
                         anchors.centerIn: parent
-                        height: isLandscape ? parent.height : parent.height - directionUI.imageScaleFactor
-                        width: isLandscape ? parent.width : parent.width - directionUI.imageScaleFactor
+                        height: directionUI.height - directionUI.imageBorder
+                        width: directionUI.width - directionUI.imageBorder
 
                         source: "images/no_signal.png"
                         fillMode: Image.PreserveAspectFit
@@ -414,7 +414,7 @@ Item {
                 // ---------------------------------------------------------
 
                 Item {
-                    Layout.preferredHeight: toolbar.height + (!isLandscape ? distanceReadoutContainer.height : 0)
+                    Layout.preferredHeight: toolbar.height + (!isLandscape ? distanceReadoutContainer.height + directionUI.imageBorder / 2 : 0)
                 }
 
                 // ---------------------------------------------------------
@@ -429,7 +429,7 @@ Item {
             Accessible.role: Accessible.Pane
 
             x: 0
-            y: parent.height - height - toolbar.height
+            y: parent.height - height - toolbar.height - directionUI.imageBorder / 2
             width: parent.width
             height: sf(100)
 
