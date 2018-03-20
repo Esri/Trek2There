@@ -114,35 +114,41 @@ Item {
 
     // UI //////////////////////////////////////////////////////////////////////
 
-    MouseArea {
-        id: mouseArea
-        anchors.fill: parent
-        enabled: autohideToolbar ? true : false
+    // Status Message ----------------------------------------------------------
 
-        onClicked: {
-            if(toolbar.opacity === 0){
-                toolbar.opacity = 1;
-                toolbar.enabled = true;
-                hideToolbar.start();
-            }
-        }
+    Item {
+        id: statusMessageContainer
+        width: parent.width
+        height: sf(50)
+        anchors.top: parent.top
+        visible: true
+        Accessible.role: Accessible.Pane
 
-        onPressAndHold: {
-            if (!isAndroid && !isIOS && useExperimentalFeatures) {
-                if (hudOn) {
-                    turnHudOff();
-                } else {
-                    turnHudOn();
+        RowLayout {
+            anchors.fill: parent
+            anchors.rightMargin: sf(10)
+            anchors.leftMargin: sf(10)
+            anchors.topMargin: sf(10)
+
+            Item {
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                StatusIndicator {
+                    id: statusMessage
+                    visible: false
+                    anchors.fill: parent
+                    containerHeight: parent.height
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    hideAutomatically: false
+                    animateHide: false
+                    messageType: statusMessage.warning
+                    message: qsTr("Start moving to determine direction.")
+
+                    Accessible.role: Accessible.AlertMessage
+                    Accessible.name: message
                 }
             }
-        }
-
-        Accessible.role: Accessible.Button
-        Accessible.name: qsTr("Show bottom toolbar")
-        Accessible.description: qsTr("This mouse area acts as a button and will show the bottom tool bar if it is hidden.")
-        Accessible.focusable: true
-        Accessible.onPressAction: {
-            clicked(null);
         }
     }
 
@@ -344,6 +350,7 @@ Item {
                         id: directionOfTravelCircle
 
                         visible: useDirectionOfTravelCircle && !noPositionSource
+
                         anchors.centerIn: parent
                         height: isLandscape ? parent.height : parent.height - directionUI.imageScaleFactor
                         width: isLandscape ? parent.width : parent.width - directionUI.imageScaleFactor
@@ -357,6 +364,7 @@ Item {
                         id: directionArrow
 
                         visible: !noPositionSource
+
                         anchors.centerIn: parent
                         width: isLandscape ? parent.width - directionUI.imageScaleFactor : parent.width - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
                         height: isLandscape ? parent.height - directionUI.imageScaleFactor : parent.height - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
@@ -375,14 +383,14 @@ Item {
                     Image {
                         id: arrivedIcon
 
+                        visible: false
+
                         anchors.centerIn: parent
                         width: isLandscape ? parent.width - directionUI.imageScaleFactor : parent.width - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
                         height: isLandscape ? parent.height - directionUI.imageScaleFactor : parent.height - (useDirectionOfTravelCircle === false ? directionUI.imageScaleFactor * 2.5 : directionUI.imageScaleFactor * 3)
 
                         source: !nightMode ? "images/map_pin_day.png" : "images/map_pin_night.png"
                         fillMode: Image.PreserveAspectFit
-                        rotation: 0
-                        visible: false
 
                         Accessible.role: Accessible.AlertMessage
                         Accessible.name: qsTr("Arrived at destination")
@@ -393,12 +401,13 @@ Item {
                     Image {
                         id: noSignalIndicator
 
+                        visible: noPositionSource && !arrivedAtDestination
+
                         anchors.centerIn: parent
                         height: isLandscape ? parent.height : parent.height - directionUI.imageScaleFactor
                         width: isLandscape ? parent.width : parent.width - directionUI.imageScaleFactor
 
                         source: "images/no_signal.png"
-                        visible: noPositionSource && !arrivedAtDestination
                         fillMode: Image.PreserveAspectFit
 
                         Accessible.role: Accessible.Indicator
@@ -616,44 +625,6 @@ Item {
         }
     }
 
-    // Status Message ----------------------------------------------------------
-
-    Item {
-        id: statusMessageContainer
-        width: parent.width
-        height: sf(50)
-        anchors.top: parent.top
-        visible: true
-        Accessible.role: Accessible.Pane
-
-        RowLayout {
-            anchors.fill: parent
-            anchors.rightMargin: sf(10)
-            anchors.leftMargin: sf(10)
-            anchors.topMargin: sf(10)
-
-            Item {
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                StatusIndicator {
-                    id: statusMessage
-                    visible: false
-                    anchors.fill: parent
-                    containerHeight: parent.height
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    hideAutomatically: false
-                    animateHide: false
-                    messageType: statusMessage.warning
-                    message: qsTr("Start moving to determine direction.")
-
-                    Accessible.role: Accessible.AlertMessage
-                    Accessible.name: message
-                }
-            }
-        }
-    }
-
     // Toolbar -----------------------------------------------------------------
 
     Item {
@@ -804,6 +775,40 @@ Item {
                     }
                 }
             }
+        }
+    }
+
+    // MouseArea ---------------------------------------------------------------
+
+    MouseArea {
+        id: mouseArea
+        anchors.fill: parent
+        enabled: autohideToolbar ? true : false
+
+        onClicked: {
+            if(toolbar.opacity === 0){
+                toolbar.opacity = 1;
+                toolbar.enabled = true;
+                hideToolbar.start();
+            }
+        }
+
+        onPressAndHold: {
+            if (!isAndroid && !isIOS && useExperimentalFeatures) {
+                if (hudOn) {
+                    turnHudOff();
+                } else {
+                    turnHudOn();
+                }
+            }
+        }
+
+        Accessible.role: Accessible.Button
+        Accessible.name: qsTr("Show bottom toolbar")
+        Accessible.description: qsTr("This mouse area acts as a button and will show the bottom tool bar if it is hidden.")
+        Accessible.focusable: true
+        Accessible.onPressAction: {
+            clicked(null);
         }
     }
 
