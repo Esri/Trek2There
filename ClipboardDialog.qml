@@ -37,18 +37,19 @@ Dialog {
     Accessible.description: qsTr("This dialog appears when coordinates have been copied to the clipboard. It allows the user to use the coordinates in the application.")
 
     contentItem:  Rectangle{
-
         width: sf(300)
         height: sf(250)
         color: "#fff"
 
-        ColumnLayout{
+        ColumnLayout {
             anchors.fill: parent
-            Rectangle{
+
+            Rectangle {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 color: "#fff"
                 Accessible.role: Accessible.Pane
+
                 Text{
                     anchors.fill: parent
                     anchors.margins: sf(5)
@@ -60,28 +61,28 @@ Dialog {
                 }
             }
 
-            Rectangle{
+            Rectangle {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 color: "#eee"
                 Accessible.role: Accessible.Pane
 
-                RowLayout{
+                RowLayout {
                     anchors.fill: parent
                     anchors.margins: sf(5)
                     spacing: 0
 
-                    Rectangle{
+                    Rectangle {
                         Layout.fillHeight: true
                         Layout.fillWidth: true
                         color: "#eee"
                         Accessible.role: Accessible.Pane
 
-                        ColumnLayout{
+                        ColumnLayout {
                             anchors.fill: parent
                             spacing: 0
 
-                            Text{
+                            Text {
                                 Layout.fillHeight: true
                                 Layout.fillWidth: true
                                 verticalAlignment: Text.AlignVCenter
@@ -90,7 +91,7 @@ Dialog {
                                 Accessible.name: qsTr("This is the latitude or y value")
                             }
 
-                            Text{
+                            Text {
                                 Layout.fillHeight: true
                                 Layout.fillWidth: true
                                 verticalAlignment: Text.AlignVCenter
@@ -99,7 +100,7 @@ Dialog {
                                 Accessible.name: qsTr("This is the longitude or x value")
                             }
 
-                            StatusIndicator{
+                            StatusIndicator {
                                 id: swapError
                                 Layout.fillHeight: true
                                 Layout.fillWidth: true
@@ -118,16 +119,16 @@ Dialog {
 
                     // ---------------------------------------------------------
 
-                    Rectangle{
+                    Rectangle {
                         Layout.fillHeight: true
                         Layout.preferredWidth: sf(50)
                         radius: sf(5)
                         Accessible.role: Accessible.Pane
 
-                        Button{
+                        Button {
                             anchors.fill: parent
                             tooltip: qsTr("Swap coordinates")
-                            style: ButtonStyle{
+                            style: ButtonStyle {
                                 background: Rectangle{
                                     color: "transparent"
                                     anchors.fill: parent
@@ -137,7 +138,7 @@ Dialog {
                                 }
                             }
 
-                            Text{
+                            Text {
                                 font.family: icons.name
                                 text: icons.swap
                                 anchors.centerIn: parent
@@ -171,21 +172,21 @@ Dialog {
                 }
             }
 
-            Rectangle{
+            Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: sf(50)
                 Layout.margins: sf(5)
                 Accessible.role: Accessible.Pane
 
-                RowLayout{
+                RowLayout {
                     anchors.fill: parent
 
-                    Button{
+                    Button {
                         Layout.fillHeight: true
                         Layout.fillWidth: true
                         text: qsTr("No")
-                        style: ButtonStyle{
-                            background: Rectangle{
+                        style: ButtonStyle {
+                            background: Rectangle {
                                 color: "transparent"
                                 anchors.fill: parent
                                 radius: sf(5)
@@ -204,18 +205,18 @@ Dialog {
                         Accessible.name: qsTr("No")
                         Accessible.description: qsTr("Do not use the coordinate values copied to the clipboard.")
                         Accessible.onPressAction: {
-                            if(enabled && visible){
+                            if (enabled && visible) {
                                 clicked(null);
                             }
                         }
                     }
 
-                    Button{
+                    Button {
                         Layout.fillHeight: true
                         Layout.fillWidth: true
                         text: qsTr("Yes")
-                        style: ButtonStyle{
-                            background: Rectangle{
+                        style: ButtonStyle {
+                            background: Rectangle {
                                 color: "transparent"
                                 anchors.fill: parent
                                 radius: sf(5)
@@ -234,7 +235,7 @@ Dialog {
                         Accessible.name: qsTr("Yes")
                         Accessible.description: qsTr("Use the coordinate values copied to the clipboard.")
                         Accessible.onPressAction: {
-                            if(enabled && visible){
+                            if(enabled && visible) {
                                 clicked(null);
                             }
                         }

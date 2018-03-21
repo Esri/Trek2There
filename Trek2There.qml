@@ -83,26 +83,26 @@ App {
 
     // COMPONENTS //////////////////////////////////////////////////////////////
 
-    AppMetrics{
+    AppMetrics {
         id: appMetrics
         releaseType: "beta"
     }
 
     //------------------------------------------------------------------------------
 
-    MainView{
+    MainView {
         anchors.fill: parent
     }
 
     //------------------------------------------------------------------------------
 
-    IconFont{
+    IconFont {
         id: icons
     }
 
     //------------------------------------------------------------------------------
 
-    ClipboardDialog{
+    ClipboardDialog {
         id: clipboardDialog
 
         width: sf(300)
@@ -131,17 +131,17 @@ App {
         var urlInfo = AppFramework.urlInfo(url);
         openParameters = urlInfo.queryParameters;
 
-        if(openParameters.hasOwnProperty("stop")){
+        if (openParameters.hasOwnProperty("stop")) {
             var inCoord = openParameters.stop.split(',');
             requestedDestination =  QtPositioning.coordinate(inCoord[0].trim(), inCoord[1].trim());
         }
 
-        if(openParameters.hasOwnProperty("callbackprompt")){
+        if (openParameters.hasOwnProperty("callbackprompt")) {
             callingApplication = openParameters.callbackprompt;
 
         }
 
-        if(openParameters.hasOwnProperty("callback")){
+        if (openParameters.hasOwnProperty("callback")) {
             applicationCallback = openParameters.callback;
         }
     }
@@ -172,7 +172,7 @@ App {
 
     // FUNCTIONS ///////////////////////////////////////////////////////////////
 
-    function localeIsMetric(){
+    function localeIsMetric() {
         switch (locale.measurementSystem) {
             case Locale.ImperialUSSystem:
             case Locale.ImperialUKSystem:
@@ -185,11 +185,10 @@ App {
 
     //--------------------------------------------------------------------------
 
-    function validCoordinates(lat,lon){
+    function validCoordinates(lat,lon) {
         if (lon.search(longitudeValidator.regExp) > -1 && lat.search(latitudeValidator.regExp) > -1){
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -210,7 +209,7 @@ App {
 
     //--------------------------------------------------------------------------
 
-    function sf(val){
+    function sf(val) {
         return val * AppFramework.displayScaleFactor;
     }
 
@@ -237,8 +236,7 @@ App {
                         lat = inJson.latitude.toString().trim();
                         lon = inJson.longitude.toString().trim();
                     }
-                }
-                catch(e) {
+                } catch(e) {
                     if (e.toString().indexOf("JSON.parse: Parse error") > -1) {
                         var incoords = AppFramework.clipboard.text.split(',');
                         if (incoords.length === 2) {
@@ -246,8 +244,7 @@ App {
                             lon = incoords[1].toString().trim();
                         }
                     }
-                }
-                finally {
+                } finally {
                     if (lat !== "" && lon !== "") {
                         if (validCoordinates(lat, lon)) {
                             appClipboard.inLat = lat;
