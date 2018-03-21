@@ -105,9 +105,6 @@ App {
     ClipboardDialog {
         id: clipboardDialog
 
-        width: sf(300)
-        height: sf(200)
-
         clipLat: appClipboard.inLat
         clipLon: appClipboard.inLon
 
