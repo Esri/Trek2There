@@ -149,7 +149,7 @@ Dialog {
 
                             onClicked: {
                                 console.log("lat:%1, lon:%2".arg(clipLat).arg(clipLon))
-                                if(validCoordinates(clipLon,clipLat)){
+                                if(validCoordinates(clipLon,clipLat)) {
                                     var newLon = clipLat;
                                     clipLat = clipLon;
                                     clipLon = newLon;
@@ -163,7 +163,7 @@ Dialog {
                             Accessible.name: qsTr("Swap coordinates")
                             Accessible.description: qsTr("Click this button to swap the coordinate values. If the swap is invalid, an alert message is displayed.")
                             Accessible.onPressAction: {
-                                if(enabled && visible){
+                                if(enabled && visible) {
                                     clicked(null);
                                 }
                             }

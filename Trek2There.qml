@@ -109,7 +109,7 @@ App {
         clipLon: appClipboard.inLon
 
         onUseCoordinates: {
-            if(clipLat !== "" && clipLon !== ""){
+            if(clipLat !== "" && clipLon !== "") {
                 console.log("lat: %1, lon:%2".arg(clipLat).arg(clipLon))
                 requestedDestination =  QtPositioning.coordinate(clipLat.toString(), clipLon.toString());
                 dismissCoordinates();
@@ -183,7 +183,7 @@ App {
     //--------------------------------------------------------------------------
 
     function validCoordinates(lat,lon) {
-        if (lon.search(longitudeValidator.regExp) > -1 && lat.search(latitudeValidator.regExp) > -1){
+        if (lon.search(longitudeValidator.regExp) > -1 && lat.search(latitudeValidator.regExp) > -1) {
             return true;
         } else {
             return false;

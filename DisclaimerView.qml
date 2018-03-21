@@ -289,7 +289,7 @@ Item {
 
                             onClicked: {
                                 /* // disabled for v1.0
-                                if(doNotShowWarningAgain.checked){
+                                if(doNotShowWarningAgain.checked) {
                                     app.settings.setValue("showSafetyWarning", false);
                                 }
                                 app.settings.setValue("safteyWarningAccepted", true);

@@ -58,25 +58,25 @@ QtObject {
 
     //--------------------------------------------------------------------------
 
-    function startRecordingTrek(){
+    function startRecordingTrek() {
 
         open();
 
-        if(logTreks){
-            if(trekTableName !== ""){
+        if(logTreks) {
+            if(trekTableName !== "") {
                 trekTableName = "";
             }
 
             trekTableName = "trek" + Date.now().valueOf().toString();
 
             db.transaction(
-                function(tx){
+                function(tx) {
                     try{
                         tx.executeSql('CREATE TABLE IF NOT EXISTS log(trekId TEXT)')
                         tx.executeSql('INSERT INTO log (trekId) VALUES(?)', [trekTableName]);
                         tx.executeSql('CREATE TABLE IF NOT EXISTS ' + trekTableName +'(timestamp INTEGER, pos_lat TEXT, pos_long TEXT, pos_dir TEXT, klat TEXT, klong TEXT, az_to TEXT, dist_to TEXT, degrees_off TEXT)')
                     }
-                    catch(e){
+                    catch(e) {
                         console.log(e);
                     }
                 });
@@ -86,17 +86,17 @@ QtObject {
 
     //--------------------------------------------------------------------------
 
-    function recordPosition(positionInfo /* array */){
+    function recordPosition(positionInfo /* array */) {
 
         // positionInfo: [timestamp, pos_lat, pos_long, pos_dir, klat, klong, az_to, dist_to, degrees_off]
 
-        if(logTreks){
+        if(logTreks) {
             db.transaction(
-                function(tx){
+                function(tx) {
                     try{
                         tx.executeSql('INSERT INTO ' + trekTableName +' (timestamp, pos_lat, pos_long, pos_dir, klat, klong, az_to, dist_to, degrees_off) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)', positionInfo);
                     }
-                    catch(e){
+                    catch(e) {
                         console.log(e);
                     }
             });
@@ -106,9 +106,9 @@ QtObject {
 
     //--------------------------------------------------------------------------
 
-    function stopRecordingTrek(){
+    function stopRecordingTrek() {
 
-        if(logTreks){
+        if(logTreks) {
             trekTableName = "";
         }
 
@@ -116,10 +116,10 @@ QtObject {
 
     //--------------------------------------------------------------------------
 
-    function deleteAllLogs(){
+    function deleteAllLogs() {
 
         db.transaction(
-            function(tx){
+            function(tx) {
                 try{
 
                     var rs = tx.executeSql('SELECT name FROM sqlite_master WHERE type="table" AND name LIKE "trek%"');
@@ -127,7 +127,7 @@ QtObject {
                        deleteTrek(rs.rows.item(i).name);
                     }
                 }
-                catch(e){
+                catch(e) {
                     console.log(e);
                 }
             });
@@ -135,14 +135,14 @@ QtObject {
 
     //--------------------------------------------------------------------------
 
-    function deleteTrek(id){
+    function deleteTrek(id) {
 
         db.transaction(
-            function(tx){
+            function(tx) {
                 try{
                     tx.executeSql('DROP TABLE ' + id);
                 }
-                catch(e){
+                catch(e) {
                     console.log(e);
                 }
             });
@@ -150,14 +150,14 @@ QtObject {
 
     //--------------------------------------------------------------------------
 
-    function queryTrek(id){
+    function queryTrek(id) {
 
         db.transaction(
-            function(tx){
+            function(tx) {
                 try{
                     var rs = tx.executeSql('SELECT * FROM ' + id);
                 }
-                catch(e){
+                catch(e) {
                     console.log(e);
                 }
             });

@@ -88,7 +88,7 @@ Item {
                             }
 
                             onClicked: {
-                                if(destinationLatitude.acceptableInput && destinationLongitude.acceptableInput){
+                                if(destinationLatitude.acceptableInput && destinationLongitude.acceptableInput) {
                                     requestedDestination = (destinationLatitude.length > 0  && destinationLongitude.length > 0) ? QtPositioning.coordinate(destinationLatitude.text, destinationLongitude.text) : null;
                                 }
                                 Qt.inputMethod.hide();
@@ -440,7 +440,7 @@ Item {
                                         leftPadding: metricChecked.indicator.width + metricChecked.spacing + sideMargin
                                }
                                 onCheckedChanged: {
-                                    if (checked){
+                                    if (checked) {
                                         usesMetric = true;
                                     }
                                 }
@@ -487,7 +487,7 @@ Item {
                                         leftPadding: imperialChecked.indicator.width + imperialChecked.spacing + sideMargin
                                }
                                 onCheckedChanged: {
-                                    if (checked){
+                                    if (checked) {
                                         usesMetric = false;
                                     }
                                 }
@@ -601,7 +601,7 @@ Item {
                                     Text {
                                         id: xFeaturesText
 
-                                        property var feedbackEmail: (function(){
+                                        property var feedbackEmail: (function() {
                                             if (Qt.platform.os === "ios") {
                                                 return "support+f9c5dcb8b61d48e88b9a784ce59feac2@feedback.hockeyapp.net";
                                             }

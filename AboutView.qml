@@ -241,7 +241,7 @@ Item {
                             anchors.fill: parent
                             onPressAndHold: {
                                 logTreks = logTreks === false ? true : false;
-                                if(logTreks){
+                                if(logTreks) {
                                     logTreksIndicator.text = "<b>+</b>";
                                 }else{
                                     logTreksIndicator.text = "<b>-</b>";

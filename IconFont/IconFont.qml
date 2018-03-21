@@ -34,7 +34,7 @@ FontLoader{
 
     //--------------------------------------------------------------------------
 
-    function getIconByName(name){
+    function getIconByName(name) {
         return this[name];
     }
 
