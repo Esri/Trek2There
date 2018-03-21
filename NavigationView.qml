@@ -69,15 +69,14 @@ Item {
     Component.onCompleted: {
         Screen.orientationUpdateMask = Qt.PortraitOrientation | Qt.InvertedPortraitOrientation | Qt.LandscapeOrientation | Qt.InvertedLandscapeOrientation
         selectBackCamera();
+        camera.stop();
     }
 
     StackView.onDeactivated: {
-        if (useExperimentalFeatures) {
-            sensors.stopCompass();
-        }
         sensors.stopTiltSensor();
         sensors.stopOrientationSensor();
         sensors.stopRotationSensor();
+        sensors.stopCompass();
         camera.stop();
     }
 
@@ -96,7 +95,6 @@ Item {
             viewData.itemCoordinate = requestedDestination;
             startNavigation();
         }
-
     }
 
     //--------------------------------------------------------------------------
@@ -105,9 +103,8 @@ Item {
         if(useExperimentalFeatures){
             if (stopUsingCompassForNavigation) {
                 sensors.stopCompass();
-            }
-            else {
-               sensors.startCompass();
+            } else {
+                sensors.startCompass();
             }
         }
     }
@@ -163,45 +160,42 @@ Item {
         VideoOutput {
             id: videoOutput
 
-            anchors.fill: parent
             visible: hudOn
-            enabled: useExperimentalFeatures
+            enabled: visible
 
-            source: camera
+            anchors.fill: parent
+
             fillMode: VideoOutput.PreserveAspectCrop
             autoOrientation: Qt.platform.os === "windows" ? false : true
-            focus : visible
-        }
 
-        //----------------------------------------------------------------------
+            source: Camera {
+                id: camera
 
-        Camera {
-            id: camera
+                imageProcessing.whiteBalanceMode: CameraImageProcessing.WhiteBalanceFlash
 
-            imageProcessing.whiteBalanceMode: CameraImageProcessing.WhiteBalanceFlash
-
-            focus {
-                focusMode: Camera.FocusContinuous
-                focusPointMode: Camera.FocusPointAuto
-            }
-
-            exposure {
-                exposureCompensation: -1.0
-                exposureMode: Camera.ExposurePortrait
-            }
-
-            captureMode: Camera.CaptureStillImage
-            flash.mode: Camera.FlashRedEyeReduction
-
-            position: Camera.BackFace
-
-            onCameraStatusChanged: {
-                if (cameraStatus === Camera.ActiveStatus) {
-                    fadeHudIn.start();
+                focus {
+                    focusMode: Camera.FocusContinuous
+                    focusPointMode: Camera.FocusPointAuto
                 }
-            }
 
-            Component.onCompleted: camera.stop()
+                exposure {
+                    exposureCompensation: -1.0
+                    exposureMode: Camera.ExposurePortrait
+                }
+
+                captureMode: Camera.CaptureStillImage
+                flash.mode: Camera.FlashRedEyeReduction
+
+                position: Camera.BackFace
+
+                onCameraStatusChanged: {
+                    if (cameraStatus === Camera.ActiveStatus) {
+                        fadeHudIn.start();
+                    }
+                }
+
+                Component.onCompleted: camera.stop()
+            }
         }
 
         // Resizable Navigation View Container ---------------------------------
@@ -237,7 +231,9 @@ Item {
             Item {
                 id: hudView
 
-                visible: useExperimentalFeatures
+                visible: hudOn
+                enabled: visible
+
                 anchors.fill: parent
 
                 //------------------------------------------------------------------
@@ -251,32 +247,30 @@ Item {
                     anchors.fill: parent
                     clip: true
 
+                    property var viewCoords
+                    property double scale: 1
                     property int offsetx: videoOutput.contentRect.x
                     property int offsety: videoOutput.contentRect.y
                     property int scalex: videoOutput.contentRect.width
                     property int scaley: videoOutput.contentRect.height
 
                     onPaint: {
+                        var ctx = getContext("2d");
+                        ctx.save();
+
+                        ctx.clearRect(0, 0, width, height);
+
+                        drawSymbol(ctx, viewCoords, scale);
+
+                        ctx.restore();
                     }
 
-                    function clearCanvas() {
-                        if (enabled) {
-                            requestPaint();
-                            var context = getContext("2d");
-                            context.clearRect(0, 0, width, height);
-                        }
-                    }
-
-                    function drawSymbol(context, pt, scale) {
-                        if (enabled) {
-                            clearCanvas();
-                            requestPaint();
-
+                    function drawSymbol(ctx, viewCoords, scale) {
+                        if (viewCoords) {
                             var size = Math.ceil(sf(50) * scale);
                             var centeredY = overlay.height / 2 - size; // pt.y - size;
-                            var centeredX = pt.x - width / 2 - size/2;
-                            context.drawImage(mapPin.source, centeredX, centeredY, size, size);
-                            context.restore();
+                            var centeredX = viewCoords.x - overlay.width / 2 - size/2;
+                            ctx.drawImage(mapPin.source, centeredX, centeredY, size, size);
                         }
                     }
                 }
@@ -285,6 +279,7 @@ Item {
 
                 Rectangle {
                     id: rect
+
                     visible: hudOn && requestedDestination !== null
                     enabled: visible
 
@@ -834,8 +829,6 @@ Item {
     onReset: {
         console.log('reseting navigation')
 
-        overlay.clearCanvas();
-
         navigating = false;
         sensors.positionSource.active = false;
         sensors.positionSource.stop();
@@ -926,8 +919,7 @@ Item {
             if (arrivedAtDestination === false) {
                 appMetrics.trackEvent("Ended navigation without arrival.");
             }
-        }
-        catch(e) {
+        } catch(e) {
             appMetrics.reportError(e, "onEndNavigation");
         }
 
@@ -1058,29 +1050,9 @@ Item {
 
         onAzimuthFromTrueNorthChanged: updateBearing()
 
-        onPitchAngleChanged: {
-            if (useExperimentalFeatures) {
-                if (Math.round(Math.abs(sensors.pitchAngle)) < 30){
-                    turnHudOn();
-                }
-                else {
-                    turnHudOff();
-                }
-            }
-            updatePitch();
-        }
+        onPitchAngleChanged: updatePitch();
 
         onRollAngleChanged: updateRoll()
-
-        onOrientationChanged: {
-            if(sensors.orientation === OrientationReading.LeftUp || sensors.orientation === OrientationReading.RightUp){
-                overlay.visible = false;
-            }
-            else {
-                overlay.visible = true;
-            }
-
-        }
 
         function updateBearing() {
             if (sensors.azimuthFromTrueNorth) {
@@ -1091,15 +1063,26 @@ Item {
         }
 
         function updatePitch() {
+            if(!fadeHudIn.running && !fadeHudOut.running) {
+                if (useExperimentalFeatures) {
+                    if (!hudOn && Math.abs(sensors.pitchAngle) <= 30) {
+                        turnHudOn();
+                    } else if (hudOn && Math.abs(sensors.pitchAngle) > 30){
+                        turnHudOff();
+                    }
+                } else if (hudOn) {
+                    turnHudOff();
+                }
+            }
+
             if (sensors.pitchAngle) {
-                //viewData.devicePitch =  sensors.pitchAngle;
                 viewData.devicePitch = 0; // sensors.pitchAngle;
             }
         }
 
         function updateRoll() {
             if (sensors.rollAngle) {
-                viewData.deviceRoll = sensors.rollAngle;
+                viewData.deviceRoll = 0; //sensors.rollAngle;
             }
         }
     }
@@ -1108,6 +1091,7 @@ Item {
 
     Item {
         id: viewData
+
         property real fieldOfViewX: 48.5
         property real fieldOfViewY: 62
 
@@ -1129,9 +1113,7 @@ Item {
         }
 
         onDeviceBearingChanged: {
-            if(observerCoordinate !== null){
-                updateViewModel();
-            }
+            updateViewModel();
         }
 
         onDevicePitchChanged: {
@@ -1166,7 +1148,8 @@ Item {
     //--------------------------------------------------------------------------
 
     PropertyAnimation{
-        id:fadeToolbar
+        id: fadeToolbar
+
         from: 1
         to: 0
         duration: 1000
@@ -1185,7 +1168,7 @@ Item {
 
     //--------------------------------------------------------------------------
 
-    ParallelAnimation {
+    SequentialAnimation {
         id: fadeHudIn
 
         running: false
@@ -1197,18 +1180,20 @@ Item {
             duration: 700
         }
 
-        OpacityAnimator {
-            target: videoOutput
-            from: videoOutput.opacity
-            to: 1
-            duration: 700
-        }
+        ParallelAnimation {
+            OpacityAnimator {
+                target: videoOutput
+                from: videoOutput.opacity
+                to: 1
+                duration: 700
+            }
 
-        OpacityAnimator {
-            target: hudView
-            from: hudView.opacity
-            to: 1
-            duration: 700
+            OpacityAnimator {
+                target: hudView
+                from: hudView.opacity
+                to: 1
+                duration: 700
+            }
         }
 
         onStarted: {
@@ -1218,29 +1203,31 @@ Item {
 
     //--------------------------------------------------------------------------
 
-    ParallelAnimation {
+    SequentialAnimation {
         id: fadeHudOut
 
         running: false
+
+        ParallelAnimation {
+            OpacityAnimator {
+                target: videoOutput
+                from: videoOutput.opacity
+                to: 0
+                duration: 700
+            }
+
+            OpacityAnimator {
+                target: hudView
+                from: hudView.opacity
+                to: 0
+                duration: 700
+            }
+        }
 
         OpacityAnimator {
             target: arrowView
             from: arrowView.opacity
             to: 1
-            duration: 700
-        }
-
-        OpacityAnimator {
-            target: videoOutput
-            from: videoOutput.opacity
-            to: 0
-            duration: 700
-        }
-
-        OpacityAnimator {
-            target: hudView
-            from: hudView.opacity
-            to: 0
             duration: 700
         }
 
@@ -1268,7 +1255,6 @@ Item {
     // -------------------------------------------------------------------------
 
     function updateViewModel() {
-
         MathLib.initializeTransformationMatrix(viewData.observerHeight, viewData.deviceBearing, viewData.devicePitch, viewData.deviceRoll, viewData.fieldOfViewX, viewData.fieldOfViewY);
 
         var distance = currentPosition.distanceToDestination;
@@ -1290,13 +1276,10 @@ Item {
             //console.log("point is not in the plane");
         }
 
-        if (useExperimentalFeatures) {
-            overlay.clearCanvas();
-            var scale = (10000 - distance) / 10000 < .4 ? .4 : (10000 - distance) / 10000;
-            var viewCoords = toScreenCoord(pointInPlane);
-            if (viewCoords !== null) {
-               overlay.drawSymbol(overlay.getContext("2d"), viewCoords, scale);
-            }
+        if (hudOn) {
+            overlay.scale = (10000 - distance) / 10000 < .4 ? .4 : (10000 - distance) / 10000;
+            overlay.viewCoords = toScreenCoord(pointInPlane);
+            overlay.requestPaint();
         }
     }
 
