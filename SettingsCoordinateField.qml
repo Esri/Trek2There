@@ -25,8 +25,15 @@ Rectangle {
     color: !nightMode ? dayModeSettings.background : nightModeSettings.background
     Accessible.role: Accessible.Pane
 
+    onInvalidChanged: {
+        if (invalid && !invalidAnimation.running) {
+            invalidAnimation.start()
+        }
+    }
+
     PropertyAnimation {
-        running: invalid
+        id: invalidAnimation
+
         target: rect
         property: "color"
         from: "red"
