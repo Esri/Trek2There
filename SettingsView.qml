@@ -690,33 +690,39 @@ Item {
     // FUNCTION DEFINITIONS ////////////////////////////////////////////////////
 
     function validateCoordinates() {
+        var valid = true;
         var coordObj = null;
 
         switch (currentDistanceFormat) {
         case 0: // decimal degrees
-            coordObj = Coordinate.parse(latitudeField.text+" "+longitudeField.text);
-            break;
         case 1: // degrees, minutes, seconds
-            coordObj = Coordinate.parse(latitudeField.text+" "+longitudeField.text);
-            break;
         case 2: // degrees, decimal minutes
-            coordObj = Coordinate.parse(latitudeField.text+" "+longitudeField.text);
+            if (latitudeField.text > "" && longitudeField.text > "") {
+                coordObj = Coordinate.parse(latitudeField.text + " " + longitudeField.text);
+            }
             break;
         case 3: // utm
-            coordObj = Coordinate.parse(utmZoneField.text+" "+eastingField.text+"E "+northingField.text+"N");
-            break;
+            if (utmZoneField.text > "" && eastingField.text > "" && northingField.text > "") {
+                coordObj = Coordinate.parse(utmZoneField.text + " " + eastingField.text + "E " + northingField.text + "N");
+            }
+                break;
         case 4: // MGRS
-            coordObj = Coordinate.parse("MGRS " + gridReferenceField.text, { spaces: true });
+            if (gridReferenceField.text > "") {
+                coordObj = Coordinate.parse("MGRS " + gridReferenceField.text, { spaces: true });
+            }
             break;
         }
 
-        if (coordObj && coordObj.coordinateValid) {
-            requestedDestination = coordObj.coordinate;
+        if (coordObj) {
+            valid = coordObj.coordinateValid
+            if (valid) {
+                requestedDestination = coordObj.coordinate;
+            }
+
+            setCoordinateInfo(currentDistanceFormat);
         }
 
-        setCoordinateInfo(currentDistanceFormat);
-
-        return coordObj.coordinateValid;
+        return valid;
     }
 
     function setCoordinateInfo(index) {
