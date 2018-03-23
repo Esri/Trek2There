@@ -15,16 +15,21 @@
  */
 
 import QtQuick 2.8
-import QtQuick.Controls 1.4
-import QtQuick.Controls.Styles 1.4
-import QtQuick.Dialogs 1.3
-import QtQuick.Layouts 1.1
-//------------------------------------------------------------------------------
+import QtQuick.Controls 2.3
+import QtQuick.Layouts 1.3
+
 import ArcGIS.AppFramework 1.0
 
 Dialog {
     id: clipboardDialog
+
     title: "Use Coordinates on Clipboard"
+    standardButtons: Dialog.Yes | Dialog.No
+    modal: true
+
+    Accessible.role: Accessible.Dialog
+    Accessible.name: title
+    Accessible.description: qsTr("This dialog appears when coordinates have been copied to the clipboard. It allows the user to use the coordinates in the application.")
 
     property string clipLat: ""
     property string clipLon: ""
@@ -32,13 +37,27 @@ Dialog {
     signal useCoordinates()
     signal dismissCoordinates()
 
-    Accessible.role: Accessible.Dialog
-    Accessible.name: title
-    Accessible.description: qsTr("This dialog appears when coordinates have been copied to the clipboard. It allows the user to use the coordinates in the application.")
+    onAccepted: {
+        useCoordinates();
+        swapError.hide();
+        clipboardDialog.close();
+    }
 
-    contentItem:  Rectangle{
-        width: sf(300)
-        height: sf(200)
+    onDiscarded: {
+        dismissCoordinates();
+        swapError.hide();
+        clipboardDialog.close();
+    }
+
+    onDismissCoordinates: {
+        clipLat = "";
+        clipLon = "";
+    }
+
+    contentWidth: parent.width
+    contentHeight: sf(200)
+
+    contentItem:  Rectangle {
         color: "#fff"
 
         ColumnLayout {
@@ -86,7 +105,7 @@ Dialog {
                                 Layout.fillHeight: true
                                 Layout.fillWidth: true
                                 verticalAlignment: Text.AlignVCenter
-                                text: "Lat (y): %1".arg(clipLat)
+                                text: "Latitude (y): %1".arg(clipLat)
                                 Accessible.role: Accessible.Indicator
                                 Accessible.name: qsTr("This is the latitude or y value")
                             }
@@ -95,7 +114,7 @@ Dialog {
                                 Layout.fillHeight: true
                                 Layout.fillWidth: true
                                 verticalAlignment: Text.AlignVCenter
-                                text: "Lng (x): %1".arg(clipLon)
+                                text: "Longitude (x): %1".arg(clipLon)
                                 Accessible.role: Accessible.Indicator
                                 Accessible.name: qsTr("This is the longitude or x value")
                             }
@@ -112,7 +131,6 @@ Dialog {
                                 hideAfter: 4000
                                 Accessible.role: Accessible.AlertMessage
                                 Accessible.name: message
-
                             }
                         }
                     }
@@ -127,16 +145,16 @@ Dialog {
 
                         Button {
                             anchors.fill: parent
-                            tooltip: qsTr("Swap coordinates")
-                            style: ButtonStyle {
-                                background: Rectangle{
-                                    color: "transparent"
-                                    anchors.fill: parent
-                                    radius: sf(5)
-                                    border.width: sf(1)
-                                    border.color: buttonTextColor
-                                }
-                            }
+//                            tooltip: qsTr("Swap coordinates")
+//                            style: ButtonStyle {
+//                                background: Rectangle{
+//                                    color: "transparent"
+//                                    anchors.fill: parent
+//                                    radius: sf(5)
+//                                    border.width: sf(1)
+//                                    border.color: buttonTextColor
+//                                }
+//                            }
 
                             Text {
                                 font.family: icons.name
@@ -172,6 +190,7 @@ Dialog {
                 }
             }
 
+/*
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: sf(50)
@@ -242,12 +261,8 @@ Dialog {
                     }
                 }
             }
+*/
         }
-    }
-
-    onDismissCoordinates: {
-        clipLat = "";
-        clipLon = "";
     }
 
     // END /////////////////////////////////////////////////////////////////////
