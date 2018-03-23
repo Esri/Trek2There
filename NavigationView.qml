@@ -1023,7 +1023,7 @@ Item {
                 currentSpeed = currentPosition.position.speed;
             }
 
-           if (requestedDestination !== null) {
+            if (requestedDestination !== null) {
                 /*
                     TODO: On some Android devices position.directionValid must return
                     true so the statusMessage isn't shown when navigation first starts
@@ -1043,7 +1043,7 @@ Item {
                     directionArrow.opacity = 0.2;
                     statusMessage.show();
                 }
-           }
+            }
         }
 
         onPositionChanged: {}

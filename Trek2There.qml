@@ -42,6 +42,7 @@ App {
     property bool nightMode: app.settings.boolValue("nightMode", false)
     property bool listenToClipboard: app.settings.boolValue("listenToClipboard", true)
     property bool useExperimentalFeatures: app.settings.boolValue("useExperimentalFeatures", false)
+    property int currentDistanceFormat: app.settings.numberValue("currentDistanceFormat", 0)
 
     property RegExpValidator latitudeValidator: RegExpValidator { regExp: /^[-]?90$|^[-]?[1-8][0-9](\.\d{1,})?$|^[-]?[1-9](\.\d{1,})?$/g }
     property RegExpValidator longitudeValidator: RegExpValidator { regExp: /^[-]?180$|^[-]?1[0-7][0-9](\.\d{1,})?$|^[-]?[1-9][0-9](\.\d{1,})?$|^[-]?[1-9](\.\d{1,})?$/g }
@@ -111,7 +112,7 @@ App {
         onUseCoordinates: {
             if(clipLat !== "" && clipLon !== "") {
                 console.log("lat: %1, lon:%2".arg(clipLat).arg(clipLon))
-                requestedDestination =  QtPositioning.coordinate(clipLat.toString(), clipLon.toString());
+                requestedDestination = QtPositioning.coordinate(clipLat.toString(), clipLon.toString());
                 dismissCoordinates();
             }
         }
@@ -165,6 +166,12 @@ App {
 
     onUseExperimentalFeaturesChanged: {
         app.settings.setValue("useExperimentalFeatures", useExperimentalFeatures);
+    }
+
+    //--------------------------------------------------------------------------
+
+    onCurrentDistanceFormatChanged: {
+        app.settings.setValue("currentDistanceFormat", currentDistanceFormat);
     }
 
     // FUNCTIONS ///////////////////////////////////////////////////////////////
