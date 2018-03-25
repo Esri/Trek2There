@@ -441,100 +441,40 @@ Item {
                             }
                         }
 
+                        //------------------------------------------------------
+
                         ButtonGroup {
                             id: distanceMeasurementGroup
+
+                            buttons: [metricChecked, imperialChecked]
                         }
 
                         //------------------------------------------------------
 
-                        Rectangle {
-                            Layout.preferredHeight: sf(50)
-                            Layout.fillWidth: true
-                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                            Accessible.role: Accessible.Pane
+                        SettingsRadioButton {
+                            id: metricChecked
 
-                            RadioButton{
-                                id: metricChecked
-                                anchors.fill: parent
-                                checked: usesMetric
-                                Accessible.ignored: true
-                                ButtonGroup.group: distanceMeasurementGroup
+                            text: "Metric"
+                            checked: usesMetric
 
-                                indicator: Rectangle {
-                                  implicitWidth: sf(20)
-                                  implicitHeight: sf(20)
-                                  x: sideMargin
-                                  y: parent.height / 2 - height / 2
-                                  radius: sf(10)
-                                  border.width: sf(2)
-                                  border.color: !nightMode ? "#595959" : nightModeSettings.foreground
-                                  color: !nightMode ? "#ededed" : "#272727"
-                                      Rectangle {
-                                          anchors.fill: parent
-                                          visible: parent.parent.checked
-                                          color: !nightMode ? "#595959" : nightModeSettings.foreground
-                                          radius: sf(9)
-                                          anchors.margins: sf(4)
-                                      }
-                                }
-                                contentItem: Text {
-                                        opacity: enabled ? 1.0 : 0.3
-                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                                        text: qsTr("Metric")
-                                        verticalAlignment: Text.AlignVCenter
-                                        leftPadding: metricChecked.indicator.width + metricChecked.spacing + sideMargin
-                               }
-                                onCheckedChanged: {
-                                    if (checked) {
-                                        usesMetric = true;
-                                    }
+                            onCheckedChanged: {
+                                if (checked) {
+                                    usesMetric = true;
                                 }
                             }
                         }
 
                         //------------------------------------------------------
 
-                        Rectangle {
-                            Layout.preferredHeight: sf(50)
-                            Layout.fillWidth: true
-                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                            Accessible.role: Accessible.Pane
+                        SettingsRadioButton {
+                            id: imperialChecked
 
-                            RadioButton{
-                                id: imperialChecked
-                                anchors.fill: parent
-                                checked: !usesMetric
-                                Accessible.ignored: true
-                                ButtonGroup.group: distanceMeasurementGroup
+                            text: "Imperial"
+                            checked: !usesMetric
 
-                                indicator: Rectangle {
-                                  implicitWidth: sf(20)
-                                  implicitHeight: sf(20)
-                                  x: sideMargin
-                                  y: parent.height / 2 - height / 2
-                                  radius: sf(10)
-                                  border.width: sf(2)
-                                  border.color: !nightMode ? "#595959" : nightModeSettings.foreground
-                                  color: !nightMode ? "#ededed" : "#272727"
-                                      Rectangle {
-                                          anchors.fill: parent
-                                          visible: parent.parent.checked
-                                          color: !nightMode ? "#595959" : nightModeSettings.foreground
-                                          radius: sf(9)
-                                          anchors.margins: sf(4)
-                                      }
-                                }
-                                contentItem: Text {
-                                        opacity: enabled ? 1.0 : 0.3
-                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                                        text: qsTr("Imperial")
-                                        verticalAlignment: Text.AlignVCenter
-                                        leftPadding: imperialChecked.indicator.width + imperialChecked.spacing + sideMargin
-                               }
-                                onCheckedChanged: {
-                                    if (checked) {
-                                        usesMetric = false;
-                                    }
+                            onCheckedChanged: {
+                                if (checked) {
+                                    usesMetric = false;
                                 }
                             }
                         }
