@@ -121,14 +121,14 @@ Item {
 
             //------------------------------------------------------------------
 
-            Rectangle{
+            Rectangle {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 Layout.margins: sf(16)
                 color: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
                 Accessible.role: Accessible.Pane
 
-                ColumnLayout{
+                ColumnLayout {
                     anchors.fill: parent
                     spacing:0
                     Accessible.role: Accessible.Pane
@@ -206,14 +206,14 @@ Item {
                         }
                     }
 
-                    Rectangle{
+                    Rectangle {
                         Layout.preferredHeight: sf(50)
                         Layout.fillWidth: true
                         Layout.topMargin: 0
                         color: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
                         Accessible.role: Accessible.Pane
 
-                        Text{
+                        Text {
                             anchors.fill: parent
                             textFormat: Text.RichText
                             color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
@@ -230,20 +230,20 @@ Item {
 
                     //----------------------------------------------------------
 
-                    Rectangle{
+                    Rectangle {
                         Layout.preferredHeight: sf(50)
                         Layout.fillWidth: true
                         Layout.topMargin: 0
                         color: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
                         Accessible.role: Accessible.Pane
 
-                        MouseArea{
+                        MouseArea {
                             anchors.fill: parent
                             onPressAndHold: {
                                 logTreks = logTreks === false ? true : false;
-                                if(logTreks) {
+                                if (logTreks) {
                                     logTreksIndicator.text = "<b>+</b>";
-                                }else{
+                                } else {
                                     logTreksIndicator.text = "<b>-</b>";
                                 }
                             }
@@ -256,11 +256,11 @@ Item {
                             }
                         }
 
-                        RowLayout{
+                        RowLayout {
                             anchors.fill: parent
                             spacing:0
 
-                            Text{
+                            Text {
                                 id: softwareVersion
                                 Layout.fillHeight: true
                                 Layout.fillWidth: true
@@ -271,7 +271,8 @@ Item {
                                 Accessible.role: Accessible.StaticText
                                 Accessible.name: qsTr("Current version of the application is %1".arg(text))
                             }
-                            Text{
+
+                            Text {
                                 id: logTreksIndicator
                                 Layout.fillHeight: true
                                 Layout.fillWidth: true

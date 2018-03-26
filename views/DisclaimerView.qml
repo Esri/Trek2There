@@ -25,23 +25,23 @@ Item {
 
     // UI //////////////////////////////////////////////////////////////////////
 
-    Rectangle{
+    Rectangle {
         anchors.fill: parent
         color: !nightMode ? dayModeSettings.background : nightModeSettings.background
         Accessible.role: Accessible.Pane
 
-        ColumnLayout{
+        ColumnLayout {
             anchors.fill: parent
             spacing: 0
             Accessible.role: Accessible.Pane
 
-            Rectangle{
+            Rectangle {
                 Layout.preferredHeight: sf(50)
                 Layout.fillWidth: true
                 color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                 Accessible.role: Accessible.Pane
 
-                Text{
+                Text {
                     anchors.fill: parent
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
@@ -51,19 +51,17 @@ Item {
                     Accessible.role: Accessible.Heading
                     Accessible.name: text
                 }
-
-
             }
 
             //------------------------------------------------------------------
 
-            Rectangle{
+            Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: sf(50)
                 color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                 Accessible.ignored: true
 
-                Image{
+                Image {
                     source: "../images/notice_triangle.png"
                     anchors.centerIn: parent
                     height: sf(30)
@@ -73,7 +71,7 @@ Item {
 
             //------------------------------------------------------------------
 
-            Rectangle{
+            Rectangle {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 Layout.margins: sf(16)
@@ -117,7 +115,7 @@ Item {
 
             //------------------------------------------------------------------
 
-            Rectangle{
+            Rectangle {
                 Layout.preferredHeight: sf(50)
                 Layout.fillWidth: true
                 Layout.margins: sf(16)
@@ -125,7 +123,7 @@ Item {
                 color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                 Accessible.role: Accessible.Pane
 
-                Text{
+                Text {
                     property string elementText: qsTr("License agreement")
                     anchors.fill: parent
                     textFormat: Text.RichText
@@ -144,7 +142,7 @@ Item {
 
             //------------------------------------------------------------------
 
-            Rectangle{
+            Rectangle {
                 Layout.preferredHeight: sf(50)
                 Layout.fillWidth: true
                 color: !nightMode ? "#ededed" : "#272727"
@@ -153,20 +151,20 @@ Item {
                 Accessible.role: Accessible.Pane
                 Accessible.ignored: true // disabled for v1.0
 
-                RowLayout{
+                RowLayout {
                     anchors.fill: parent
                     anchors.leftMargin: sf(16)
                     anchors.rightMargin: sf(16)
                     spacing: 0
                     Accessible.role: Accessible.Pane
 
-                    Rectangle{
+                    Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         color: "transparent"
                         Accessible.role: Accessible.Pane
 
-                        Text{
+                        Text {
                             id: doNotShowWarningAgainLabel
                             anchors.fill: parent
                             verticalAlignment: Text.AlignVCenter
@@ -177,13 +175,13 @@ Item {
                         }
                     }
 
-                    Rectangle{
+                    Rectangle {
                         Layout.preferredWidth: parent.height
                         Layout.fillHeight: true
                         color: "transparent"
                         Accessible.role: Accessible.Pane
 
-                        RadioButton{
+                        RadioButton {
                             id: doNotShowWarningAgain
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.right: parent.right
@@ -200,6 +198,7 @@ Item {
                               border.width: sf(2)
                               border.color: !nightMode ? "#595959" : nightModeSettings.foreground
                               color: !nightMode ? "#ededed" : "#272727"
+
                               Rectangle {
                                   anchors.fill: parent
                                   visible: parent.parent.checked
@@ -215,21 +214,21 @@ Item {
 
             //------------------------------------------------------------------
 
-            Rectangle{
+            Rectangle {
                 Layout.preferredHeight: sf(50)
                 Layout.fillWidth: true
                 Layout.bottomMargin: sf(16)
                 color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                 Accessible.role: Accessible.Pane
 
-                RowLayout{
+                RowLayout {
                     anchors.fill: parent
                     anchors.leftMargin: sf(16)
                     anchors.rightMargin: sf(16)
                     spacing: 0
                     Accessible.role: Accessible.Pane
 
-                    Rectangle{
+                    Rectangle {
                         Layout.fillHeight: true
                         Layout.fillWidth: true
                         visible: false // disabled for v1.0
@@ -238,7 +237,7 @@ Item {
                         Accessible.role: Accessible.Pane
                         Accessible.ignored: true // disabled for v1.0
 
-                        Button{
+                        Button {
                             height: parent.height
                             width: parent.width - sf(50)
                             anchors.left: parent.left
@@ -246,11 +245,13 @@ Item {
                                 anchors.fill: parent
                                 color: parent.pressed || parent.hovered ? "#fff" : ( !nightMode ? dayModeSettings.background : nightModeSettings.background )
                             }
-                            Text{
+
+                            Text {
                                 anchors.centerIn: parent
                                 color: buttonTextColor
                                 text: qsTr("Cancel")
-                              }
+                            }
+
                             onClicked: {
                                 Qt.quit();
                             }
@@ -264,24 +265,25 @@ Item {
                         }
                     }
 
-                    Rectangle{
+                    Rectangle {
                         Layout.fillHeight: true
                         Layout.fillWidth: true
                         color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                         Accessible.role: Accessible.Pane
 
-                        Button{
+                        Button {
                             height: parent.height
                             width: parent.width // parent.width - 50 * AppFramework.displayScaleFactor
                             anchors.right: parent.right
-                            background: Rectangle{
+                            background: Rectangle {
                                 anchors.fill: parent
                                 color: parent.pressed || parent.hovered ? "#fff" : ( !nightMode ? dayModeSettings.background : nightModeSettings.background )
                                 border.color: !nightMode ? "#ddd" : nightModeSettings.secondaryBackground
                                 border.width: sf(1)
                                 radius: sf(5)
                             }
-                            Text{
+
+                            Text {
                                 anchors.centerIn: parent
                                 color: buttonTextColor
                                 text: qsTr("Accept")
@@ -289,7 +291,7 @@ Item {
 
                             onClicked: {
                                 /* // disabled for v1.0
-                                if(doNotShowWarningAgain.checked) {
+                                if (doNotShowWarningAgain.checked) {
                                     app.settings.setValue("showSafetyWarning", false);
                                 }
                                 app.settings.setValue("safteyWarningAccepted", true);

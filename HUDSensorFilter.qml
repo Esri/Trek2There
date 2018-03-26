@@ -59,7 +59,7 @@ QtObject {
     }
 
     function reset(value) {
-        if(enabled && value) {
+        if (enabled && value) {
             values = [];
             for (var i = 0; i < size; i++) {
                 values[i] = value;

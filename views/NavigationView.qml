@@ -102,7 +102,7 @@ Item {
     //--------------------------------------------------------------------------
 
     onStopUsingCompassForNavigationChanged: {
-        if(useExperimentalFeatures) {
+        if (useExperimentalFeatures) {
             if (stopUsingCompassForNavigation) {
                 sensors.stopCompass();
             } else {
@@ -121,7 +121,7 @@ Item {
         enabled: autohideToolbar ? true : false
 
         onClicked: {
-            if(toolbar.opacity === 0) {
+            if (toolbar.opacity === 0) {
                 toolbar.opacity = 1;
                 toolbar.enabled = true;
                 hideToolbar.start();
@@ -750,7 +750,7 @@ Item {
 
                     onClicked: {
                         endNavigation();
-                        if(applicationCallback !== "") {
+                        if (applicationCallback !== "") {
                             callingApplication = "";
                             Qt.openUrlExternally(applicationCallback);
                             applicationCallback = "";
@@ -885,7 +885,7 @@ Item {
 
         try {
             appMetrics.startSession();
-            if(callingApplication !== null && callingApplication !== "") {
+            if (callingApplication !== null && callingApplication !== "") {
                 appMetrics.trackEvent("App called from: " + callingApplication);
             }
         }
@@ -1002,19 +1002,15 @@ Item {
 
             if (currentPosition.position.horizontalAccuracyValid) {
                 var accuracy = currentPosition.position.horizontalAccuracy;
-                if(accuracy < 10) {
+                if (accuracy < 10) {
                     currentAccuracy = 4;
-                }
-                else if(accuracy > 11 && accuracy < 55) {
+                } else if (accuracy > 11 && accuracy < 55) {
                     currentAccuracy = 3;
-                }
-                else if(accuracy > 56 && accuracy < 100) {
+                } else if (accuracy > 56 && accuracy < 100) {
                     currentAccuracy = 2;
-                }
-                else if(accuracy >= 100) {
+                } else if (accuracy >= 100) {
                     currentAccuracy = 1;
-                }
-                else{
+                } else {
                     currentAccuracy = 0;
                 }
 
@@ -1065,7 +1061,7 @@ Item {
         }
 
         function updatePitch() {
-            if(!fadeHudIn.running && !fadeHudOut.running) {
+            if (!fadeHudIn.running && !fadeHudOut.running) {
                 if (useExperimentalFeatures) {
                     if (!hudOn && Math.abs(sensors.pitchAngle) <= 30) {
                         turnHudOn();

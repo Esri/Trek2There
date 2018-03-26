@@ -62,8 +62,8 @@ QtObject {
 
         open();
 
-        if(logTreks) {
-            if(trekTableName !== "") {
+        if (logTreks) {
+            if (trekTableName !== "") {
                 trekTableName = "";
             }
 
@@ -90,7 +90,7 @@ QtObject {
 
         // positionInfo: [timestamp, pos_lat, pos_long, pos_dir, klat, klong, az_to, dist_to, degrees_off]
 
-        if(logTreks) {
+        if (logTreks) {
             db.transaction(
                 function(tx) {
                     try{
@@ -108,7 +108,7 @@ QtObject {
 
     function stopRecordingTrek() {
 
-        if(logTreks) {
+        if (logTreks) {
             trekTableName = "";
         }
 

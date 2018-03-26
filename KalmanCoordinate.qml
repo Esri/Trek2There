@@ -35,11 +35,11 @@ QtObject {
 
     function process(inLat, inLong, inAccuracy, inTimestamp) {
 
-        if(inAccuracy < minAccuracy) {
+        if (inAccuracy < minAccuracy) {
             inAccuracy = minAccuracy;
         }
 
-        if(variance < 0) { // Uninitilized
+        if (variance < 0) { // Uninitilized
             timeStampInMillseconds = inTimestamp;
             latitude = inLat;
             longitude = inLong;
@@ -48,7 +48,7 @@ QtObject {
         else{
             var thisMomentInMilliseconds = inTimestamp - timeStampInMillseconds;
 
-            if(thisMomentInMilliseconds > 0) {
+            if (thisMomentInMilliseconds > 0) {
 
                 variance += thisMomentInMilliseconds * metersPerSecond * metersPerSecond / 1000;
 

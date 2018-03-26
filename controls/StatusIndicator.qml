@@ -91,7 +91,7 @@ Rectangle {
     onShow: {
        statusIndicator.opacity = 1;
        statusIndicator.visible = true;
-        if(hideAutomatically===true) {
+        if (hideAutomatically===true) {
             hideStatusMessage.start();
         }
     }
@@ -99,12 +99,11 @@ Rectangle {
     //--------------------------------------------------------------------------
 
     onHide: {
-        if(animateHide===true) {
+        if (animateHide===true) {
             fader.start()
-        }
-        else{
+        } else {
             statusIndicator.visible = false;
-            if(hideStatusMessage.running===true) {
+            if (hideStatusMessage.running===true) {
                 hideStatusMessage.stop();
             }
         }
@@ -134,11 +133,9 @@ Rectangle {
 
         onStopped: {
             statusIndicator.visible = false;
-            if(hideStatusMessage.running===true) {
+            if (hideStatusMessage.running===true) {
                 hideStatusMessage.stop();
             }
         }
     }
-
-
 }
