@@ -20,6 +20,8 @@ import QtPositioning 5.4
 //------------------------------------------------------------------------------
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
+import ArcGIS.AppFramework.Networking 1.0
+import ArcGIS.AppFramework.Positioning 1.0
 //------------------------------------------------------------------------------
 import "AppMetrics"
 import "IconFont"
@@ -128,6 +130,51 @@ App {
             appClipboard.inLat = "";
             appClipboard.inLon = "";
         }
+    }
+
+    //--------------------------------------------------------------------------
+
+    PositionSource {
+        id: positionSource
+
+        active: true
+        nmeaSource: nmeaSource
+
+        onPositionChanged: {
+            if (debug) {
+                console.log("Position change:", JSON.stringify(position));
+            }
+        }
+    }
+
+    //--------------------------------------------------------------------------
+
+    SatelliteInfoSource {
+        id: satelliteInfoSource
+
+        active: true
+        nmeaSource: nmeaSource
+    }
+
+    //--------------------------------------------------------------------------
+
+    NmeaSource {
+        id: nmeaSource
+
+        onSourceChanged: {
+            console.log("SOURCE CHANGED", JSON.stringify(source));
+            positionSource.update();
+        }
+
+        onReceivedNmeaData: {
+            // console.log("RECEIVED NMEA DATA", receivedSentence.trim());
+        }
+    }
+
+    //--------------------------------------------------------------------------
+
+    TcpSocket {
+        id: tcpSocket
     }
 
     // SIGNALS /////////////////////////////////////////////////////////////////

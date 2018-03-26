@@ -51,7 +51,8 @@ Item {
 
     //--------------------------------------------------------------------------
 
-    Component.onDestruction: {
+    StackView.onDeactivated: {
+        discoveryAgent.stop();
         disconnect();
     }
 
@@ -619,14 +620,6 @@ Item {
             case AbstractSocket.StateUnconnected:
                 isConnected = false;
                 isConnecting = false;
-
-                // XXX workaround for https://devtopia.esri.com/Melbourne/appstudio-framework/issues/455
-                // tcpSocket.error does not fire changed events
-                // XXX https://devtopia.esri.com/Melbourne/appstudio-framework/issues/456
-                // tcpSocket.error should be cleared on reconnect
-                if (tcpSocket.error !== AbstractSocket.ErrorUnknown) {
-                    tcpSocket.errorChanged();
-                }
                 break;
             case AbstractSocket.StateHostLookup:
                 isConnected = false;
@@ -653,15 +646,13 @@ Item {
         }
 
         onErrorChanged: {
-            if (tcpSocket.error !== tcpSocket.ErrorUnknown) {
-                console.log("Connection error", tcpSocket.error, tcpSocket.errorString)
+            console.log("Connection error", tcpSocket.error, tcpSocket.errorString)
 
-                errorDialog.text = tcpSocket.errorString;
-                errorDialog.open();
+            errorDialog.text = tcpSocket.errorString;
+            errorDialog.open();
 
-                isConnected = false;
-                isConnecting = false;
-            }
+            isConnected = false;
+            isConnecting = false;
         }
     }
 
