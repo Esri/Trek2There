@@ -49,6 +49,7 @@ App {
 
     property var locale: Qt.locale()
     property bool usesMetric: app.settings.boolValue("usesMetric", localeIsMetric())
+    property bool useInternalGPS: app.settings.boolValue("useInternalGPS", true)
 
     property TrekLogger trekLogger: TrekLogger{}
     property bool logTreks: app.settings.boolValue("logTreks", false)
@@ -154,6 +155,12 @@ App {
 
     onUsesMetricChanged: {
         app.settings.setValue("usesMetric", usesMetric);
+    }
+
+    //--------------------------------------------------------------------------
+
+    onUseInternalGPSChanged: {
+        app.settings.setValue("useInternalGPS", useInternalGPS);
     }
 
     //--------------------------------------------------------------------------

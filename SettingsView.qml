@@ -189,7 +189,8 @@ Item {
                     Accessible.role: Accessible.Pane
 
                     ColumnLayout {
-                        anchors.fill: parent
+                        anchors.left: parent.left
+                        anchors.right: parent.right
                         spacing:0
                         Accessible.role: Accessible.Pane
 
@@ -476,6 +477,122 @@ Item {
                                 if (checked) {
                                     usesMetric = false;
                                 }
+                            }
+                        }
+
+                        // SECTION /////////////////////////////////////////////
+
+                        Rectangle {
+                            Layout.preferredHeight: sf(50)
+                            Layout.fillWidth: true
+                            Layout.topMargin: sf(8)
+                            Layout.bottomMargin: sf(5)
+                            color: "transparent"
+                            Accessible.role: Accessible.Pane
+
+                            Text {
+                                anchors.fill: parent
+                                anchors.leftMargin: sideMargin
+                                text: qsTr("POSITION SOURCE")
+                                verticalAlignment: Text.AlignBottom
+                                color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                                Accessible.role: Accessible.Heading
+                                Accessible.name: text
+                                Accessible.description: qsTr("Choose between the device internal or an external position source")
+                            }
+                        }
+
+                        //------------------------------------------------------
+
+                        ButtonGroup {
+                            id: gpsReceiverGroup
+
+                            buttons: [internalChecked, externalChecked]
+                        }
+
+                        //------------------------------------------------------
+
+                        SettingsRadioButton {
+                            id: internalChecked
+
+                            text: "Use built-in location sensor"
+                            checked: useInternalGPS
+
+                            onCheckedChanged: {
+                                if (checked) {
+                                    useInternalGPS = true;
+                                }
+                            }
+                        }
+
+                        //------------------------------------------------------
+
+                        RowLayout {
+                            spacing: 0
+
+                            SettingsRadioButton {
+                                id: externalChecked
+
+                                text: "Use external receiver"
+                                checked: !useInternalGPS
+
+                                onCheckedChanged: {
+                                    if (checked) {
+                                        useInternalGPS = false;
+                                    }
+                                }
+                            }
+
+                            Button {
+                                id: externalDeviceButton
+
+                                visible: externalChecked.checked //&& currentDevice
+
+                                Layout.fillHeight: true
+                                Layout.preferredWidth: sf(100)
+                                anchors.right: parent.right
+
+                                contentItem: Text {
+                                    Layout.fillHeight: true
+                                    Layout.fillWidth: true
+
+                                    text: "Change"
+                                    color: buttonTextColor
+                                    verticalAlignment: Text.AlignVCenter
+                                    horizontalAlignment: Text.AlignHCenter
+                                }
+
+                                background: Rectangle {
+                                    Layout.fillHeight: true
+                                    Layout.fillWidth: true
+
+                                    color: !nightMode ? (externalDeviceButton.down ? dayModeSettings.secondaryBackground : dayModeSettings.background) : (externalDeviceButton.down ? nightModeSettings.secondaryBackground : nightModeSettings.background)
+                                 }
+
+                                onClicked: {
+                                    // XXX switch to device selection page
+                                }
+                            }
+                        }
+
+                        //------------------------------------------------------
+
+                        Rectangle {
+                            visible: externalChecked.checked //&& currentDevice
+
+                            Layout.preferredHeight: sf(50)
+                            Layout.fillWidth: true
+                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                            Accessible.role: Accessible.Pane
+
+                            Text {
+                                id: receiverName
+
+                                anchors.fill: parent
+                                color: buttonTextColor
+                                text: qsTr("External GPS receiver")
+                                verticalAlignment: Text.AlignVCenter
+                                leftPadding: /*radioButton.indicator.width + 2*externalChecked.radioButton.spacing +*/ sideMargin
                             }
                         }
 

@@ -5,6 +5,7 @@ import QtQuick.Layouts 1.1
 Rectangle {
     id: rect
 
+    property alias radioButton: radioButton
     property alias text: textItem.text
     property alias checked: radioButton.checked
 
@@ -13,7 +14,7 @@ Rectangle {
     color: !nightMode ? dayModeSettings.background : nightModeSettings.background
     Accessible.role: Accessible.Pane
 
-    RadioButton{
+    RadioButton {
         id: radioButton
 
         anchors.fill: parent
@@ -36,6 +37,7 @@ Rectangle {
                 anchors.margins: sf(4)
             }
         }
+
         contentItem: Text {
             id: textItem
 
