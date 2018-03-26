@@ -27,7 +27,9 @@ import QtSensors 5.5
 
 import ArcGIS.AppFramework 1.0
 
-import "js/MathLib.js" as MathLib
+import "../"
+import "../controls"
+import "../js/MathLib.js" as MathLib
 
 //------------------------------------------------------------------------------
 
@@ -54,7 +56,7 @@ Item {
     property double currentSpeed: 0.0
     property int kAzimuthRounding: 1
     property int kAzimuthFilterLength: 25
-    property Image mapPin: Image { source: "images/map_pin_night.png" }
+    property Image mapPin: Image { source: "../images/map_pin_night.png" }
 
     // Signals /////////////////////////////////////////////////////////////////
 
@@ -301,7 +303,7 @@ Item {
                         anchors.centerIn: parent
                         height: parent.height - sf(40)
 
-                        source: "images/arrow_night.png"
+                        source: "../images/arrow_night.png"
                         fillMode: Image.PreserveAspectFit
                     }
                 }
@@ -346,7 +348,7 @@ Item {
                         height: directionUI.height - directionUI.imageBorder
                         width: directionUI.width - directionUI.imageBorder
 
-                        source: "images/direction_of_travel_circle.png"
+                        source: "../images/direction_of_travel_circle.png"
                         fillMode: Image.PreserveAspectFit
                         Accessible.ignored: true
                     }
@@ -360,7 +362,7 @@ Item {
                         width: 0.9 * directionOfTravelCircle.width
                         height: 0.9 * directionOfTravelCircle.height
 
-                        source: !nightMode ? "images/arrow_day.png" : "images/arrow_night.png"
+                        source: !nightMode ? "../images/arrow_day.png" : "../images/arrow_night.png"
                         fillMode: Image.PreserveAspectFit
                         rotation: 0
                         opacity: 1
@@ -380,7 +382,7 @@ Item {
                         width: 0.9 * directionOfTravelCircle.width
                         height: 0.9 * directionOfTravelCircle.height
 
-                        source: !nightMode ? "images/map_pin_day.png" : "images/map_pin_night.png"
+                        source: !nightMode ? "../images/map_pin_day.png" : "../images/map_pin_night.png"
                         fillMode: Image.PreserveAspectFit
 
                         Accessible.role: Accessible.AlertMessage
@@ -398,7 +400,7 @@ Item {
                         height: directionUI.height - directionUI.imageBorder
                         width: directionUI.width - directionUI.imageBorder
 
-                        source: "images/no_signal.png"
+                        source: "../images/no_signal.png"
                         fillMode: Image.PreserveAspectFit
 
                         Accessible.role: Accessible.Indicator
@@ -694,7 +696,7 @@ Item {
                         anchors.centerIn: parent
                         height: parent.height - sf(24)
                         fillMode: Image.PreserveAspectFit
-                        source: "images/settings.png"
+                        source: "../images/settings.png"
                     }
 
                     onClicked: {
@@ -789,7 +791,7 @@ Item {
                         anchors.centerIn: parent
                         height: parent.height - sf(26)
                         fillMode: Image.PreserveAspectFit
-                        source: "images/contrast.png"
+                        source: "../images/contrast.png"
                     }
 
                     onClicked: {

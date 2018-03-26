@@ -22,6 +22,8 @@ import ArcGIS.AppFramework 1.0
 //------------------------------------------------------------------------------
 import "AppMetrics"
 import "IconFont"
+import "views"
+import "controls"
 //------------------------------------------------------------------------------
 
 App {

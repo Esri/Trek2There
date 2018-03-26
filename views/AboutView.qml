@@ -70,7 +70,7 @@ Item {
 
                             Image {
                                 id: backArrow
-                                source: "images/back_arrow.png"
+                                source: "../images/back_arrow.png"
                                 anchors.left: parent.left
                                 anchors.leftMargin: sideMargin
                                 anchors.verticalCenter: parent.verticalCenter

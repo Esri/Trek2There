@@ -64,7 +64,7 @@ Item {
                 Accessible.ignored: true
 
                 Image{
-                    source: "images/notice_triangle.png"
+                    source: "../images/notice_triangle.png"
                     anchors.centerIn: parent
                     height: sf(30)
                     fillMode: Image.PreserveAspectFit

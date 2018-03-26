@@ -24,6 +24,8 @@ import QtPositioning 5.4
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Sql 1.0
 
+import "../controls"
+
 Item {
     id: settingsView
 
@@ -79,7 +81,7 @@ Item {
                             }
                             Image {
                                 id: backArrow
-                                source: "images/back_arrow.png"
+                                source: "../images/back_arrow.png"
                                 anchors.left: parent.left
                                 anchors.leftMargin: sideMargin
                                 anchors.verticalCenter: parent.verticalCenter
@@ -140,7 +142,7 @@ Item {
                             }
                             Image {
                                 id: aboutIcon
-                                source: "images/about.png"
+                                source: "../images/about.png"
                                 anchors.left: parent.left
                                 anchors.leftMargin: sideMargin
                                 anchors.verticalCenter: parent.verticalCenter
@@ -653,7 +655,7 @@ Item {
                                                 width: parent.width - sf(8)
                                                 fillMode: Image.PreserveAspectFit
                                                 visible: useExperimentalFeatures
-                                                source: "images/checkmark.png"
+                                                source: "../images/checkmark.png"
                                                 Accessible.ignored: true
                                             }
                                         }
