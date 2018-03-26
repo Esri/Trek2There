@@ -47,7 +47,6 @@ Item {
     signal deviceSelected(string name, Device device)
     signal networkHostSelected(string hostname, int port)
     signal disconnect()
-    signal showLocationPage()
 
     //--------------------------------------------------------------------------
 
@@ -106,18 +105,7 @@ Item {
     //--------------------------------------------------------------------------
 
     onIsConnectedChanged: {
-        if (isConnected && footer.currentIndex === 0) {
-            showLocationPage();
-        }
-    }
-
-    //--------------------------------------------------------------------------
-
-    onShowLocationPage: {
-        locationPage.clear();
-        skyplotPage.clear();
-        debugPage.clear();
-        footer.currentIndex = 1;
+        // XXX stub
     }
 
     //--------------------------------------------------------------------------

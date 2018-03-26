@@ -41,6 +41,15 @@ Item {
     property var utmZone: requestedDestination && requestedDestination.isValid && coordinateInfo && coordinateInfo.zone && coordinateInfo.band ? coordinateInfo.zone + coordinateInfo.band : ""
     property var gridReference: requestedDestination && requestedDestination.isValid && coordinateInfo && coordinateInfo.text ? coordinateInfo.text : ""
 
+    property bool initialized
+
+    StackView.onActivating: {
+        if (!currentDevice) {
+            useInternalGPS = true;
+        }
+        initialized = true;
+    }
+
     // UI //////////////////////////////////////////////////////////////////////
 
     Rectangle {
@@ -427,7 +436,7 @@ Item {
                                     if (checked) {
                                         useInternalGPS = false;
 
-                                        if (!currentDevice) {
+                                        if (!currentDevice && initialized) {
                                             mainStackView.push(devicesView);
                                         }
                                     }
@@ -437,7 +446,7 @@ Item {
                             Button {
                                 id: externalDeviceButton
 
-                                visible: externalChecked.checked //&& currentDevice
+                                visible: externalChecked.checked && currentDevice
 
                                 Layout.fillHeight: true
                                 Layout.preferredWidth: sf(100)
@@ -469,7 +478,7 @@ Item {
                         //------------------------------------------------------
 
                         Rectangle {
-                            visible: externalChecked.checked //&& currentDevice
+                            visible: externalChecked.checked && currentDevice
 
                             Layout.preferredHeight: sf(50)
                             Layout.fillWidth: true
