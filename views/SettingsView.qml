@@ -541,6 +541,10 @@ Item {
                                 onCheckedChanged: {
                                     if (checked) {
                                         useInternalGPS = false;
+
+                                        if (!currentDevice) {
+                                            mainStackView.push(devicesView);
+                                        }
                                     }
                                 }
                             }
@@ -572,7 +576,7 @@ Item {
                                  }
 
                                 onClicked: {
-                                    // XXX switch to device selection page
+                                    mainStackView.push(devicesView);
                                 }
                             }
                         }
@@ -660,6 +664,7 @@ Item {
                                             }
                                         }
                                     }
+
                                     Text {
                                         Layout.fillHeight: true
                                         Layout.fillWidth: true

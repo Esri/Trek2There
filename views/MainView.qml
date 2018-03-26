@@ -71,6 +71,17 @@ Item {
     //--------------------------------------------------------------------------
 
     Component {
+        id: devicesView
+
+        DevicesView {
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+        }
+    }
+
+    //--------------------------------------------------------------------------
+
+    Component {
         id: aboutView
 
         AboutView {

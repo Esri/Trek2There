@@ -19,6 +19,7 @@ import QtQuick.Window 2.0
 import QtPositioning 5.4
 //------------------------------------------------------------------------------
 import ArcGIS.AppFramework 1.0
+import ArcGIS.AppFramework.Devices 1.0
 //------------------------------------------------------------------------------
 import "AppMetrics"
 import "IconFont"
@@ -51,7 +52,7 @@ App {
 
     property var locale: Qt.locale()
     property bool usesMetric: app.settings.boolValue("usesMetric", localeIsMetric())
-    property bool useInternalGPS: app.settings.boolValue("useInternalGPS", true)
+    property bool useInternalGPS: !currentDevice || app.settings.boolValue("useInternalGPS", true)
 
     property TrekLogger trekLogger: TrekLogger{}
     property bool logTreks: app.settings.boolValue("logTreks", false)
@@ -60,6 +61,8 @@ App {
 
     property bool isLandscape: isLandscapeOrientation() //(Screen.primaryOrientation === 2) ? true : false
     property bool useDirectionOfTravelCircle: true
+
+    property Device currentDevice
 
     property var requestedDestination: null //QtPositioning.coordinate(23,45) //null
     property var openParameters: null
