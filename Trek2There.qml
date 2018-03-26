@@ -69,6 +69,7 @@ App {
     property string callingApplication: ""
     property string applicationCallback: ""
 
+    property int sideMargin: sf(14)
     property int baseFontSize: 14
     property double largeFontSize: baseFontSize * 1.3
     property double extraLargeFontSize: baseFontSize * 3

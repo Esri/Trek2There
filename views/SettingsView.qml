@@ -32,7 +32,6 @@ Item {
     // PROPERTIES //////////////////////////////////////////////////////////////
 
     property var distanceFormats: ["Decimal degrees", "Degrees, minutes, seconds", "Degrees, decimal minutes", "UTM (WGS84)", "MGRS"]
-    property int sideMargin: sf(14)
 
     property var coordinateInfo: Coordinate.convert(requestedDestination, "dd" , { precision: 8 } ).dd
     property var latitude: requestedDestination && requestedDestination.isValid && coordinateInfo && coordinateInfo.latitudeText ? coordinateInfo.latitudeText : ""

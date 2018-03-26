@@ -25,6 +25,8 @@ import ArcGIS.AppFramework.Devices 1.0
 import ArcGIS.AppFramework.Networking 1.0
 import ArcGIS.AppFramework.Speech 1.0
 
+import "../controls"
+
 Item {
     id: devicePage
 
@@ -38,6 +40,9 @@ Item {
     readonly property string disconnectedText: qsTr("Device disconnected")
     readonly property string connectedText: qsTr("Device connected")
     readonly property bool bluetoothOnly: Qt.platform.os === "ios" || Qt.platform.os === "android"
+
+    readonly property real scaleFactor: AppFramework.displayScaleFactor
+    property color primaryColor: "#8f499c"
 
     signal deviceSelected(string name, Device device)
     signal networkHostSelected(string hostname, int port)
@@ -125,308 +130,318 @@ Item {
     //--------------------------------------------------------------------------
 
     ColumnLayout {
-        enabled: !isConnecting
-
         anchors.fill: parent
-        Layout.fillHeight: true
-        Layout.fillWidth: true
         spacing: 0
+        Accessible.role: Accessible.Pane
 
-        Label {
-            Layout.fillWidth: true
-
-            text: qsTr("DISCOVERY SETTINGS")
-            font.pixelSize: baseFontSize
-            topPadding: 30 * scaleFactor
-            bottomPadding: 8 * scaleFactor
-            leftPadding: 12 * scaleFactor
-            color: "grey"
+        SettingsHeader {
+            text: qsTr("Search external receiver")
         }
 
-        Rectangle {
+        //------------------------------------------------------------------
+
+        ColumnLayout {
+            enabled: !isConnecting
+
+            Layout.fillHeight: true
             Layout.fillWidth: true
-            height: 1 * scaleFactor
-            color: "lightgrey"
-        }
-
-        //--------------------------------------------------------------------------
-
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 200 * scaleFactor
-            color: navBarColor
-
-            GridLayout {
-                columns: 4
-                rows: 5
-                rowSpacing: 0
-
-                anchors.fill: parent
-                anchors.leftMargin: 12 * scaleFactor
-                anchors.rightMargin: 12 * scaleFactor
-                Material.accent: primaryColor
-
-                //--------------------------------------------------------------------------
-
-                RadioButton {
-                    id: tcpRadioButton
-
-                    Layout.row: 0
-                    Layout.column: 0
-                    Layout.columnSpan: 4
-                    Layout.fillWidth: true
-
-                    text: "TCP Connection"
-                    font.pixelSize: baseFontSize
-                    Material.accent: primaryColor
-
-                    checked: false
-                }
-
-                //--------------------------------------------------------------------------
-
-                Label {
-                    enabled: !showDevices
-                    visible: !showDevices
-
-                    Layout.row: 1
-                    Layout.column: 0
-
-                    text: "Hostname"
-                    font.pixelSize: baseFontSize
-                    Material.accent: primaryColor
-                }
-
-                TextField {
-                    id: hostnameTF
-
-                    enabled: !showDevices
-                    visible: !showDevices
-
-                    Layout.row: 1
-                    Layout.column: 1
-                    Layout.columnSpan: 2
-                    Layout.fillWidth: true
-
-                    text: app.settings.value("hostname", "");
-                    placeholderText: "Hostname"
-                    font.pixelSize: baseFontSize
-                    Material.accent: primaryColor
-                }
-
-                //--------------------------------------------------------------------------
-
-                Label {
-                    enabled: !showDevices
-                    visible: !showDevices
-
-                    Layout.row: 2
-                    Layout.column: 0
-
-                    text: "Port"
-                    font.pixelSize: baseFontSize
-                    Material.accent: primaryColor
-                }
-
-                TextField {
-                    id: portTF
-
-                    enabled: !showDevices
-                    visible: !showDevices
-
-                    Layout.row: 2
-                    Layout.column: 1
-                    Layout.columnSpan: 2
-                    Layout.fillWidth: true
-
-                    text: app.settings.value("port", "").toString();
-                    placeholderText: "Port"
-                    font.pixelSize: baseFontSize
-                    Material.accent: primaryColor
-                }
-
-                Button {
-                    id: connectBtn
-
-                    enabled: !showDevices && hostname && port
-                    visible: !showDevices
-
-                    Layout.row: 2
-                    Layout.column: 3
-                    Layout.alignment: Qt.AlignHCenter
-
-                    text: qsTr("Connect")
-                    font.pixelSize: baseFontSize
-                    Material.accent: primaryColor
-
-                    onClicked: networkHostSelected(hostname, port)
-                }
-
-                //--------------------------------------------------------------------------
-
-                RadioButton {
-                    id: deviceRadioButton
-
-                    Layout.row: 3
-                    Layout.column: 0
-                    Layout.columnSpan: 4
-                    Layout.fillWidth: true
-
-                    text: "External device"
-                    font.pixelSize: baseFontSize
-                    Material.accent: primaryColor
-
-                    checked: true
-
-                    onCheckedChanged: {
-                        showDevices = checked
-                        disconnect();
-                        if (checked && discoverySwitch.checked) {
-                            discoveryAgent.start();
-                        } else {
-                            discoveryAgent.stop();
-                        }
-                    }
-                }
-
-                //--------------------------------------------------------------------------
-
-                Switch {
-                    id: discoverySwitch
-
-                    enabled: showDevices && (bluetoothCheckBox.checked || usbCheckBox.checked)
-                    visible: showDevices
-
-                    Layout.row: 4
-                    Layout.column: 0
-                    Layout.columnSpan: 2
-                    Layout.fillWidth: true
-
-                    text: "Discovery %1".arg(checked ? "active" : "off")
-                    font.pixelSize: baseFontSize
-                    Material.accent: primaryColor
-
-                    Component.onCompleted: {
-                        checked = true;
-                    }
-
-                    onCheckedChanged: {
-                        if (checked) {
-                            discoveryAgent.start();
-                        } else {
-                            discoveryAgent.stop();
-                        }
-                    }
-                }
-
-                CheckBox {
-                    id: bluetoothCheckBox
-
-                    enabled: showDevices && !discoverySwitch.checked
-                    visible: showDevices && !bluetoothOnly
-
-                    Layout.row: 4
-                    Layout.column: 2
-
-                    text: "Bluetooth"
-                    font.pixelSize: baseFontSize
-                    Material.accent: primaryColor
-
-                    checked: true
-                }
-
-                CheckBox {
-                    id: usbCheckBox
-
-                    enabled: showDevices && !discoverySwitch.checked
-                    visible: showDevices && !bluetoothOnly
-
-                    Layout.row: 4
-                    Layout.column: 3
-
-                    text: "USB"
-                    font.pixelSize: baseFontSize
-                    Material.accent: primaryColor
-
-                    checked: false
-                }
-            }
-        }
-
-        //--------------------------------------------------------------------------
-
-        Rectangle {
-            Layout.fillWidth: true
-            height: 1 * scaleFactor
-            color: "lightgrey"
-        }
-
-        Item {
-            height: 20 * scaleFactor
-        }
-
-        //--------------------------------------------------------------------------
-
-        RowLayout {
-            id: deviceRowLayout
-
-            Layout.row: 3
-            Layout.column: 0
-            Layout.columnSpan: 4
-            Layout.fillWidth: true
+            spacing: 0
 
             Label {
                 Layout.fillWidth: true
 
-                text: qsTr("SELECT A DEVICE")
+                text: qsTr("DISCOVERY SETTINGS")
                 font.pixelSize: baseFontSize
+                topPadding: 30 * scaleFactor
+                bottomPadding: 8 * scaleFactor
                 leftPadding: 12 * scaleFactor
                 color: "grey"
             }
 
-            Item {
-                height: 25 * scaleFactor
-                width: height
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1 * scaleFactor
+                color: "lightgrey"
+            }
 
-                BusyIndicator {
+            //--------------------------------------------------------------------------
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 200 * scaleFactor
+                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+
+                GridLayout {
+                    columns: 4
+                    rows: 5
+                    rowSpacing: 0
+
                     anchors.fill: parent
+                    anchors.leftMargin: 12 * scaleFactor
+                    anchors.rightMargin: 12 * scaleFactor
 
-                    running: discoveryAgent.running
-                    Material.accent: "#8f499c"
+                    //--------------------------------------------------------------------------
+
+                    RadioButton {
+                        id: tcpRadioButton
+
+                        Layout.row: 0
+                        Layout.column: 0
+                        Layout.columnSpan: 4
+                        Layout.fillWidth: true
+
+                        text: "TCP Connection"
+                        font.pixelSize: baseFontSize
+                        Material.accent: primaryColor
+
+                        checked: false
+                    }
+
+                    //--------------------------------------------------------------------------
+
+                    Label {
+                        enabled: !showDevices
+                        visible: !showDevices
+
+                        Layout.row: 1
+                        Layout.column: 0
+
+                        text: "Hostname"
+                        font.pixelSize: baseFontSize
+                        Material.accent: primaryColor
+                    }
+
+                    TextField {
+                        id: hostnameTF
+
+                        enabled: !showDevices
+                        visible: !showDevices
+
+                        Layout.row: 1
+                        Layout.column: 1
+                        Layout.columnSpan: 2
+                        Layout.fillWidth: true
+
+                        text: app.settings.value("hostname", "");
+                        placeholderText: "Hostname"
+                        font.pixelSize: baseFontSize
+                        Material.accent: primaryColor
+                    }
+
+                    //--------------------------------------------------------------------------
+
+                    Label {
+                        enabled: !showDevices
+                        visible: !showDevices
+
+                        Layout.row: 2
+                        Layout.column: 0
+
+                        text: "Port"
+                        font.pixelSize: baseFontSize
+                        Material.accent: primaryColor
+                    }
+
+                    TextField {
+                        id: portTF
+
+                        enabled: !showDevices
+                        visible: !showDevices
+
+                        Layout.row: 2
+                        Layout.column: 1
+                        Layout.columnSpan: 2
+                        Layout.fillWidth: true
+
+                        text: app.settings.value("port", "").toString();
+                        placeholderText: "Port"
+                        font.pixelSize: baseFontSize
+                        Material.accent: primaryColor
+                    }
+
+                    Button {
+                        id: connectBtn
+
+                        enabled: !showDevices && hostname && port
+                        visible: !showDevices
+
+                        Layout.row: 2
+                        Layout.column: 3
+                        Layout.alignment: Qt.AlignHCenter
+
+                        text: qsTr("Connect")
+                        font.pixelSize: baseFontSize
+                        Material.accent: primaryColor
+
+                        onClicked: networkHostSelected(hostname, port)
+                    }
+
+                    //--------------------------------------------------------------------------
+
+                    RadioButton {
+                        id: deviceRadioButton
+
+                        Layout.row: 3
+                        Layout.column: 0
+                        Layout.columnSpan: 4
+                        Layout.fillWidth: true
+
+                        text: "External device"
+                        font.pixelSize: baseFontSize
+                        Material.accent: primaryColor
+
+                        checked: true
+
+                        onCheckedChanged: {
+                            showDevices = checked
+                            disconnect();
+                            if (checked && discoverySwitch.checked) {
+                                discoveryAgent.start();
+                            } else {
+                                discoveryAgent.stop();
+                            }
+                        }
+                    }
+
+                    //--------------------------------------------------------------------------
+
+                    Switch {
+                        id: discoverySwitch
+
+                        enabled: showDevices && (bluetoothCheckBox.checked || usbCheckBox.checked)
+                        visible: showDevices
+
+                        Layout.row: 4
+                        Layout.column: 0
+                        Layout.columnSpan: 2
+                        Layout.fillWidth: true
+
+                        text: "Discovery %1".arg(checked ? "active" : "off")
+                        font.pixelSize: baseFontSize
+                        Material.accent: primaryColor
+
+                        Component.onCompleted: {
+                            checked = true;
+                        }
+
+                        onCheckedChanged: {
+                            if (checked) {
+                                discoveryAgent.start();
+                            } else {
+                                discoveryAgent.stop();
+                            }
+                        }
+                    }
+
+                    CheckBox {
+                        id: bluetoothCheckBox
+
+                        enabled: showDevices && !discoverySwitch.checked
+                        visible: showDevices && !bluetoothOnly
+
+                        Layout.row: 4
+                        Layout.column: 2
+
+                        text: "Bluetooth"
+                        font.pixelSize: baseFontSize
+                        Material.accent: primaryColor
+
+                        checked: true
+                    }
+
+                    CheckBox {
+                        id: usbCheckBox
+
+                        enabled: showDevices && !discoverySwitch.checked
+                        visible: showDevices && !bluetoothOnly
+
+                        Layout.row: 4
+                        Layout.column: 3
+
+                        text: "USB"
+                        font.pixelSize: baseFontSize
+                        Material.accent: primaryColor
+
+                        checked: false
+                    }
                 }
             }
-        }
 
-        Item {
-            height: 5 * scaleFactor
-        }
+            //--------------------------------------------------------------------------
 
-        Rectangle {
-            Layout.fillWidth: true
-            height: 1 * scaleFactor
-            color: "lightgrey"
-        }
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1 * scaleFactor
+                color: "lightgrey"
+            }
 
-        ListView {
-            id: deviceListView
+            Item {
+                height: 20 * scaleFactor
+            }
 
-            enabled: showDevices
-            visible: showDevices
+            //--------------------------------------------------------------------------
 
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            spacing: 0
-            clip: true
+            RowLayout {
+                id: deviceRowLayout
 
-            model: discoveryAgent.devices
-            delegate: deviceDelegate
-        }
+                Layout.row: 3
+                Layout.column: 0
+                Layout.columnSpan: 4
+                Layout.fillWidth: true
 
-        Item {
-            visible: !deviceListView.visible
+                Label {
+                    Layout.fillWidth: true
 
-            Layout.fillWidth: true
-            Layout.fillHeight: true
+                    text: qsTr("SELECT A DEVICE")
+                    font.pixelSize: baseFontSize
+                    leftPadding: 12 * scaleFactor
+                    color: "grey"
+                }
+
+                Item {
+                    height: 25 * scaleFactor
+                    width: height
+
+                    BusyIndicator {
+                        anchors.fill: parent
+
+                        running: discoveryAgent.running
+                        Material.accent: "#8f499c"
+                    }
+                }
+            }
+
+            Item {
+                height: 5 * scaleFactor
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1 * scaleFactor
+                color: "lightgrey"
+            }
+
+            ListView {
+                id: deviceListView
+
+                enabled: showDevices
+                visible: showDevices
+
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                spacing: 0
+                clip: true
+
+                model: discoveryAgent.devices
+                delegate: deviceDelegate
+            }
+
+            Item {
+                visible: !deviceListView.visible
+
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
         }
     }
 
@@ -452,7 +467,7 @@ Item {
             width: ListView.view.width
             height: deviceLayout.height
 
-            color: navBarColor
+            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
             opacity: parent.enabled ? 1.0 : 0.7
 
             ColumnLayout {
