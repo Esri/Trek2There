@@ -66,14 +66,17 @@ Rectangle {
 
             Layout.fillHeight: true
             Layout.fillWidth: true
+            verticalAlignment: TextInput.AlignVCenter
+
             background: Rectangle {
                 anchors.fill: parent
                 anchors.topMargin: sf(3)
                 anchors.bottomMargin: sf(3)
-                border.width: sf(1)
+                border.width: sf(0)
                 border.color: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
                 color: !nightMode ? dayModeSettings.background : nightModeSettings.background
             }
+
             color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
 
             onEditingFinished: rect.editingFinished();
