@@ -50,6 +50,16 @@ Item {
         initialized = true;
     }
 
+    Connections {
+        target: app
+
+        onRequestedDestinationChanged: {
+            if (requestedDestination && requestedDestination.isValid) {
+                setCoordinateInfo(currentDistanceFormat);
+            }
+        }
+    }
+
     // UI //////////////////////////////////////////////////////////////////////
 
     Rectangle {
