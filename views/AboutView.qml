@@ -257,31 +257,69 @@ Item {
                         }
 
                         RowLayout {
-                            anchors.fill: parent
+                            id: appRow
+
                             spacing:0
 
                             Text {
                                 id: softwareVersion
+
                                 Layout.fillHeight: true
                                 Layout.fillWidth: true
-                                textFormat: Text.RichText
                                 horizontalAlignment: Text.AlignLeft
+
+                                text: "<b>App Version: %1.%2.%3</b>".arg(app.info.value("version").major).arg(app.info.value("version").minor).arg(app.info.value("version").micro)
+                                textFormat: Text.RichText
                                 color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                                text: "<b>v%1.%2.%3</b>".arg(app.info.value("version").major).arg(app.info.value("version").minor).arg(app.info.value("version").micro)
                                 Accessible.role: Accessible.StaticText
                                 Accessible.name: qsTr("Current version of the application is %1".arg(text))
                             }
 
                             Text {
                                 id: logTreksIndicator
+
                                 Layout.fillHeight: true
                                 Layout.fillWidth: true
-                                textFormat: Text.RichText
                                 horizontalAlignment: Text.AlignRight
+
+                                textFormat: Text.RichText
                                 color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                 Accessible.role: Accessible.Indicator
                                 Accessible.name: qsTr("Indicates if logging of treks is on or off. Logging is currently: %1".arg(logTreks ? "on" : "off"))
                                 Accessible.description: qsTr("If the text reads '+' then logging is turned on. If text reads '-' then logging is turned off.")
+                            }
+                        }
+
+                        RowLayout {
+                            anchors.top: appRow.bottom
+                            spacing:0
+
+                            Text {
+                                id: frameworkVersion
+
+                                Layout.fillHeight: true
+                                Layout.fillWidth: true
+                                horizontalAlignment: Text.AlignLeft
+
+                                text: qsTr("<b>AppFramework Version: </b>")
+                                textFormat: Text.RichText
+                                color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                                Accessible.role: Accessible.StaticText
+                                Accessible.name: qsTr("Current version of the application framework %1".arg(frameworkVersionNumber.text))
+                            }
+
+                            Text {
+                                id: frameworkVersionNumber
+
+                                Layout.fillHeight: true
+                                Layout.fillWidth: true
+                                horizontalAlignment: Text.AlignLeft
+
+                                text: "<b>%1</b>".arg(AppFramework.version)
+                                textFormat: Text.RichText
+                                color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                                Accessible.name: qsTr("Current version of the application framework %1".arg(frameworkVersionNumber.text))
+                                Accessible.role: Accessible.StaticText
                             }
                         }
                     }
