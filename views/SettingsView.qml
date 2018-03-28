@@ -23,6 +23,7 @@ import QtPositioning 5.4
 
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Sql 1.0
+import ArcGIS.AppFramework.Networking 1.0
 
 import "../controls"
 
@@ -44,7 +45,7 @@ Item {
     property bool initialized
 
     StackView.onActivating: {
-        if (!currentDevice) {
+        if (!currentDevice && !useTCPConnection) {
             useInternalGPS = true;
         }
         initialized = true;
@@ -446,7 +447,7 @@ Item {
                                     if (checked) {
                                         useInternalGPS = false;
 
-                                        if (!currentDevice && initialized) {
+                                        if (!currentDevice && !useTCPConnection && initialized) {
                                             mainStackView.push(devicesView);
                                         }
                                     }
@@ -456,7 +457,7 @@ Item {
                             Button {
                                 id: externalDeviceButton
 
-                                visible: externalChecked.checked && currentDevice
+                                visible: externalChecked.checked && (currentDevice || useTCPConnection)
 
                                 Layout.fillHeight: true
                                 Layout.preferredWidth: sf(100)
@@ -488,7 +489,7 @@ Item {
                         //------------------------------------------------------
 
                         Rectangle {
-                            visible: externalChecked.checked && currentDevice
+                            visible: externalChecked.checked && !useTCPConnection && currentDevice
 
                             Layout.preferredHeight: sf(50)
                             Layout.fillWidth: true
@@ -496,11 +497,28 @@ Item {
                             Accessible.role: Accessible.Pane
 
                             Text {
-                                id: receiverName
-
                                 anchors.fill: parent
                                 color: buttonTextColor
-                                text: qsTr("External GPS receiver")
+                                text: currentDevice && currentDevice.connected ? currentDevice.name : qsTr("Not connected")
+                                verticalAlignment: Text.AlignVCenter
+                                leftPadding: /*radioButton.indicator.width + 2*externalChecked.radioButton.spacing +*/ sideMargin
+                            }
+                        }
+
+                        //------------------------------------------------------
+
+                        Rectangle {
+                            visible: externalChecked.checked && useTCPConnection
+
+                            Layout.preferredHeight: sf(50)
+                            Layout.fillWidth: true
+                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                            Accessible.role: Accessible.Pane
+
+                            Text {
+                                anchors.fill: parent
+                                color: buttonTextColor
+                                text: tcpSocket.state === AbstractSocket.StateConnected ? tcpSocket.remoteName + ":" + tcpSocket.remotePort : qsTr("Not connected")
                                 verticalAlignment: Text.AlignVCenter
                                 leftPadding: /*radioButton.indicator.width + 2*externalChecked.radioButton.spacing +*/ sideMargin
                             }

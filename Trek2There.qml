@@ -65,6 +65,7 @@ App {
     property bool useDirectionOfTravelCircle: true
 
     property Device currentDevice
+    property bool useTCPConnection
 
     property var requestedDestination: null //QtPositioning.coordinate(23,45) //null
     property var openParameters: null
