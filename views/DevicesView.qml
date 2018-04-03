@@ -22,7 +22,6 @@ import QtGraphicalEffects 1.0
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
 import ArcGIS.AppFramework.Networking 1.0
-import ArcGIS.AppFramework.Speech 1.0
 
 import "../controls"
 
@@ -32,7 +31,7 @@ Item {
     property string hostname: hostnameTF.text
     property string port: portTF.text
 
-    property bool showDevices: true
+    property bool showDevices
     property bool isConnecting
     property bool isConnected
 
@@ -45,6 +44,10 @@ Item {
     signal disconnect()
 
     //--------------------------------------------------------------------------
+
+    StackView.onActivating: {
+        showDevices = !useTCPConnection;
+    }
 
     StackView.onDeactivated: {
         discoveryAgent.stop();
@@ -110,7 +113,7 @@ Item {
     ButtonGroup {
         id: buttonGroup
 
-        buttons: [tcpRadioButton, deviceRadioButton]
+        buttons: [tcpRadioButton.radioButton, deviceRadioButton.radioButton]
     }
 
     //--------------------------------------------------------------------------
@@ -193,27 +196,26 @@ Item {
                             GridLayout {
                                 id: deviceSelectionGrid
 
-                                columns: 4
+                                columns: 3
                                 rows: 5
 
-                                anchors.leftMargin: sideMargin
+                                anchors.left: parent.left
+                                anchors.right: parent.right
                                 anchors.rightMargin: sideMargin
 
                                 //--------------------------------------------------------------------------
 
-                                RadioButton {
+                                SettingsRadioButton {
                                     id: tcpRadioButton
 
                                     Layout.row: 0
                                     Layout.column: 0
-                                    Layout.columnSpan: 4
+                                    Layout.columnSpan: 3
                                     Layout.fillWidth: true
 
                                     text: "TCP Connection"
-                                    font.pixelSize: baseFontSize
-                                    //Material.accent: primaryColor
 
-                                    checked: false //useTCPConnection // XXX crash due to circular binding
+                                    Component.onCompleted: checked = useTCPConnection ? true : false
                                 }
 
                                 //--------------------------------------------------------------------------
@@ -224,6 +226,7 @@ Item {
 
                                     Layout.row: 1
                                     Layout.column: 0
+                                    Layout.leftMargin: sideMargin
 
                                     text: "Hostname"
                                     font.pixelSize: baseFontSize
@@ -238,7 +241,6 @@ Item {
 
                                     Layout.row: 1
                                     Layout.column: 1
-                                    Layout.columnSpan: 2
                                     Layout.fillWidth: true
 
                                     text: app.settings.value("hostname", "");
@@ -255,6 +257,7 @@ Item {
 
                                     Layout.row: 2
                                     Layout.column: 0
+                                    Layout.leftMargin: sideMargin
 
                                     text: "Port"
                                     font.pixelSize: baseFontSize
@@ -269,7 +272,6 @@ Item {
 
                                     Layout.row: 2
                                     Layout.column: 1
-                                    Layout.columnSpan: 2
                                     Layout.fillWidth: true
 
                                     text: app.settings.value("port", "").toString();
@@ -285,8 +287,7 @@ Item {
                                     visible: !showDevices
 
                                     Layout.row: 2
-                                    Layout.column: 3
-                                    Layout.alignment: Qt.AlignHCenter
+                                    Layout.column: 2
 
                                     text: qsTr("Connect")
                                     font.pixelSize: baseFontSize
@@ -297,22 +298,19 @@ Item {
 
                                 //--------------------------------------------------------------------------
 
-                                RadioButton {
+                                SettingsRadioButton {
                                     id: deviceRadioButton
 
                                     Layout.row: 3
                                     Layout.column: 0
-                                    Layout.columnSpan: 4
+                                    Layout.columnSpan: 3
                                     Layout.fillWidth: true
 
                                     text: "External device"
-                                    font.pixelSize: baseFontSize
-                                    //Material.accent: primaryColor
-
-                                    checked: true
 
                                     onCheckedChanged: {
-                                        showDevices = checked
+                                        showDevices = checked;
+
                                         disconnect();
                                         if (checked && discoverySwitch.checked) {
                                             discoveryAgent.start();
@@ -320,6 +318,8 @@ Item {
                                             discoveryAgent.stop();
                                         }
                                     }
+
+                                    Component.onCompleted: checked = useTCPConnection ? false : true
                                 }
 
                                 //--------------------------------------------------------------------------
@@ -332,8 +332,8 @@ Item {
 
                                     Layout.row: 4
                                     Layout.column: 0
-                                    Layout.columnSpan: 2
                                     Layout.fillWidth: true
+                                    Layout.leftMargin: sideMargin
 
                                     text: "Discovery %1".arg(checked ? "active" : "off")
                                     font.pixelSize: baseFontSize
@@ -359,7 +359,7 @@ Item {
                                     visible: showDevices && !bluetoothOnly
 
                                     Layout.row: 4
-                                    Layout.column: 2
+                                    Layout.column: 1
 
                                     text: "Bluetooth"
                                     font.pixelSize: baseFontSize
@@ -375,7 +375,7 @@ Item {
                                     visible: showDevices && !bluetoothOnly
 
                                     Layout.row: 4
-                                    Layout.column: 3
+                                    Layout.column: 2
 
                                     text: "USB"
                                     font.pixelSize: baseFontSize
