@@ -45,10 +45,11 @@ Item {
     property bool initialized
 
     StackView.onActivating: {
-        if (!currentDevice && !useTCPConnection) {
-            useInternalGPS = true;
-        }
         initialized = true;
+    }
+
+    StackView.onDeactivating: {
+        initialized = false;
     }
 
     Connections {
@@ -354,7 +355,7 @@ Item {
                         ButtonGroup {
                             id: distanceMeasurementGroup
 
-                            buttons: [metricChecked, imperialChecked]
+                            buttons: [metricChecked.radioButton, imperialChecked.radioButton]
                         }
 
                         //------------------------------------------------------
@@ -366,7 +367,7 @@ Item {
                             checked: usesMetric
 
                             onCheckedChanged: {
-                                if (checked) {
+                                if (initialized && checked) {
                                     usesMetric = true;
                                 }
                             }
@@ -381,7 +382,7 @@ Item {
                             checked: !usesMetric
 
                             onCheckedChanged: {
-                                if (checked) {
+                                if (initialized && checked) {
                                     usesMetric = false;
                                 }
                             }
@@ -414,7 +415,7 @@ Item {
                         ButtonGroup {
                             id: gpsReceiverGroup
 
-                            buttons: [internalChecked, externalChecked]
+                            buttons: [internalChecked.radioButton, externalChecked.radioButton]
                         }
 
                         //------------------------------------------------------
@@ -426,8 +427,26 @@ Item {
                             checked: useInternalGPS
 
                             onCheckedChanged: {
-                                if (checked) {
-                                    useInternalGPS = true;
+                                if (initialized && checked) {
+                                    sources.disconnect();
+                                    app.discoveryAgent.stop();
+                                }
+                            }
+                        }
+
+                        //------------------------------------------------------
+
+                        SettingsRadioButton {
+                            id: externalChecked
+
+                            text: "Use external receiver"
+                            checked: !useInternalGPS
+
+                            onCheckedChanged: {
+                                if (initialized && checked) {
+                                    if (!isConnecting && !isConnected) {
+                                        mainStackView.push(devicesView);
+                                    }
                                 }
                             }
                         }
@@ -435,29 +454,30 @@ Item {
                         //------------------------------------------------------
 
                         RowLayout {
+                            visible: externalChecked.checked
+
                             spacing: 0
 
-                            SettingsRadioButton {
-                                id: externalChecked
+                            Rectangle {
+                                Layout.preferredHeight: sf(50)
+                                Layout.fillWidth: true
+                                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                                Accessible.role: Accessible.Pane
 
-                                text: "Use external receiver"
-                                checked: !useInternalGPS
-
-                                onCheckedChanged: {
-                                    if (checked) {
-                                        useInternalGPS = false;
-
-                                        if (!currentDevice && !useTCPConnection && initialized) {
-                                            mainStackView.push(devicesView);
-                                        }
-                                    }
+                                Text {
+                                    property string name: useExternalGPS ? currentDevice.name : tcpSocket.remoteName + ":" + tcpSocket.remotePort
+                                    anchors.fill: parent
+                                    color: app.isConnecting ? "red" : buttonTextColor
+                                    text: app.isConnecting ? "Connecting to " + name : app.isConnected ? "Connected to " + name : qsTr("Not connected")
+                                    verticalAlignment: Text.AlignVCenter
+                                    leftPadding: /*radioButton.indicator.width + 2*externalChecked.radioButton.spacing +*/ sideMargin
                                 }
                             }
 
                             Button {
                                 id: externalDeviceButton
 
-                                visible: externalChecked.checked && (currentDevice || useTCPConnection)
+                                visible: externalChecked.checked
 
                                 Layout.fillHeight: true
                                 Layout.preferredWidth: sf(100)
@@ -478,49 +498,11 @@ Item {
                                     Layout.fillWidth: true
 
                                     color: !nightMode ? (externalDeviceButton.down ? dayModeSettings.secondaryBackground : dayModeSettings.background) : (externalDeviceButton.down ? nightModeSettings.secondaryBackground : nightModeSettings.background)
-                                 }
+                                }
 
                                 onClicked: {
                                     mainStackView.push(devicesView);
                                 }
-                            }
-                        }
-
-                        //------------------------------------------------------
-
-                        Rectangle {
-                            visible: externalChecked.checked && !useTCPConnection && currentDevice
-
-                            Layout.preferredHeight: sf(50)
-                            Layout.fillWidth: true
-                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                            Accessible.role: Accessible.Pane
-
-                            Text {
-                                anchors.fill: parent
-                                color: buttonTextColor
-                                text: currentDevice && currentDevice.connected ? currentDevice.name : qsTr("Not connected")
-                                verticalAlignment: Text.AlignVCenter
-                                leftPadding: /*radioButton.indicator.width + 2*externalChecked.radioButton.spacing +*/ sideMargin
-                            }
-                        }
-
-                        //------------------------------------------------------
-
-                        Rectangle {
-                            visible: externalChecked.checked && useTCPConnection
-
-                            Layout.preferredHeight: sf(50)
-                            Layout.fillWidth: true
-                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                            Accessible.role: Accessible.Pane
-
-                            Text {
-                                anchors.fill: parent
-                                color: buttonTextColor
-                                text: tcpSocket.state === AbstractSocket.StateConnected ? tcpSocket.remoteName + ":" + tcpSocket.remotePort : qsTr("Not connected")
-                                verticalAlignment: Text.AlignVCenter
-                                leftPadding: /*radioButton.indicator.width + 2*externalChecked.radioButton.spacing +*/ sideMargin
                             }
                         }
 
@@ -691,7 +673,7 @@ Item {
             if (utmZoneField.text > "" && eastingField.text > "" && northingField.text > "") {
                 coordObj = Coordinate.parse(utmZoneField.text + " " + eastingField.text + "E " + northingField.text + "N");
             }
-                break;
+            break;
         case 4: // MGRS
             if (gridReferenceField.text > "") {
                 coordObj = Coordinate.parse("MGRS " + gridReferenceField.text, { spaces: true });

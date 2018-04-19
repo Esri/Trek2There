@@ -814,7 +814,7 @@ Item {
     onArrived: {
         arrivedAtDestination = true;
         navigating = false;
-        sensors.positionSource.stop();
+        sources.positionSource.stop();
         directionArrow.visible = false
         arrivedIcon.visible = true
         distanceReadout.text = qsTr("Arrived");
@@ -832,8 +832,7 @@ Item {
         console.log('reseting navigation')
 
         navigating = false;
-        sensors.positionSource.active = false;
-        sensors.positionSource.stop();
+        sources.positionSource.stop();
 
         statusMessage.hide();
 
@@ -872,10 +871,10 @@ Item {
         reset(); // TODO: This may cause some hiccups as positoin source is stopped and started. even though update is called, not sure all devices allow the update immedieately.
         navigating = true;
 
-        sensors.positionSource.start();
-        sensors.positionSource.update();
+        sources.positionSource.start();
+        sources.positionSource.update();
         currentPosition.destinationCoordinate = requestedDestination;
-        sensors.positionSource.update();
+        sources.positionSource.update();
         endNavigationButton.visible = true;
         endNavigationButton.enabled = true;
 
@@ -986,15 +985,56 @@ Item {
         attitudeFilterLength: 25
         magneticDeclination: 0.0
 
-        positionSource.onActiveChanged: {
+        onAzimuthFromTrueNorthChanged: updateBearing()
+
+        onPitchAngleChanged: updatePitch();
+
+        onRollAngleChanged: updateRoll()
+
+        function updateBearing() {
+            if (sensors.azimuthFromTrueNorth) {
+                if (viewData.observerCoordinate !== null /* && useCompass */) {
+                    viewData.deviceBearing = sensors.azimuthFromTrueNorth;
+                }
+            }
+        }
+
+        function updatePitch() {
+            if (!fadeHudIn.running && !fadeHudOut.running) {
+                if (useExperimentalFeatures) {
+                    if (!hudOn && Math.abs(sensors.pitchAngle) <= 30) {
+                        turnHudOn();
+                    } else if (hudOn && Math.abs(sensors.pitchAngle) > 30) {
+                        turnHudOff();
+                    }
+                } else if (hudOn) {
+                    turnHudOff();
+                }
+            }
+
+            if (sensors.pitchAngle) {
+                viewData.devicePitch = 0; // sensors.pitchAngle;
+            }
+        }
+
+        function updateRoll() {
+            if (sensors.rollAngle) {
+                viewData.deviceRoll = 0; //sensors.rollAngle;
+            }
+        }
+    }
+
+    Connections {
+        target: positionSource
+
+        onActiveChanged: {
             if (positionSource.active && viewData.observerCoordinate === null) {
                 statusMessage.show();
             }
         }
 
-        onSensorPositionChanged: {
-
-            currentPosition.position = sensors.position;
+        onPositionChanged: {
+            currentPosition.position = positionSource.position;
 
             if (currentPosition.position.coordinate.isValid) {
                 viewData.observerCoordinate = QtPositioning.coordinate(currentPosition.position.coordinate.latitude, currentPosition.position.coordinate.longitude, currentPosition.position.coordinate.altitude);
@@ -1041,46 +1081,6 @@ Item {
                     directionArrow.opacity = 0.2;
                     statusMessage.show();
                 }
-            }
-        }
-
-        onPositionChanged: {}
-
-        onAzimuthFromTrueNorthChanged: updateBearing()
-
-        onPitchAngleChanged: updatePitch();
-
-        onRollAngleChanged: updateRoll()
-
-        function updateBearing() {
-            if (sensors.azimuthFromTrueNorth) {
-                if (viewData.observerCoordinate !== null /* && useCompass */) {
-                    viewData.deviceBearing = sensors.azimuthFromTrueNorth;
-                }
-            }
-        }
-
-        function updatePitch() {
-            if (!fadeHudIn.running && !fadeHudOut.running) {
-                if (useExperimentalFeatures) {
-                    if (!hudOn && Math.abs(sensors.pitchAngle) <= 30) {
-                        turnHudOn();
-                    } else if (hudOn && Math.abs(sensors.pitchAngle) > 30) {
-                        turnHudOff();
-                    }
-                } else if (hudOn) {
-                    turnHudOff();
-                }
-            }
-
-            if (sensors.pitchAngle) {
-                viewData.devicePitch = 0; // sensors.pitchAngle;
-            }
-        }
-
-        function updateRoll() {
-            if (sensors.rollAngle) {
-                viewData.deviceRoll = 0; //sensors.rollAngle;
             }
         }
     }

@@ -76,6 +76,11 @@ Item {
         DevicesView {
             Layout.fillHeight: true
             Layout.fillWidth: true
+
+            discoveryAgent: app.discoveryAgent
+            currentDevice: app.currentDevice
+            isConnecting: app.isConnecting
+            isConnected: app.isConnected
         }
     }
 

@@ -14,26 +14,29 @@
  *
  */
 
-import QtQuick 2.8
-import QtQuick.Window 2.0
-import QtPositioning 5.4
+import QtQuick 2.9
+import QtQuick.Window 2.3
+import QtQuick.Layouts 1.3
+import QtQuick.Controls 2.2
+
 //------------------------------------------------------------------------------
+
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
 import ArcGIS.AppFramework.Networking 1.0
 import ArcGIS.AppFramework.Positioning 1.0
+
 //------------------------------------------------------------------------------
+
 import "AppMetrics"
 import "IconFont"
 import "views"
 import "controls"
+
 //------------------------------------------------------------------------------
 
 App {
-
     id: app
-
-    readonly property real windowScaleFactor: !(Qt.platform.os === "windows" || Qt.platform.os === "unix" || Qt.platform.os === "linux") ? 1 : AppFramework.displayScaleFactor
 
     width: 480 * windowScaleFactor
     height: 640 * windowScaleFactor
@@ -41,6 +44,21 @@ App {
     Accessible.role: Accessible.Window
 
     // PROPERTIES //////////////////////////////////////////////////////////////
+
+    property alias positionSource: sources.positionSource
+    property alias satelliteInfoSource: sources.satelliteInfoSource
+    property alias nmeaSource: sources.nmeaSource
+    property alias tcpSocket: sources.tcpSocket
+    property alias discoveryAgent: sources.discoveryAgent
+
+    property Device currentDevice: sources.currentDevice
+    property bool isConnecting: sources.isConnecting
+    property bool isConnected: sources.isConnected
+    property alias connectionType: sources.connectionType
+
+    property bool useInternalGPS: connectionType === sources.eConnectionType.internal
+    property bool useExternalGPS: connectionType === sources.eConnectionType.external
+    property bool useTCPConnection: connectionType === sources.eConnectionType.network
 
     property bool safteyWarningAccepted: app.settings.boolValue("safteyWarningAccepted", false)
     property bool showSafetyWarning: app.settings.boolValue("showSafetyWarning", true)
@@ -54,7 +72,6 @@ App {
 
     property var locale: Qt.locale()
     property bool usesMetric: app.settings.boolValue("usesMetric", localeIsMetric())
-    property bool useInternalGPS: app.settings.boolValue("useInternalGPS", true)
 
     property TrekLogger trekLogger: TrekLogger{}
     property bool logTreks: app.settings.boolValue("logTreks", false)
@@ -64,10 +81,7 @@ App {
     property bool isLandscape: isLandscapeOrientation() //(Screen.primaryOrientation === 2) ? true : false
     property bool useDirectionOfTravelCircle: true
 
-    property Device currentDevice
-    property bool useTCPConnection
-
-    property var requestedDestination: null //QtPositioning.coordinate(23,45) //null
+    property var requestedDestination: null
     property var openParameters: null
     property string callingApplication: ""
     property string applicationCallback: ""
@@ -83,13 +97,18 @@ App {
     readonly property var dayModeSettings: { "background": "#f8f8f8", "foreground": "#000", "secondaryBackground": "#efefef", "buttonBorder": "#ddd" }
     readonly property string buttonTextColor: "#007ac2"
 
+    readonly property real windowScaleFactor: !(Qt.platform.os === "windows" || Qt.platform.os === "unix" || Qt.platform.os === "linux") ? 1 : AppFramework.displayScaleFactor
     readonly property bool isAndroid: Qt.platform.os === "android"
     readonly property bool isIOS: Qt.platform.os === "ios"
+
+    property bool initialized
 
     Component.onCompleted: {
         fileFolder.makePath(localStoragePath);
         AppFramework.offlineStoragePath = fileFolder.path + "/ArcGIS/My Treks";
-        console.log("------------------------------- Component.onCompleted useExperimentalFeatures: ", useExperimentalFeatures);
+
+        connectionType = app.settings.value("connectionType", sources.eConnectionType.internal)
+        initialized = true;
     }
 
     // COMPONENTS //////////////////////////////////////////////////////////////
@@ -135,47 +154,60 @@ App {
 
     //--------------------------------------------------------------------------
 
-    PositionSource {
-        id: positionSource
+    PositioningSources {
+        id: sources
+    }
 
-        active: true
-        nmeaSource: nmeaSource
+    //--------------------------------------------------------------------------
 
-        onPositionChanged: {
-            if (debug) {
-                console.log("Position change:", JSON.stringify(position));
+    Connections {
+        target: tcpSocket
+
+        onErrorChanged: {
+            console.log("Connection error:", tcpSocket.error, tcpSocket.errorString)
+
+            errorDialog.text = tcpSocket.errorString;
+            errorDialog.open();
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
+    Connections {
+        target: currentDevice
+
+        onErrorChanged: {
+            if (currentDevice) {
+                console.log("Connection error:", currentDevice.error)
+
+                errorDialog.text = currentDevice.error;
+                errorDialog.open();
             }
         }
     }
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
-    SatelliteInfoSource {
-        id: satelliteInfoSource
+    Dialog {
+        id: errorDialog
 
-        active: true
-        nmeaSource: nmeaSource
-    }
+        property alias text: label.text
 
-    //--------------------------------------------------------------------------
+        x: (parent.width - width) / 2
+        y: (parent.height - height) / 2
+        modal: true
 
-    NmeaSource {
-        id: nmeaSource
+        standardButtons: Dialog.Ok
+        title: qsTr("Unable to connect");
+        text: ""
 
-        onSourceChanged: {
-            console.log("SOURCE CHANGED", JSON.stringify(source));
-            positionSource.update();
+        Label {
+            id: label
+
+            Layout.fillWidth: true
+            font.pixelSize: baseFontSize
+            color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
         }
-
-        onReceivedNmeaData: {
-            // console.log("RECEIVED NMEA DATA", receivedSentence.trim());
-        }
-    }
-
-    //--------------------------------------------------------------------------
-
-    TcpSocket {
-        id: tcpSocket
     }
 
     // SIGNALS /////////////////////////////////////////////////////////////////
@@ -202,37 +234,49 @@ App {
     //--------------------------------------------------------------------------
 
     onNightModeChanged: {
-        app.settings.setValue("nightMode", nightMode);
+        if (initialized) {
+            app.settings.setValue("nightMode", nightMode);
+        }
     }
 
     //--------------------------------------------------------------------------
 
     onUsesMetricChanged: {
-        app.settings.setValue("usesMetric", usesMetric);
+        if (initialized) {
+            app.settings.setValue("usesMetric", usesMetric);
+        }
     }
 
     //--------------------------------------------------------------------------
 
-    onUseInternalGPSChanged: {
-        app.settings.setValue("useInternalGPS", useInternalGPS);
+    onConnectionTypeChanged: {
+        if (initialized) {
+            app.settings.setValue("connectionType", connectionType);
+        }
     }
 
     //--------------------------------------------------------------------------
 
     onLogTreksChanged: {
-        app.settings.setValue("logTreks", logTreks);
+        if (initialized) {
+            app.settings.setValue("logTreks", logTreks);
+        }
     }
 
     //--------------------------------------------------------------------------
 
     onUseExperimentalFeaturesChanged: {
-        app.settings.setValue("useExperimentalFeatures", useExperimentalFeatures);
+        if (initialized) {
+            app.settings.setValue("useExperimentalFeatures", useExperimentalFeatures);
+        }
     }
 
     //--------------------------------------------------------------------------
 
     onCurrentDistanceFormatChanged: {
-        app.settings.setValue("currentDistanceFormat", currentDistanceFormat);
+        if (initialized) {
+            app.settings.setValue("currentDistanceFormat", currentDistanceFormat);
+        }
     }
 
     // FUNCTIONS ///////////////////////////////////////////////////////////////
