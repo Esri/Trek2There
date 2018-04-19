@@ -91,7 +91,7 @@
     "urlScheme": "arcgis-trek2there",
     "version": {
         "major": 3,
-        "micro": 9,
+        "micro": 10,
         "minor": 0
     }
 }
