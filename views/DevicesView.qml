@@ -62,6 +62,14 @@ Item {
 
     //--------------------------------------------------------------------------
 
+    onIsConnectedChanged: {
+        if (isConnected) {
+            mainStackView.pop();
+        }
+    }
+
+    //--------------------------------------------------------------------------
+
     onNetworkHostSelected: {
         app.settings.setValue("hostname", hostname);
         app.settings.setValue("port", port);
@@ -81,12 +89,6 @@ Item {
 
     onDisconnect: {
         sources.disconnect();
-    }
-
-    //--------------------------------------------------------------------------
-
-    onIsConnectedChanged: {
-        // XXX stub
     }
 
     //--------------------------------------------------------------------------
@@ -506,7 +508,7 @@ Item {
                     Text {
                         Layout.fillWidth: true
 
-                        text: currentDevice && (currentDevice.name === name) && isConnecting ? isConnecting ? name + qsTr(" (Connecting...)") : isConnected ? name + qsTr(" (Connected)") : name : name
+                        text: currentDevice && (currentDevice.name === name) ? isConnecting ? name + qsTr(" (Connecting...)") : isConnected ? name + qsTr(" (Connected)") : name : name
                         font.pixelSize: baseFontSize * 0.9
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                         color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? buttonTextColor : !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
