@@ -465,10 +465,12 @@ Item {
                                 Accessible.role: Accessible.Pane
 
                                 Text {
-                                    property string name: useExternalGPS ? currentDevice.name : tcpSocket.remoteName + ":" + tcpSocket.remotePort
+                                    property string name: useExternalGPS ? (currentDevice ? currentDevice.name : "Unknown") : ((tcpSocket.remoteName && tcpSocket.remotePort) ? tcpSocket.remoteName + ":" + tcpSocket.remotePort : "Unknown")
+
                                     anchors.fill: parent
                                     color: app.isConnecting ? "red" : buttonTextColor
                                     text: app.isConnecting ? "Connecting to " + name : app.isConnected ? "Connected to " + name : qsTr("Not connected")
+                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                     verticalAlignment: Text.AlignVCenter
                                     leftPadding: /*radioButton.indicator.width + 2*externalChecked.radioButton.spacing +*/ sideMargin
                                 }
