@@ -42,7 +42,6 @@ Item {
     signal deviceSelected(Device device)
     signal disconnect()
 
-onConnectionTypeChanged: console.log("~~~sources.connectionType changed", connectionType)
     //--------------------------------------------------------------------------
 
     Component.onDestruction: {
@@ -78,7 +77,6 @@ onConnectionTypeChanged: console.log("~~~sources.connectionType changed", connec
         onSourceChanged: positionSource.update()
 
         onReceivedNmeaData: {
-            //console.log("~~~ nmea", receivedSentence.trim())
             if (!isConnected && receivedSentence.trim() > "") {
                 isConnected = true;
                 isConnecting = false;
@@ -122,7 +120,24 @@ onConnectionTypeChanged: console.log("~~~sources.connectionType changed", connec
         property bool detectBluetooth: true
         property bool detectSerialPort: false
 
-        deviceFilter: function(device) {
+        deviceFilter: function(device) { return filter(device); }
+
+        onDeviceDiscovered: {
+            if (filter(device)) {
+                console.log("Device discovered: ", device.name);
+            }
+        }
+
+        onRunningChanged: {
+            console.log("DeviceDiscoveryAgent running", running)
+        }
+
+        onDiscoverDevicesCompleted: {
+            console.log("Device discovery completed");
+            stop();
+        }
+
+        function filter(device) {
             var types = [];
 
             if (detectBluetooth) {
@@ -140,19 +155,6 @@ onConnectionTypeChanged: console.log("~~~sources.connectionType changed", connec
             }
 
             return false;
-        }
-
-        onDeviceDiscovered: {
-            console.log("Device discovered: ", device.name);
-        }
-
-        onRunningChanged: {
-            console.log("DeviceDiscoveryAgent running", running)
-        }
-
-        onDiscoverDevicesCompleted: {
-            console.log("Device discovery completed");
-            stop();
         }
     }
 
@@ -190,7 +192,6 @@ onConnectionTypeChanged: console.log("~~~sources.connectionType changed", connec
     //--------------------------------------------------------------------------
 
     onDisconnect: {
-        console.log("~~~disconnecting")
         if (tcpSocket.valid && tcpSocket.state === AbstractSocket.StateConnected) {
             tcpSocket.disconnectFromHost();
         }
