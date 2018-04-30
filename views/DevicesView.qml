@@ -135,8 +135,6 @@ Item {
                     Accessible.role: Accessible.Pane
 
                     ColumnLayout {
-                        enabled: !isConnecting
-
                         anchors.fill: parent
                         spacing: 0
 
