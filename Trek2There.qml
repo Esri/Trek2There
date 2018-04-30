@@ -51,6 +51,8 @@ App {
     property alias tcpSocket: sources.tcpSocket
     property alias discoveryAgent: sources.discoveryAgent
 
+    property string storedDevice: settings.value("device", "");
+
     property Device currentDevice: sources.currentDevice
     property bool isConnecting: sources.isConnecting
     property bool isConnected: sources.isConnected
@@ -156,6 +158,8 @@ App {
 
     PositioningSources {
         id: sources
+
+        storedDevice: app.storedDevice
     }
 
     //--------------------------------------------------------------------------

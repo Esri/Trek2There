@@ -46,6 +46,10 @@ Item {
 
     StackView.onActivating: {
         initialized = true;
+
+        if (!isConnecting && !isConnected && externalChecked.checked) {
+            sources.discoveryAgent.start();
+        }
     }
 
     StackView.onDeactivating: {
@@ -468,8 +472,8 @@ Item {
                                     property string name: useExternalGPS ? (currentDevice ? currentDevice.name : "Unknown") : ((tcpSocket.remoteName && tcpSocket.remotePort) ? tcpSocket.remoteName + ":" + tcpSocket.remotePort : "Unknown")
 
                                     anchors.fill: parent
-                                    color: app.isConnecting ? "red" : buttonTextColor
-                                    text: app.isConnecting ? "Connecting to " + name : app.isConnected ? "Connected to " + name : qsTr("Not connected")
+                                    color: app.storedDevice > "" && discoveryAgent.running || app.isConnecting ? "red" : buttonTextColor
+                                    text: app.storedDevice > "" && discoveryAgent.running ? "Looking for " + app.storedDevice : app.isConnecting ? "Connecting to " + name : app.isConnected ? "Connected to " + name : qsTr("Not connected")
                                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                     verticalAlignment: Text.AlignVCenter
                                     leftPadding: /*radioButton.indicator.width + 2*externalChecked.radioButton.spacing +*/ sideMargin

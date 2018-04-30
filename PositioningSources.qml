@@ -33,6 +33,8 @@ Item {
     property alias tcpSocket: tcpSocket
     property alias discoveryAgent: discoveryAgent
 
+    property string storedDevice
+
     property Device currentDevice
     property bool isConnecting
     property bool isConnected
@@ -125,6 +127,10 @@ Item {
         onDeviceDiscovered: {
             if (filter(device)) {
                 console.log("Device discovered: ", device.name);
+
+                if (!isConnecting && !isConnected && storedDevice > "" && storedDevice === device.name) {
+                    deviceSelected(device);
+                }
             }
         }
 

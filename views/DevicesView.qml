@@ -555,15 +555,6 @@ Item {
                         disconnect();
                     }
                 }
-
-                Component.onCompleted: {
-                    var stored = app.settings.value("device", "");
-
-                    if (showDevices && !isConnecting && !isConnected && stored > "" && stored === name) {
-                        deviceListView.currentIndex = index;
-                        deviceSelected(discoveryAgent.devices.get(index));
-                    }
-                }
             }
         }
     }
