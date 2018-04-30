@@ -63,7 +63,7 @@ Item {
     //--------------------------------------------------------------------------
 
     onIsConnectedChanged: {
-        if (isConnected) {
+        if (initialized && isConnected) {
             mainStackView.pop();
         }
     }
