@@ -23,7 +23,7 @@ Item {
     readonly property real kMaxRotationSensorCalibrationThreshold: 10
     readonly property real rotationSensorCalibrationLevel: calculateRotationSensorCalibration()
 
-    property alias positionSource: positionSource
+//    property alias positionSource: positionSource
     property alias compass: compass
     property alias tiltSensor: tiltSensor
     property alias rotationSensor: rotationSensor
@@ -66,7 +66,7 @@ Item {
     property real sensorTurnVelocity: 0
 
     // raw sensor readings
-    property Position position
+//    property Position position
     property CompassReading compassReading
     property TiltReading tiltReading
     property RotationReading rotationReading
@@ -96,7 +96,7 @@ Item {
     property bool reduceSmoothing: false
     property bool deviceTurning: false
 
-    signal sensorPositionChanged();
+//    signal sensorPositionChanged();
 
     //--------------------------------------------------------------------------
 
@@ -292,43 +292,43 @@ Item {
 
     //--------------------------------------------------------------------------
 
-    PositionSource {
-        id: positionSource
+//    PositionSource {
+//        id: positionSource
 
-        property date activatedTimestamp
-        property bool positionUpToDate
+//        property date activatedTimestamp
+//        property bool positionUpToDate
 
-        active: false
+//        active: false
 
-        onActiveChanged: {
-            if (active) {
-                activatedTimestamp = new Date();
-                positionUpToDate = position.timestamp > activatedTimestamp;
-            } else {
-                positionUpToDate = false;
-            }
-        }
+//        onActiveChanged: {
+//            if (active) {
+//                activatedTimestamp = new Date();
+//                positionUpToDate = position.timestamp > activatedTimestamp;
+//            } else {
+//                positionUpToDate = false;
+//            }
+//        }
 
-        onPositionChanged: {
-            positionUpToDate = position.timestamp > activatedTimestamp;
+//        onPositionChanged: {
+//            positionUpToDate = position.timestamp > activatedTimestamp;
 
-            if (position.latitudeValid && position.longitudeValid && positionUpToDate) {
-                sensors.position = position;
-                // #46, #101, #142 need to signal a change or position will not be updated
-                sensorPositionChanged();
-            }
-        }
+//            if (position.latitudeValid && position.longitudeValid && positionUpToDate) {
+//                sensors.position = position;
+//                // #46, #101, #142 need to signal a change or position will not be updated
+//                sensorPositionChanged();
+//            }
+//        }
 
-        function activate() {
-            console.log("Starting position source:", name);
+//        function activate() {
+//            console.log("Starting position source:", name);
 
-            AppFramework.environment.setValue("APPSTUDIO_POSITION_DESIRED_ACCURACY", "HIGHEST");
-            AppFramework.environment.setValue("APPSTUDIO_POSITION_ACTIVITY_MODE", "OTHERNAVIGATION");
-            AppFramework.environment.setValue("APPSTUDIO_POSITION_MOVEMENT_THRESHOLD", movementThreshold.toString());
+//            AppFramework.environment.setValue("APPSTUDIO_POSITION_DESIRED_ACCURACY", "HIGHEST");
+//            AppFramework.environment.setValue("APPSTUDIO_POSITION_ACTIVITY_MODE", "OTHERNAVIGATION");
+//            AppFramework.environment.setValue("APPSTUDIO_POSITION_MOVEMENT_THRESHOLD", movementThreshold.toString());
 
-            start();
-        }
-    }
+//            start();
+//        }
+//    }
 
     //--------------------------------------------------------------------------
 
