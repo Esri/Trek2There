@@ -199,7 +199,7 @@ Item {
                                     Layout.columnSpan: 3
                                     Layout.fillWidth: true
 
-                                    text: "TCP Connection"
+                                    text: "TCP/UDP Connection"
                                     checked: !showDevices
                                 }
 
@@ -367,7 +367,7 @@ Item {
                                     Layout.row: 4
                                     Layout.column: 2
 
-                                    text: "USB"
+                                    text: "USB/COM"
                                     font.pixelSize: baseFontSize
 
                                     checked: false
