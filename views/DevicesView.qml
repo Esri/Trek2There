@@ -38,6 +38,11 @@ Item {
     property bool showDevices
     readonly property bool bluetoothOnly: Qt.platform.os === "ios" || Qt.platform.os === "android"
 
+    property string backgroundColor: !nightMode ? dayModeSettings.background : nightModeSettings.background
+    property string secondaryBackgroundColor: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
+    property string foregroundColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+    property string secondaryForegroundColor: buttonTextColor
+
     signal networkHostSelected(string hostname, int port)
     signal deviceSelected(Device device)
     signal disconnect()
@@ -103,7 +108,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+        color: backgroundColor
         Accessible.role: Accessible.Pane
 
         ColumnLayout {
@@ -120,7 +125,7 @@ Item {
             Rectangle {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
-                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                color: backgroundColor
                 Accessible.role: Accessible.Pane
 
                 Flickable {
@@ -147,7 +152,7 @@ Item {
                             Layout.preferredHeight: sf(50)
                             Layout.fillWidth: true
 
-                            color: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
+                            color: secondaryBackgroundColor
                             Accessible.role: Accessible.Pane
 
                             Text {
@@ -156,7 +161,7 @@ Item {
                                 anchors.bottomMargin: sf(5)
                                 text: qsTr("DISCOVERY SETTINGS")
                                 verticalAlignment: Text.AlignBottom
-                                color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                                color: foregroundColor
                                 Accessible.role: Accessible.Heading
                                 Accessible.name: text
                                 Accessible.description: qsTr("Choose the connection type")
@@ -172,7 +177,7 @@ Item {
                             Layout.preferredHeight: deviceSelectionGrid.height
                             Layout.fillWidth: true
 
-                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                            color: backgroundColor
 
                             GridLayout {
                                 id: deviceSelectionGrid
@@ -387,7 +392,7 @@ Item {
                                 Layout.preferredHeight: sf(50)
                                 Layout.fillWidth: true
 
-                                color: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
+                                color: secondaryBackgroundColor
                                 Accessible.role: Accessible.Pane
 
                                 Text {
@@ -396,7 +401,7 @@ Item {
                                     anchors.bottomMargin: sf(5)
                                     text: qsTr("SELECT A DEVICE")
                                     verticalAlignment: Text.AlignBottom
-                                    color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                                    color: foregroundColor
                                     Accessible.role: Accessible.Heading
                                     Accessible.name: text
                                 }
@@ -406,7 +411,7 @@ Item {
                                 Layout.preferredHeight: sf(50)
                                 Layout.preferredWidth: sf(25)
                                 anchors.bottom: parent.bottom
-                                color: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
+                                color: secondaryBackgroundColor
 
                                 BusyIndicator {
                                     id: discoveryIndicator
@@ -419,7 +424,7 @@ Item {
                                 ColorOverlay {
                                     anchors.fill: discoveryIndicator
                                     source: discoveryIndicator
-                                    color: buttonTextColor
+                                    color: secondaryForegroundColor
                                 }
                             }
                         }
@@ -430,7 +435,7 @@ Item {
                             Layout.fillWidth: true
                             Layout.minimumHeight: sf(184)
                             height: contentHeight > Layout.minimumHeight ? contentHeight :  Layout.minimumHeight
-                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                            color: backgroundColor
 
                             ListView {
                                 id: deviceListView
@@ -464,7 +469,7 @@ Item {
             width: ListView.view.width
             height: deviceLayout.height
 
-            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+            color: backgroundColor
             opacity: parent.enabled ? 1.0 : 0.7
 
             ColumnLayout {
@@ -496,7 +501,7 @@ Item {
                     ColorOverlay {
                         anchors.fill: deviceImage
                         source: deviceImage
-                        color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? buttonTextColor : !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                        color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? secondaryForegroundColor : foregroundColor
                     }
 
                     Item {
@@ -509,7 +514,7 @@ Item {
                         text: currentDevice && (currentDevice.name === name) ? isConnecting ? name + qsTr(" (Connecting...)") : isConnected ? name + qsTr(" (Connected)") : name : name
                         font.pixelSize: baseFontSize * 0.9
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? buttonTextColor : !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                        color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? secondaryForegroundColor : foregroundColor
                     }
 
                     Image {
@@ -528,14 +533,14 @@ Item {
                     ColorOverlay {
                         anchors.fill: rightImage
                         source: rightImage
-                        color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? buttonTextColor : !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                        color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? secondaryForegroundColor : foregroundColor
                     }
                 }
 
                 Rectangle {
                     Layout.fillWidth: true
                     height: sf(1)
-                    color: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
+                    color: secondaryBackgroundColor
                 }
             }
 
@@ -573,7 +578,7 @@ Item {
     ColorOverlay {
         anchors.fill: connectingIndicator
         source: connectingIndicator
-        color: buttonTextColor
+        color: secondaryForegroundColor
     }
 
     //--------------------------------------------------------------------------
