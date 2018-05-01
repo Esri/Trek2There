@@ -4,12 +4,14 @@
         "audio": false,
         "backgroundLocation": true,
         "biometricAuthentication": false,
-        "bluetooth": false,
+        "bluetooth": true,
         "camera": true,
         "fileSharing": false,
         "highAccuracyLocation": true,
         "ios": {
             "externalAccessoryProtocolStrings": [
+                "com.bad-elf.gps",
+                "com.eos-gnss.positioningsource"
             ]
         },
         "localnotification": false,
