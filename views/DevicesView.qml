@@ -34,9 +34,9 @@ Item {
     property string hostname: hostnameTF.text
     property string port: portTF.text
 
-    property bool initialized
-    property bool showDevices
     readonly property bool bluetoothOnly: Qt.platform.os === "ios" || Qt.platform.os === "android"
+    property bool showDevices
+    property bool initialized
 
     property string backgroundColor: !nightMode ? dayModeSettings.background : nightModeSettings.background
     property string secondaryBackgroundColor: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
@@ -122,294 +122,299 @@ Item {
 
             //------------------------------------------------------------------
 
-            Rectangle {
-                Layout.fillHeight: true
+            Flickable {
                 Layout.fillWidth: true
-                color: backgroundColor
+                Layout.fillHeight: true
+                contentHeight: contentItem.children[0].childrenRect.height
+                contentWidth: parent.width
                 Accessible.role: Accessible.Pane
 
-                Flickable {
-                    width: parent.width
-                    height: parent.height
-                    contentHeight: contentItem.children[0].childrenRect.height
-                    contentWidth: parent.width
+                interactive: true
+                flickableDirection: Flickable.VerticalFlick
+                clip: true
 
-                    interactive: true
-                    flickableDirection: Flickable.VerticalFlick
-                    clip: true
-                    Accessible.role: Accessible.Pane
+                ColumnLayout {
+                    anchors.fill: parent
 
-                    ColumnLayout {
-                        anchors.fill: parent
-                        spacing: 0
+                    //--------------------------------------------------------------------------
 
-                        //--------------------------------------------------------------------------
+                    Rectangle {
+                        id: connectionTitleRect
 
-                        Rectangle {
-                            id: discoveryTitleRect
+                        anchors.top: parent.top
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: sf(50)
 
-                            anchors.top: parent.top
-                            Layout.preferredHeight: sf(50)
-                            Layout.fillWidth: true
+                        color: secondaryBackgroundColor
+                        Accessible.role: Accessible.Pane
 
-                            color: secondaryBackgroundColor
-                            Accessible.role: Accessible.Pane
+                        Text {
+                            id: connectionTitle
 
-                            Text {
-                                anchors.fill: parent
-                                anchors.leftMargin: sideMargin
-                                anchors.bottomMargin: sf(5)
-                                text: qsTr("DISCOVERY SETTINGS")
-                                verticalAlignment: Text.AlignBottom
+                            anchors.fill: parent
+                            anchors.leftMargin: sideMargin
+                            anchors.bottomMargin: sf(5)
+
+                            text: qsTr("CONNECTION SETTINGS")
+                            verticalAlignment: Text.AlignBottom
+                            color: foregroundColor
+
+                            Accessible.role: Accessible.Heading
+                            Accessible.name: text
+                            Accessible.description: qsTr("Choose the connection type")
+                        }
+                    }
+
+                    //--------------------------------------------------------------------------
+
+                    Rectangle {
+                        id: connectionTypeGridRect
+
+                        anchors.top: connectionTitleRect.bottom
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: connectionTypeGrid.height
+
+                        color: backgroundColor
+                        Accessible.role: Accessible.Pane
+
+                        GridLayout {
+                            id: connectionTypeGrid
+
+                            columns: 3
+                            rows: 5
+
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+
+                            //--------------------------------------------------------------------------
+
+                            SettingsRadioButton {
+                                id: tcpRadioButton
+
+                                Layout.row: 0
+                                Layout.column: 0
+                                Layout.columnSpan: 3
+
+                                text: "TCP/UDP Connection"
+                                checked: !showDevices
+                            }
+
+                            //--------------------------------------------------------------------------
+
+                            Label {
+                                enabled: !showDevices
+                                visible: !showDevices
+
+                                Layout.row: 1
+                                Layout.column: 0
+                                Layout.leftMargin: sideMargin
+
+                                text: "Hostname"
+                                font.pixelSize: baseFontSize
                                 color: foregroundColor
-                                Accessible.role: Accessible.Heading
-                                Accessible.name: text
-                                Accessible.description: qsTr("Choose the connection type")
                             }
-                        }
 
-                        //--------------------------------------------------------------------------
+                            TextField {
+                                id: hostnameTF
 
-                        Rectangle {
-                            id: deviceSelectionGridRect
+                                enabled: !showDevices
+                                visible: !showDevices
 
-                            anchors.top: discoveryTitleRect.bottom
-                            Layout.preferredHeight: deviceSelectionGrid.height
-                            Layout.fillWidth: true
-
-                            color: backgroundColor
-
-                            GridLayout {
-                                id: deviceSelectionGrid
-
-                                columns: 3
-                                rows: 5
-
-                                anchors.left: parent.left
-                                anchors.right: parent.right
-                                anchors.rightMargin: sideMargin
-
-                                //--------------------------------------------------------------------------
-
-                                SettingsRadioButton {
-                                    id: tcpRadioButton
-
-                                    Layout.row: 0
-                                    Layout.column: 0
-                                    Layout.columnSpan: 3
-                                    Layout.fillWidth: true
-
-                                    text: "TCP/UDP Connection"
-                                    checked: !showDevices
-                                }
-
-                                //--------------------------------------------------------------------------
-
-                                Label {
-                                    enabled: !showDevices
-                                    visible: !showDevices
-
-                                    Layout.row: 1
-                                    Layout.column: 0
-                                    Layout.leftMargin: sideMargin
-
-                                    text: "Hostname"
-                                    font.pixelSize: baseFontSize
-                                }
-
-                                TextField {
-                                    id: hostnameTF
-
-                                    enabled: !showDevices
-                                    visible: !showDevices
-
-                                    Layout.row: 1
-                                    Layout.column: 1
-                                    Layout.fillWidth: true
-
-                                    text: app.settings.value("hostname", "");
-                                    placeholderText: "Hostname"
-                                    font.pixelSize: baseFontSize
-                                }
-
-                                //--------------------------------------------------------------------------
-
-                                Label {
-                                    enabled: !showDevices
-                                    visible: !showDevices
-
-                                    Layout.row: 2
-                                    Layout.column: 0
-                                    Layout.leftMargin: sideMargin
-
-                                    text: "Port"
-                                    font.pixelSize: baseFontSize
-                                }
-
-                                TextField {
-                                    id: portTF
-
-                                    enabled: !showDevices
-                                    visible: !showDevices
-
-                                    Layout.row: 2
-                                    Layout.column: 1
-                                    Layout.fillWidth: true
-
-                                    text: app.settings.value("port", "").toString();
-                                    placeholderText: "Port"
-                                    font.pixelSize: baseFontSize
-                                }
-
-                                Button {
-                                    id: connectBtn
-
-                                    enabled: !showDevices && hostname && port
-                                    visible: !showDevices
-
-                                    Layout.row: 2
-                                    Layout.column: 2
-
-                                    text: qsTr("Connect")
-                                    font.pixelSize: baseFontSize
-
-                                    onClicked: networkHostSelected(hostname, port)
-                                }
-
-                                //--------------------------------------------------------------------------
-
-                                SettingsRadioButton {
-                                    id: deviceRadioButton
-
-                                    Layout.row: 3
-                                    Layout.column: 0
-                                    Layout.columnSpan: 3
-                                    Layout.fillWidth: true
-
-                                    text: "External device"
-                                    checked: showDevices
-
-                                    onCheckedChanged: {
-                                        if (initialized) {
-                                            disconnect();
-                                            showDevices = checked;
-
-                                            if (checked && (!discoveryAgent.devices || discoveryAgent.devices.count == 0)) {
-                                                discoverySwitch.checked = true;
-                                            } else {
-                                                discoverySwitch.checked = false;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                //--------------------------------------------------------------------------
-
-                                Switch {
-                                    id: discoverySwitch
-
-                                    enabled: showDevices && (bluetoothCheckBox.checked || usbCheckBox.checked)
-                                    visible: showDevices
-
-                                    Layout.row: 4
-                                    Layout.column: 0
-                                    Layout.fillWidth: true
-                                    Layout.leftMargin: sideMargin
-
-                                    text: "Discovery %1".arg(checked ? "on" : "off")
-                                    font.pixelSize: baseFontSize
-
-                                    onCheckedChanged: {
-                                        if (initialized) {
-                                            if (checked) {
-                                                disconnect();
-                                                discoveryAgent.start();
-                                            } else {
-                                                discoveryAgent.stop();
-                                            }
-                                        }
-                                    }
-
-                                    Connections {
-                                        target: discoveryAgent
-
-                                        onRunningChanged: {
-                                            if (!discoveryAgent.running) {
-                                                discoverySwitch.checked = false;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                CheckBox {
-                                    id: bluetoothCheckBox
-
-                                    enabled: showDevices && !discoverySwitch.checked
-                                    visible: showDevices && !bluetoothOnly
-
-                                    Layout.row: 4
-                                    Layout.column: 1
-
-                                    text: "Bluetooth"
-                                    font.pixelSize: baseFontSize
-
-                                    checked: true
-
-                                    onCheckedChanged: discoveryAgent.detectBluetooth = checked
-                                }
-
-                                CheckBox {
-                                    id: usbCheckBox
-
-                                    enabled: showDevices && !discoverySwitch.checked
-                                    visible: showDevices && !bluetoothOnly
-
-                                    Layout.row: 4
-                                    Layout.column: 2
-
-                                    text: "USB/COM"
-                                    font.pixelSize: baseFontSize
-
-                                    checked: false
-
-                                    onCheckedChanged: discoveryAgent.detectSerialPort = checked
-                                }
-                            }
-                        }
-
-                        //--------------------------------------------------------------------------
-
-                        RowLayout {
-                            anchors.top: deviceSelectionGridRect.bottom
-                            Layout.preferredHeight: sf(50)
-                            Layout.fillWidth: true
-                            Layout.bottomMargin: sf(5)
-                            spacing: 0
-
-                            Rectangle {
-                                id: deviceTitleRect
-
-                                Layout.preferredHeight: sf(50)
+                                Layout.row: 1
+                                Layout.column: 1
                                 Layout.fillWidth: true
 
-                                color: secondaryBackgroundColor
-                                Accessible.role: Accessible.Pane
+                                text: app.settings.value("hostname", "");
+                                placeholderText: "Hostname"
+                                font.pixelSize: baseFontSize
+                            }
 
-                                Text {
-                                    anchors.fill: parent
-                                    anchors.leftMargin: sideMargin
-                                    anchors.bottomMargin: sf(5)
-                                    text: qsTr("SELECT A DEVICE")
-                                    verticalAlignment: Text.AlignBottom
-                                    color: foregroundColor
-                                    Accessible.role: Accessible.Heading
-                                    Accessible.name: text
+                            //--------------------------------------------------------------------------
+
+                            Label {
+                                enabled: !showDevices
+                                visible: !showDevices
+
+                                Layout.row: 2
+                                Layout.column: 0
+                                Layout.leftMargin: sideMargin
+
+                                text: "Port"
+                                font.pixelSize: baseFontSize
+                                color: foregroundColor
+                            }
+
+                            TextField {
+                                id: portTF
+
+                                enabled: !showDevices
+                                visible: !showDevices
+
+                                Layout.row: 2
+                                Layout.column: 1
+                                Layout.fillWidth: true
+
+                                text: app.settings.value("port", "").toString();
+                                placeholderText: "Port"
+                                font.pixelSize: baseFontSize
+                            }
+
+                            Button {
+                                id: connectBtn
+
+                                enabled: !showDevices && hostname && port
+                                visible: !showDevices
+
+                                Layout.row: 2
+                                Layout.column: 2
+                                Layout.rightMargin: sideMargin
+
+                                text: qsTr("Connect")
+                                font.pixelSize: baseFontSize
+
+                                onClicked: networkHostSelected(hostname, port)
+                            }
+
+                            //--------------------------------------------------------------------------
+
+                            SettingsRadioButton {
+                                id: deviceRadioButton
+
+                                Layout.row: 3
+                                Layout.column: 0
+                                Layout.columnSpan: 3
+
+                                text: "External device"
+                                checked: showDevices
+
+                                onCheckedChanged: {
+                                    if (initialized) {
+                                        disconnect();
+                                        showDevices = checked;
+
+                                        if (checked && (!discoveryAgent.devices || discoveryAgent.devices.count == 0)) {
+                                            discoverySwitch.checked = true;
+                                        } else {
+                                            discoverySwitch.checked = false;
+                                        }
+                                    }
                                 }
                             }
 
+                            //--------------------------------------------------------------------------
+
+                            Switch {
+                                id: discoverySwitch
+
+                                enabled: showDevices && (bluetoothCheckBox.checked || usbCheckBox.checked)
+                                visible: showDevices
+
+                                Layout.row: 4
+                                Layout.column: 0
+                                Layout.fillWidth: true
+                                Layout.leftMargin: sideMargin
+
+                                text: "Discovery %1".arg(checked ? "on" : "off")
+                                font.pixelSize: baseFontSize
+
+                                onCheckedChanged: {
+                                    if (initialized) {
+                                        if (checked) {
+                                            disconnect();
+                                            discoveryAgent.start();
+                                        } else {
+                                            discoveryAgent.stop();
+                                        }
+                                    }
+                                }
+
+                                Connections {
+                                    target: discoveryAgent
+
+                                    onRunningChanged: {
+                                        if (!discoveryAgent.running) {
+                                            discoverySwitch.checked = false;
+                                        }
+                                    }
+                                }
+                            }
+
+                            CheckBox {
+                                id: bluetoothCheckBox
+
+                                enabled: showDevices && !discoverySwitch.checked
+                                visible: showDevices && !bluetoothOnly
+
+                                Layout.row: 4
+                                Layout.column: 1
+
+                                text: "Bluetooth"
+                                font.pixelSize: baseFontSize
+
+                                checked: discoveryAgent.detectBluetooth
+
+                                onCheckedChanged: discoveryAgent.detectBluetooth = checked ? true : false
+                            }
+
+                            CheckBox {
+                                id: usbCheckBox
+
+                                enabled: showDevices && !discoverySwitch.checked
+                                visible: showDevices && !bluetoothOnly
+
+                                Layout.row: 4
+                                Layout.column: 2
+
+                                text: "USB/COM"
+                                font.pixelSize: baseFontSize
+
+                                checked: discoveryAgent.detectSerialPort
+
+                                onCheckedChanged: discoveryAgent.detectSerialPort = checked ? true : false
+                            }
+                        }
+                    }
+
+                    //--------------------------------------------------------------------------
+
+                    Rectangle {
+                        id: deviceTitleRowRect
+
+                        anchors.top: connectionTypeGridRect.bottom
+                        Layout.fillWidth: true;
+                        Layout.preferredHeight: sf(50)
+
+                        color: secondaryBackgroundColor
+                        Accessible.role: Accessible.Pane
+
+                        RowLayout {
+                            id: deviceTitleRow
+
+                            anchors.fill: parent
+                            spacing: 0
+
+                            Text {
+                                id: deviceTitle
+
+                                Layout.fillHeight: true
+                                Layout.fillWidth: true
+                                Layout.leftMargin: sideMargin
+                                Layout.bottomMargin: sf(5)
+
+                                text: qsTr("SELECT A DEVICE")
+                                verticalAlignment: Text.AlignBottom
+                                color: foregroundColor
+
+                                Accessible.role: Accessible.Heading
+                                Accessible.name: text
+                                Accessible.description: qsTr("Choose an external GPS device")
+                            }
+
                             Rectangle {
-                                Layout.preferredHeight: sf(50)
-                                Layout.preferredWidth: sf(25)
+                                id: discoveryIndicatorRect
+
+                                Layout.fillHeight: true
+                                Layout.preferredWidth: sf(30)
                                 anchors.bottom: parent.bottom
                                 color: secondaryBackgroundColor
 
@@ -428,24 +433,31 @@ Item {
                                 }
                             }
                         }
+                    }
 
-                        Rectangle {
-                            property real contentHeight: deviceListView.count * deviceListView.contentHeight
+                    //--------------------------------------------------------------------------
 
+                    Rectangle {
+                        id: deviceListRect
+
+                        anchors.top: deviceTitleRowRect.bottom
+                        Layout.fillWidth: true;
+                        Layout.preferredHeight: deviceListColumn.height
+
+                        color: backgroundColor
+                        Accessible.role: Accessible.Pane
+
+                        ColumnLayout {
+                            id: deviceListColumn
+
+                            Layout.fillHeight: true
                             Layout.fillWidth: true
-                            Layout.minimumHeight: sf(184)
-                            height: contentHeight > Layout.minimumHeight ? contentHeight :  Layout.minimumHeight
-                            color: backgroundColor
+                            spacing: 0
 
-                            ListView {
-                                id: deviceListView
-
+                            Repeater {
                                 enabled: showDevices
                                 visible: showDevices
 
-                                anchors.fill: parent
-
-                                spacing: 0
                                 clip: true
 
                                 model: discoveryAgent.devices
@@ -466,8 +478,8 @@ Item {
         Rectangle {
             id: delegateRect
 
-            width: ListView.view.width
-            height: deviceLayout.height
+            Layout.preferredHeight: deviceLayout.height
+            Layout.preferredWidth: deviceListRect.width
 
             color: backgroundColor
             opacity: parent.enabled ? 1.0 : 0.7
@@ -475,56 +487,55 @@ Item {
             ColumnLayout {
                 id: deviceLayout
 
-                width: parent.width
-                spacing: sf(20)
+                height: rowLayout.height + separator.height
+                width: delegateRect.width
+                spacing: 0
 
                 RowLayout {
-                    Layout.fillWidth: true
-                    anchors.verticalCenter: parent.verticalCenter
+                    id: rowLayout
 
-                    Item {
-                        width: sf(12)
-                    }
+                    height: sf(35)
+                    Layout.fillWidth: true
 
                     Image {
-                        id: deviceImage
+                        id: leftImage
 
                         width: sf(25)
-                        height: width
-                        Layout.preferredWidth: sf(25)
-                        Layout.preferredHeight: Layout.preferredWidth
+                        height: rowLayout.height
+                        Layout.preferredWidth: leftImage.width
+                        Layout.preferredHeight: leftImage.height
+                        anchors.left: parent.left
+                        anchors.leftMargin: sf(10)
 
                         source:"../images/deviceType-%1.png".arg(deviceType)
                         fillMode: Image.PreserveAspectFit
                     }
 
                     ColorOverlay {
-                        anchors.fill: deviceImage
-                        source: deviceImage
+                        anchors.fill: leftImage
+                        source: leftImage
                         color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? secondaryForegroundColor : foregroundColor
-                    }
-
-                    Item {
-                        width: sf(2)
                     }
 
                     Text {
+                        height: rowLayout.height
                         Layout.fillWidth: true
 
                         text: currentDevice && (currentDevice.name === name) ? isConnecting ? name + qsTr(" (Connecting...)") : isConnected ? name + qsTr(" (Connected)") : name : name
+                        color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? secondaryForegroundColor : foregroundColor
                         font.pixelSize: baseFontSize * 0.9
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? secondaryForegroundColor : foregroundColor
                     }
 
                     Image {
-                        id:rightImage
+                        id: rightImage
 
-                        anchors.right: parent.right
                         width: sf(25)
-                        height: width
-                        Layout.preferredWidth: sf(25)
-                        Layout.preferredHeight: Layout.preferredWidth
+                        height: rowLayout.height
+                        Layout.preferredWidth: rightImage.width
+                        Layout.preferredHeight: rightImage.height
+                        anchors.right: parent.right
+                        anchors.rightMargin: sf(10)
 
                         source:"../images/right.png"
                         fillMode: Image.PreserveAspectFit
@@ -538,8 +549,10 @@ Item {
                 }
 
                 Rectangle {
-                    Layout.fillWidth: true
+                    id: separator
+
                     height: sf(1)
+                    Layout.fillWidth: true
                     color: secondaryBackgroundColor
                 }
             }
@@ -549,12 +562,9 @@ Item {
 
                 onClicked: {
                     if (!isConnecting && !isConnected || currentDevice && currentDevice.name !== name) {
-                        deviceListView.currentIndex = index;
                         deviceSelected(discoveryAgent.devices.get(index));
                     } else {
                         app.settings.remove("device");
-
-                        deviceListView.currentIndex = -1;
                         disconnect();
                     }
                 }

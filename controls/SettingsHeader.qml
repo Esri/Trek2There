@@ -11,6 +11,8 @@ import ArcGIS.AppFramework.Speech 1.0
 Rectangle {
     property alias text: titleText.text
 
+    anchors.top: parent.top
+
     Layout.fillWidth: true
     Layout.preferredHeight: sf(50)
 

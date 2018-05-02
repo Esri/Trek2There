@@ -48,7 +48,7 @@ Item {
         initialized = true;
 
         if (!isConnecting && !isConnected && externalChecked.checked) {
-            sources.discoveryAgent.start();
+            discoveryAgent.start();
         }
     }
 
@@ -494,7 +494,7 @@ Item {
                                     Layout.fillWidth: true
 
                                     text: "Change"
-                                    color: buttonTextColor
+                                    color: app.storedDevice > "" && discoveryAgent.running || app.isConnecting ? "red" : buttonTextColor
                                     verticalAlignment: Text.AlignVCenter
                                     horizontalAlignment: Text.AlignHCenter
                                 }
