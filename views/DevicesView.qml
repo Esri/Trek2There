@@ -120,7 +120,7 @@ Item {
                 text: qsTr("Search external receiver")
             }
 
-            //------------------------------------------------------------------
+            //--------------------------------------------------------------------------
 
             Flickable {
                 Layout.fillWidth: true
@@ -364,6 +364,7 @@ Item {
 
                                 Layout.row: 4
                                 Layout.column: 2
+                                Layout.rightMargin: sideMargin
 
                                 text: "USB/COM"
                                 font.pixelSize: baseFontSize
@@ -494,7 +495,7 @@ Item {
                 RowLayout {
                     id: rowLayout
 
-                    height: sf(35)
+                    height: sf(45)
                     Layout.fillWidth: true
 
                     Image {
@@ -518,13 +519,14 @@ Item {
                     }
 
                     Text {
-                        height: rowLayout.height
                         Layout.fillWidth: true
+                        Layout.fillHeight: true
 
                         text: currentDevice && (currentDevice.name === name) ? isConnecting ? name + qsTr(" (Connecting...)") : isConnected ? name + qsTr(" (Connected)") : name : name
                         color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? secondaryForegroundColor : foregroundColor
                         font.pixelSize: baseFontSize * 0.9
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        verticalAlignment: Text.AlignVCenter
                     }
 
                     Image {
