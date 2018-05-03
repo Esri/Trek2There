@@ -58,8 +58,6 @@ Item {
 
         active: true
         nmeaSource: nmeaSource.source ? nmeaSource : null
-
-        onPositionChanged: console.log("~~~ coords", position.coordinate.latitude, position.coordinate.longitude)
     }
 
     //--------------------------------------------------------------------------
