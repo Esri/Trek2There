@@ -105,12 +105,22 @@ App {
 
     property bool initialized
 
+    //--------------------------------------------------------------------------
+
     Component.onCompleted: {
         fileFolder.makePath(localStoragePath);
         AppFramework.offlineStoragePath = fileFolder.path + "/ArcGIS/My Treks";
 
         connectionType = app.settings.value("connectionType", sources.eConnectionType.internal)
         initialized = true;
+    }
+
+    //--------------------------------------------------------------------------
+
+    Connections {
+        target: app.settings
+
+        onValueChanged: storedDevice = settings.value("device", "")
     }
 
     // COMPONENTS //////////////////////////////////////////////////////////////

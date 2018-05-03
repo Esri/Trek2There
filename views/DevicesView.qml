@@ -291,12 +291,7 @@ Item {
                                     if (initialized) {
                                         disconnect();
                                         showDevices = checked;
-
-                                        if (checked && (!discoveryAgent.devices || discoveryAgent.devices.count == 0)) {
-                                            discoverySwitch.checked = true;
-                                        } else {
-                                            discoverySwitch.checked = false;
-                                        }
+                                        discoverySwitch.checked = false;
                                     }
                                 }
                             }
@@ -331,11 +326,7 @@ Item {
                                 Connections {
                                     target: discoveryAgent
 
-                                    onRunningChanged: {
-                                        if (!discoveryAgent.running) {
-                                            discoverySwitch.checked = false;
-                                        }
-                                    }
+                                    onRunningChanged: discoverySwitch.checked = discoveryAgent.running
                                 }
                             }
 

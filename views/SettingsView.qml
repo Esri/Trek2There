@@ -440,18 +440,59 @@ Item {
 
                         //------------------------------------------------------
 
-                        SettingsRadioButton {
-                            id: externalChecked
+                        RowLayout {
+                            spacing: 0
 
-                            text: "Use external receiver"
-                            checked: !useInternalGPS
+                            SettingsRadioButton {
+                                id: externalChecked
 
-                            onCheckedChanged: {
-                                if (initialized && checked) {
-                                    if (!isConnecting && !isConnected) {
-                                        mainStackView.push(devicesView);
+                                text: "Use external receiver"
+                                checked: !useInternalGPS
+
+                                onCheckedChanged: {
+                                    if (initialized && checked) {
+                                        if (storedDevice > "") {
+                                            if (currentDevice && currentDevice.name === storedDevice) {
+                                                sources.deviceSelected(currentDevice);
+                                            } else {
+                                                discoveryAgent.start();
+                                            }
+                                        } else if (!isConnecting && !isConnected) {
+                                            mainStackView.push(devicesView);
+                                        }
                                     }
                                 }
+                            }
+
+                            Rectangle {
+                                Layout.fillHeight: true
+                                Layout.preferredWidth: sf(30)
+                                anchors.bottom: parent.bottom
+                                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+
+                                BusyIndicator {
+                                    id: discoveryIndicator
+
+                                    anchors.fill: parent
+
+                                    running: app.isConnecting || discoveryAgent.running && !app.isConnected
+                                }
+
+                                ColorOverlay {
+                                    anchors.fill: discoveryIndicator
+                                    source: discoveryIndicator
+                                    color: buttonTextColor
+                                }
+                            }
+
+                            Rectangle {
+                                id: discoveryIndicatorRect
+
+                                Layout.fillHeight: true
+                                Layout.preferredWidth: sideMargin
+                                anchors.bottom: parent.bottom
+                                anchors.right: parent.right
+                                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                             }
                         }
 
@@ -472,8 +513,8 @@ Item {
                                     property string name: useExternalGPS ? (currentDevice ? currentDevice.name : "Unknown") : ((tcpSocket.remoteName && tcpSocket.remotePort) ? tcpSocket.remoteName + ":" + tcpSocket.remotePort : "Unknown")
 
                                     anchors.fill: parent
-                                    color: app.storedDevice > "" && discoveryAgent.running || app.isConnecting ? "red" : buttonTextColor
-                                    text: app.storedDevice > "" && discoveryAgent.running ? "Looking for " + app.storedDevice : app.isConnecting ? "Connecting to " + name : app.isConnected ? "Connected to " + name : qsTr("Not connected")
+                                    color: app.isConnecting ? "green" : !app.isConnected && app.storedDevice > "" && discoveryAgent.running ? "red" : buttonTextColor
+                                    text: app.isConnecting ? "Connecting to " + name : app.isConnected ? "Connected to " + name : app.storedDevice > "" && discoveryAgent.running ? "Looking for " + app.storedDevice : qsTr("Not connected")
                                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                     verticalAlignment: Text.AlignVCenter
                                     leftPadding: /*radioButton.indicator.width + 2*externalChecked.radioButton.spacing +*/ sideMargin
@@ -494,7 +535,7 @@ Item {
                                     Layout.fillWidth: true
 
                                     text: "Change"
-                                    color: app.storedDevice > "" && discoveryAgent.running || app.isConnecting ? "red" : buttonTextColor
+                                    color: app.isConnecting ? "green" : !app.isConnected && app.storedDevice > "" && discoveryAgent.running ? "red" : buttonTextColor
                                     verticalAlignment: Text.AlignVCenter
                                     horizontalAlignment: Text.AlignHCenter
                                 }

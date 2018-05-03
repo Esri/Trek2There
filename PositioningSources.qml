@@ -106,7 +106,6 @@ Item {
 
         onErrorChanged:  {
             if (currentDevice) {
-                currentDevice = null;
                 disconnect();
             }
         }
@@ -202,7 +201,6 @@ Item {
 
         if (currentDevice && currentDevice.connected) {
             currentDevice.connected = false;
-            currentDevice = null;
         }
 
         isConnected = false;
