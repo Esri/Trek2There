@@ -45,7 +45,7 @@ Item {
     property bool noPositionSource: false
     property double currentDistance: 0.0
     property int currentAccuracy: 0
-    property int currentAccuracyInUnits: 0
+    property real currentAccuracyInUnits: 0
     property int sideMargin: 14 * AppFramework.displayScaleFactor
     property bool hudOn: false
 
@@ -500,7 +500,7 @@ Item {
                         color: "transparent"
                         Accessible.role: Accessible.Indicator
                         Accessible.name: qsTr("Location Accuracy Indicator")
-                        Accessible.description: qsTr("Location accuracy is denoted on a scale of 1 to 5, with 1 being lowest and 5 being highest. Current location accuracy is rated %1".arg(currentAccuracy))
+                        Accessible.description: qsTr("Location accuracy is denoted on a scale of 1 to 4, with 1 being lowest and 4 being highest. Current location accuracy is rated %1".arg(currentAccuracy))
 
                         Text {
                             id: locationAccuracyBaseline
@@ -1045,19 +1045,19 @@ Item {
 
             if (currentPosition.position.horizontalAccuracyValid) {
                 var accuracy = currentPosition.position.horizontalAccuracy;
-                if (accuracy < 10) {
+                if (accuracy <= 5) {
                     currentAccuracy = 4;
-                } else if (accuracy > 11 && accuracy < 55) {
+                } else if (accuracy > 5 && accuracy <= 10) {
                     currentAccuracy = 3;
-                } else if (accuracy > 56 && accuracy < 100) {
+                } else if (accuracy > 10 && accuracy <= 25) {
                     currentAccuracy = 2;
-                } else if (accuracy >= 100) {
-                    currentAccuracy = 1;
                 } else {
-                    currentAccuracy = 0;
+                    currentAccuracy = 1;
                 }
 
-                currentAccuracyInUnits = usesMetric ? Math.ceil(accuracy) : Math.ceil(accuracy * 3.28084)
+                currentAccuracyInUnits = usesMetric ? Math.round(accuracy * 100) / 100 : Math.round(accuracy * 3.28084 * 100) / 100
+            } else {
+                currentAccuracy = 0;
             }
 
             if (currentPosition.position.speedValid) {
