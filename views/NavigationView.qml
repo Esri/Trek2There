@@ -1296,19 +1296,21 @@ Item {
 
         if (usesMetric === false) {
             var distanceFt = distance * 3.28084;
-            if (distanceFt < 1000) {
+            if (distanceFt < 3.28084) {
+                return "%1 ft".arg((Math.round(distance*100)/100).toLocaleString(locale, "f", 0))
+            } if (distanceFt < 1000) {
                 return "%1 ft".arg(Math.round(distanceFt).toLocaleString(locale, "f", 0))
-            }
-            else {
+            } else {
                 var distanceMiles = distance * 0.000621371;
                 return "%1 mi".arg((Math.round(distanceMiles * 10) / 10).toLocaleString(locale, "f", distanceMiles < 10 ? 1 : 0))
             }
         }
         else {
-            if (distance < 1000) {
+            if (distance < 1) {
+                return "%1 cm".arg(Math.round(distance*100).toLocaleString(locale, "f", 0))
+            } else if (distance < 1000) {
                 return "%1 m".arg(Math.round(distance).toLocaleString(locale, "f", 0))
-            }
-            else {
+            } else {
                 var distanceKm = distance / 1000;
                 return "%1 km".arg((Math.round(distanceKm * 10) / 10).toLocaleString(locale, "f", distanceKm < 10 ? 1 : 0))
             }
