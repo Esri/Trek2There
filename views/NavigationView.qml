@@ -309,7 +309,7 @@ Item {
                 }
             }
 
-            // Arrow View --------------------------------------------------------------
+            // Arrow View ----------------------------------------------------------
 
             ColumnLayout {
                 id: arrowView
@@ -654,6 +654,24 @@ Item {
                 }
             }
         }
+    }
+
+    // External GPS indicator ----------------------------------------------
+
+    Image {
+        id: externalGPSIndicator
+
+        width: sf(30)
+        height: width
+        visible: app.isConnected
+
+        anchors.top: statusMessage.visible ? statusMessageContainer.bottom : parent.top
+        anchors.topMargin: sideMargin
+        anchors.right: parent.right
+        anchors.rightMargin: sideMargin
+
+        source: !nightMode ? "../images/satellite_day.png" : "../images/satellite_night.png"
+        fillMode: Image.PreserveAspectFit
     }
 
     // Toolbar -----------------------------------------------------------------
