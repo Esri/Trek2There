@@ -38,18 +38,11 @@ Item {
     property Device currentDevice
     property bool isConnecting
     property bool isConnected
-    property var connectionType: eConnectionType.internal
+    property int connectionType: eConnectionType.internal
 
     signal networkHostSelected(string hostname, int port)
     signal deviceSelected(Device device)
     signal disconnect()
-
-    //--------------------------------------------------------------------------
-
-    Component.onDestruction: {
-        discoveryAgent.stop();
-        disconnect();
-    }
 
     //--------------------------------------------------------------------------
 
