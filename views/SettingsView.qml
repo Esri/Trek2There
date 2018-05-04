@@ -42,8 +42,11 @@ Item {
     property var utmZone: requestedDestination && requestedDestination.isValid && coordinateInfo && coordinateInfo.zone && coordinateInfo.band ? coordinateInfo.zone + coordinateInfo.band : ""
     property var gridReference: requestedDestination && requestedDestination.isValid && coordinateInfo && coordinateInfo.text ? coordinateInfo.text : ""
 
-    property string originatesFrom
+    property bool isConnecting
+    property bool isConnected
+
     property bool initialized
+    property string originatesFrom
 
     StackView.onActivating: {
         initialized = true;
@@ -479,7 +482,7 @@ Item {
 
                                     anchors.fill: parent
 
-                                    running: app.isConnecting || discoveryAgent.running && !app.isConnected
+                                    running: isConnecting || discoveryAgent.running && !isConnected
                                 }
 
                                 ColorOverlay {
@@ -517,8 +520,8 @@ Item {
                                     property string name: useExternalGPS ? (currentDevice ? currentDevice.name : "Unknown") : ((tcpSocket.remoteName && tcpSocket.remotePort) ? tcpSocket.remoteName + ":" + tcpSocket.remotePort : "Unknown")
 
                                     anchors.fill: parent
-                                    color: app.isConnecting ? "green" : !app.isConnected && app.storedDevice > "" && discoveryAgent.running ? "red" : buttonTextColor
-                                    text: app.isConnecting ? "Connecting to " + name : app.isConnected ? "Connected to " + name : app.storedDevice > "" && discoveryAgent.running ? "Looking for " + app.storedDevice : qsTr("Not connected")
+                                    color: isConnecting ? "green" : !isConnected && storedDevice > "" && discoveryAgent.running ? "red" : buttonTextColor
+                                    text: isConnecting ? "Connecting to " + name : isConnected ? "Connected to " + name : storedDevice > "" && discoveryAgent.running ? "Looking for " + storedDevice : qsTr("Not connected")
                                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                     verticalAlignment: Text.AlignVCenter
                                     leftPadding: /*radioButton.indicator.width + 2*externalChecked.radioButton.spacing +*/ sideMargin
@@ -539,7 +542,7 @@ Item {
                                     Layout.fillWidth: true
 
                                     text: "Change"
-                                    color: app.isConnecting ? "green" : !app.isConnected && app.storedDevice > "" && discoveryAgent.running ? "red" : buttonTextColor
+                                    color: isConnecting ? "green" : !isConnected && storedDevice > "" && discoveryAgent.running ? "red" : buttonTextColor
                                     verticalAlignment: Text.AlignVCenter
                                     horizontalAlignment: Text.AlignHCenter
                                 }

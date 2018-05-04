@@ -49,6 +49,11 @@ Item {
     property int sideMargin: 14 * AppFramework.displayScaleFactor
     property bool hudOn: false
 
+    property bool isConnecting
+    property bool isConnected
+
+    property bool initialized
+
     // 2.0 Experimental Properties ---------------------------------------------
 
     property bool stopUsingCompassForNavigation: currentSpeed > maximumSpeedForCompass
@@ -80,6 +85,8 @@ Item {
         sensors.stopRotationSensor();
         sensors.stopCompass();
         camera.stop();
+
+        initialized = false;
     }
 
     StackView.onActivating: {
@@ -99,6 +106,8 @@ Item {
             viewData.itemCoordinate = requestedDestination;
             startNavigation();
         }
+
+        initialized = true;
     }
 
     //--------------------------------------------------------------------------
@@ -109,6 +118,42 @@ Item {
                 sensors.stopCompass();
             } else {
                 sensors.startCompass();
+            }
+        }
+    }
+
+    //--------------------------------------------------------------------------
+
+    // Try to reconnect if connection to external GPS is lost
+    onIsConnectedChanged: {
+        if (initialized && useExternalGPS) {
+            if (!isConnected) {
+                discoveryAgentRepeatTimer.start();
+            } else {
+                discoveryAgent.stop();
+            }
+        }
+    }
+
+    Timer {
+        id: discoveryAgentRepeatTimer
+
+        interval: 2000
+        running: false
+        repeat: false
+
+        onTriggered: {
+            connectionType = sources.eConnectionType.external
+            discoveryAgent.start();
+        }
+    }
+
+    Connections {
+        target: discoveryAgent
+
+        onRunningChanged: {
+            if (initialized && !discoveryAgent.running && !isConnecting && !isConnected) {
+                discoveryAgentRepeatTimer.start();
             }
         }
     }
@@ -665,7 +710,8 @@ Item {
 
         width: sf(30)
         height: width
-        visible: app.isConnected
+
+        visible: isConnected
 
         anchors.top: statusMessage.visible ? statusMessageContainer.bottom : parent.top
         anchors.topMargin: sideMargin
@@ -674,6 +720,34 @@ Item {
 
         source: !nightMode ? "../images/satellite_day.png" : "../images/satellite_night.png"
         fillMode: Image.PreserveAspectFit
+    }
+
+    Rectangle {
+        width: sf(30)
+        height: width
+
+        visible: !isConnected && discoveryAgent.running
+
+        anchors.top: statusMessage.visible ? statusMessageContainer.bottom : parent.top
+        anchors.topMargin: sideMargin
+        anchors.right: parent.right
+        anchors.rightMargin: sideMargin
+
+        color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+
+        BusyIndicator {
+            id: discoveryIndicator
+
+            anchors.fill: parent
+
+            running: discoveryAgent.running
+        }
+
+        ColorOverlay {
+            anchors.fill: discoveryIndicator
+            source: discoveryIndicator
+            color: buttonTextColor
+        }
     }
 
     // Toolbar -----------------------------------------------------------------

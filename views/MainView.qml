@@ -54,6 +54,9 @@ Item {
           NavigationView {
               Layout.fillHeight: true
               Layout.fillWidth: true
+
+              isConnecting: app.isConnecting
+              isConnected: app.isConnected
           }
       }
 
@@ -65,6 +68,9 @@ Item {
         SettingsView {
             Layout.fillHeight: true
             Layout.fillWidth: true
+
+            isConnecting: app.isConnecting
+            isConnected: app.isConnected
         }
     }
 
