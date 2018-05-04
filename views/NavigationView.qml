@@ -83,6 +83,8 @@ Item {
     }
 
     StackView.onActivating: {
+        discoveryAgent.stop();
+
         sensors.startTiltSensor();
         sensors.startOrientationSensor();
         sensors.startRotationSensor();
@@ -721,7 +723,7 @@ Item {
                         if (navigating === false) {
                             reset();
                         }
-                        mainStackView.push(settingsView);
+                        mainStackView.push(settingsView, {"originatesFrom":"NavigationView"});
                     }
 
                     Accessible.role: Accessible.Button

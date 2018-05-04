@@ -42,17 +42,21 @@ Item {
     property var utmZone: requestedDestination && requestedDestination.isValid && coordinateInfo && coordinateInfo.zone && coordinateInfo.band ? coordinateInfo.zone + coordinateInfo.band : ""
     property var gridReference: requestedDestination && requestedDestination.isValid && coordinateInfo && coordinateInfo.text ? coordinateInfo.text : ""
 
+    property string originatesFrom
     property bool initialized
 
     StackView.onActivating: {
         initialized = true;
 
-        if (!isConnecting && !isConnected && externalChecked.checked) {
-            discoveryAgent.start();
+        if (originatesFrom === "NavigationView") {
+            if (externalChecked.checked && !isConnecting && !isConnected ) {
+                discoveryAgent.start();
+            }
         }
     }
 
     StackView.onDeactivating: {
+        originatesFrom = "";
         initialized = false;
     }
 
