@@ -19,6 +19,8 @@ import QtQuick.Window 2.3
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.2
 
+import QtPositioning 5.2 // needed for the call to QtPositioning.coordinate()
+
 //------------------------------------------------------------------------------
 
 import ArcGIS.AppFramework 1.0
