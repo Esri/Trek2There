@@ -1151,19 +1151,22 @@ Item {
 
             if (currentPosition.position.horizontalAccuracyValid) {
                 var accuracy = currentPosition.position.horizontalAccuracy;
-                if (accuracy <= 5) {
+                if (accuracy > 0 && accuracy <= 5) {
                     currentAccuracy = 4;
                 } else if (accuracy > 5 && accuracy <= 10) {
                     currentAccuracy = 3;
                 } else if (accuracy > 10 && accuracy <= 25) {
                     currentAccuracy = 2;
-                } else {
+                } else if (accuracy > 25 && accuracy <= 10000) {
                     currentAccuracy = 1;
+                } else {
+                    currentAccuracy = 0;
                 }
 
-                currentAccuracyInUnits = usesMetric ? Math.round(accuracy * 100) / 100 : Math.round(accuracy * 3.28084 * 100) / 100
+                currentAccuracyInUnits = accuracy > 0 && accuracy <= 10000 ? usesMetric ? Math.round(accuracy * 100) / 100 : Math.round(accuracy * 3.28084 * 100) / 100 : 0
             } else {
                 currentAccuracy = 0;
+                currentAccuracyInUnits = 0;
             }
 
             if (currentPosition.position.speedValid) {
