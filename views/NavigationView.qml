@@ -90,8 +90,6 @@ Item {
     }
 
     StackView.onActivating: {
-        discoveryAgent.stop();
-
         sensors.startTiltSensor();
         sensors.startOrientationSensor();
         sensors.startRotationSensor();
@@ -102,6 +100,14 @@ Item {
     }
 
     StackView.onActivated: {
+        if (useExternalGPS) {
+            if (!isConnected) {
+                discoveryAgentRepeatTimer.start();
+            } else {
+                discoveryAgent.stop();
+            }
+        }
+
         if (requestedDestination !== null) {
             viewData.itemCoordinate = requestedDestination;
             startNavigation();
@@ -720,6 +726,9 @@ Item {
 
         source: !nightMode ? "../images/satellite_day.png" : "../images/satellite_night.png"
         fillMode: Image.PreserveAspectFit
+
+        Accessible.role: Accessible.Indicator
+        Accessible.name: qsTr("Connected to external GPS receiver")
     }
 
     Rectangle {
@@ -748,6 +757,9 @@ Item {
             source: discoveryIndicator
             color: buttonTextColor
         }
+
+        Accessible.role: Accessible.Indicator
+        Accessible.name: qsTr("Looking for external GPS receiver")
     }
 
     // Toolbar -----------------------------------------------------------------
