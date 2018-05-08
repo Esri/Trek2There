@@ -53,32 +53,33 @@ App {
     property alias tcpSocket: sources.tcpSocket
     property alias discoveryAgent: sources.discoveryAgent
 
-    property string storedDevice: settings.value("device", "");
-
     property Device currentDevice: sources.currentDevice
     property bool isConnecting: sources.isConnecting
     property bool isConnected: sources.isConnected
     property alias connectionType: sources.connectionType
 
-    property bool useInternalGPS: connectionType === sources.eConnectionType.internal
-    property bool useExternalGPS: connectionType === sources.eConnectionType.external
-    property bool useTCPConnection: connectionType === sources.eConnectionType.network
+    readonly property bool useInternalGPS: connectionType === sources.eConnectionType.internal
+    readonly property bool useExternalGPS: connectionType === sources.eConnectionType.external
+    readonly property bool useTCPConnection: connectionType === sources.eConnectionType.network
 
     property bool safteyWarningAccepted: app.settings.boolValue("safteyWarningAccepted", false)
     property bool showSafetyWarning: app.settings.boolValue("showSafetyWarning", true)
-    property bool nightMode: app.settings.boolValue("nightMode", false)
     property bool listenToClipboard: app.settings.boolValue("listenToClipboard", true)
+    property bool logTreks: app.settings.boolValue("logTreks", false)
+    property bool nightMode: app.settings.boolValue("nightMode", false)
+    property int coordinateFormat: app.settings.numberValue("coordinateFormat", 0)
+    property bool usesMetric: app.settings.boolValue("usesMetric", localeIsMetric())
     property bool useExperimentalFeatures: app.settings.boolValue("useExperimentalFeatures", false)
-    property int currentDistanceFormat: app.settings.numberValue("currentDistanceFormat", 0)
+    property string storedDevice: settings.value("device", "");
+    property string hostname: settings.value("hostname", "");
+    property int port: settings.numberValue("port", "");
 
     property RegExpValidator latitudeValidator: RegExpValidator { regExp: /^[-]?90$|^[-]?[1-8][0-9](\.\d{1,})?$|^[-]?[1-9](\.\d{1,})?$/g }
     property RegExpValidator longitudeValidator: RegExpValidator { regExp: /^[-]?180$|^[-]?1[0-7][0-9](\.\d{1,})?$|^[-]?[1-9][0-9](\.\d{1,})?$|^[-]?[1-9](\.\d{1,})?$/g }
 
     property var locale: Qt.locale()
-    property bool usesMetric: app.settings.boolValue("usesMetric", localeIsMetric())
 
     property TrekLogger trekLogger: TrekLogger{}
-    property bool logTreks: app.settings.boolValue("logTreks", false)
     property FileFolder fileFolder: FileFolder{ path: AppFramework.userHomePath }
     property string localStoragePath: fileFolder.path + "/ArcGIS/My Treks"
 
@@ -249,9 +250,25 @@ App {
 
     //--------------------------------------------------------------------------
 
+    onLogTreksChanged: {
+        if (initialized) {
+            app.settings.setValue("logTreks", logTreks);
+        }
+    }
+
+    //--------------------------------------------------------------------------
+
     onNightModeChanged: {
         if (initialized) {
             app.settings.setValue("nightMode", nightMode);
+        }
+    }
+
+    //--------------------------------------------------------------------------
+
+    onCoordinateFormatChanged: {
+        if (initialized) {
+            app.settings.setValue("coordinateFormat", coordinateFormat);
         }
     }
 
@@ -265,22 +282,6 @@ App {
 
     //--------------------------------------------------------------------------
 
-    onConnectionTypeChanged: {
-        if (initialized) {
-            app.settings.setValue("connectionType", connectionType);
-        }
-    }
-
-    //--------------------------------------------------------------------------
-
-    onLogTreksChanged: {
-        if (initialized) {
-            app.settings.setValue("logTreks", logTreks);
-        }
-    }
-
-    //--------------------------------------------------------------------------
-
     onUseExperimentalFeaturesChanged: {
         if (initialized) {
             app.settings.setValue("useExperimentalFeatures", useExperimentalFeatures);
@@ -289,9 +290,9 @@ App {
 
     //--------------------------------------------------------------------------
 
-    onCurrentDistanceFormatChanged: {
+    onConnectionTypeChanged: {
         if (initialized) {
-            app.settings.setValue("currentDistanceFormat", currentDistanceFormat);
+            app.settings.setValue("connectionType", connectionType);
         }
     }
 

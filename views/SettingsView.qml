@@ -68,7 +68,7 @@ Item {
 
         onRequestedDestinationChanged: {
             if (requestedDestination && requestedDestination.isValid) {
-                setCoordinateInfo(currentDistanceFormat);
+                setCoordinateInfo(coordinateFormat);
             }
         }
     }
@@ -207,12 +207,12 @@ Item {
 
                                     model: distanceFormats
 
-                                    currentIndex: currentDistanceFormat
+                                    currentIndex: coordinateFormat
 
                                     onCurrentIndexChanged: {
-                                        currentDistanceFormat = currentIndex;
+                                        coordinateFormat = currentIndex;
                                         if (requestedDestination && requestedDestination.isValid) {
-                                            setCoordinateInfo(currentDistanceFormat);
+                                            setCoordinateInfo(coordinateFormat);
                                         }
                                     }
                                 }
@@ -224,7 +224,7 @@ Item {
                         SettingsCoordinateField {
                             id: latitudeField
 
-                            visible: currentDistanceFormat < 3
+                            visible: coordinateFormat < 3
 
                             label: qsTr("Latitude")
                             text: (requestedDestination === null) ? "" : latitude
@@ -244,7 +244,7 @@ Item {
                         SettingsCoordinateField {
                             id: longitudeField
 
-                            visible: currentDistanceFormat < 3
+                            visible: coordinateFormat < 3
 
                             label: qsTr("Longitude")
                             text: (requestedDestination === null) ? "" : longitude
@@ -264,7 +264,7 @@ Item {
                         SettingsCoordinateField {
                             id: utmZoneField
 
-                            visible: currentDistanceFormat == 3
+                            visible: coordinateFormat == 3
 
                             label: qsTr("UTM Zone")
                             text: (requestedDestination === null) ? "" : utmZone
@@ -284,7 +284,7 @@ Item {
                         SettingsCoordinateField {
                             id: eastingField
 
-                            visible: currentDistanceFormat == 3
+                            visible: coordinateFormat == 3
 
                             label: qsTr("Easting")
                             text: (requestedDestination === null) ? "" : easting
@@ -304,7 +304,7 @@ Item {
                         SettingsCoordinateField {
                             id: northingField
 
-                            visible: currentDistanceFormat == 3
+                            visible: coordinateFormat == 3
 
                             label: qsTr("Northing")
                             text: (requestedDestination === null) ? "" : northing
@@ -324,7 +324,7 @@ Item {
                         SettingsCoordinateField {
                             id: gridReferenceField
 
-                            visible: currentDistanceFormat == 4
+                            visible: coordinateFormat == 4
 
                             label: qsTr("Grid Reference")
                             text: (requestedDestination === null) ? "" : gridReference
@@ -715,7 +715,7 @@ Item {
         var valid = true;
         var coordObj = null;
 
-        switch (currentDistanceFormat) {
+        switch (coordinateFormat) {
         case 0: // decimal degrees
         case 1: // degrees, minutes, seconds
         case 2: // degrees, decimal minutes
@@ -741,7 +741,7 @@ Item {
                 requestedDestination = coordObj.coordinate;
             }
 
-            setCoordinateInfo(currentDistanceFormat);
+            setCoordinateInfo(coordinateFormat);
         }
 
         return valid;

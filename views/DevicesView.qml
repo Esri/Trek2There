@@ -224,7 +224,7 @@ Item {
                                 Layout.column: 1
                                 Layout.fillWidth: true
 
-                                text: app.settings.value("hostname", "");
+                                text: app.hostname
                                 placeholderText: "Hostname"
                                 font.pixelSize: baseFontSize
                             }
@@ -254,7 +254,7 @@ Item {
                                 Layout.column: 1
                                 Layout.fillWidth: true
 
-                                text: app.settings.value("port", "").toString();
+                                text: app.port;
                                 placeholderText: "Port"
                                 font.pixelSize: baseFontSize
                             }
