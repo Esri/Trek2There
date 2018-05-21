@@ -938,10 +938,10 @@ Item {
         console.log('reseting navigation')
 
         navigating = false;
-        if (useInternalGPS) {
-            // this disconnects external devices, do we really need it?
-            sources.positionSource.stop();
-        }
+//        if (useInternalGPS) {
+//            // this disconnects external devices, do we really need it?
+//            sources.positionSource.stop();
+//        }
 
         statusMessage.hide();
 

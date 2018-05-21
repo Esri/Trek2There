@@ -51,6 +51,8 @@ Item {
 
         active: true
         nmeaSource: nmeaSource.source ? nmeaSource : null
+
+        onNmeaSourceChanged: start()
     }
 
     //--------------------------------------------------------------------------
@@ -59,15 +61,13 @@ Item {
         id: satelliteInfoSource
 
         active: true
-        nmeaSource: nmeaSource.source ? nmeaSource : null
+        nmeaSource: nmeaSource //nmeaSource.source ? nmeaSource : null
     }
 
     //--------------------------------------------------------------------------
 
     NmeaSource {
         id: nmeaSource
-
-        onSourceChanged: positionSource.update()
 
         onReceivedNmeaData: {
             if (!isConnected && receivedSentence.trim() > "") {
@@ -200,6 +200,7 @@ Item {
         isConnecting = false;
 
         nmeaSource.source = null;
+
         connectionType = eConnectionType.internal;
     }
 
