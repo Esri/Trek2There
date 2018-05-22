@@ -54,6 +54,9 @@ Item {
 
     property bool initialized
 
+    readonly property string startMovingMessage: qsTr("Start moving to determine direction.")
+    readonly property string noLocationMessage: qsTr("Waiting for location...")
+
     // 2.0 Experimental Properties ---------------------------------------------
 
     property bool stopUsingCompassForNavigation: currentSpeed > maximumSpeedForCompass
@@ -700,7 +703,7 @@ Item {
                     hideAutomatically: false
                     animateHide: false
                     messageType: statusMessage.warning
-                    message: qsTr("Start moving to determine direction.")
+                    message: noLocationMessage
 
                     Accessible.role: Accessible.AlertMessage
                     Accessible.name: message
@@ -748,6 +751,7 @@ Item {
             id: discoveryIndicator
 
             anchors.fill: parent
+            visible: !isConnected && discoveryAgent.running
 
             running: discoveryAgent.running
         }
@@ -1138,6 +1142,7 @@ Item {
 
         onActiveChanged: {
             if (positionSource.active && viewData.observerCoordinate === null) {
+                statusMessage.message = startMovingMessage;
                 statusMessage.show();
             }
         }
@@ -1147,11 +1152,14 @@ Item {
 
             if (currentPosition.position.coordinate.isValid) {
                 viewData.observerCoordinate = QtPositioning.coordinate(currentPosition.position.coordinate.latitude, currentPosition.position.coordinate.longitude, currentPosition.position.coordinate.altitude);
+            } else {
+                statusMessage.message = noLocationMessage;
+                statusMessage.show();
             }
 
             if (currentPosition.position.horizontalAccuracyValid) {
                 var accuracy = currentPosition.position.horizontalAccuracy;
-                if (accuracy > 0 && accuracy <= 5) {
+                if (accuracy > 1e-6 && accuracy <= 5) {
                     currentAccuracy = 4;
                 } else if (accuracy > 5 && accuracy <= 10) {
                     currentAccuracy = 3;
@@ -1163,7 +1171,7 @@ Item {
                     currentAccuracy = 0;
                 }
 
-                currentAccuracyInUnits = accuracy > 0 && accuracy <= 10000 ? usesMetric ? Math.round(accuracy * 100) / 100 : Math.round(accuracy * 3.28084 * 100) / 100 : 0
+                currentAccuracyInUnits = accuracy > 1e-6 && accuracy <= 10000 ? usesMetric ? Math.round(accuracy * 100) / 100 : Math.round(accuracy * 3.28084 * 100) / 100 : 0
             } else {
                 currentAccuracy = 0;
                 currentAccuracyInUnits = 0;
@@ -1173,7 +1181,7 @@ Item {
                 currentSpeed = currentPosition.position.speed;
             }
 
-            if (requestedDestination !== null) {
+            if (requestedDestination !== null && currentPosition.position.coordinate.isValid) {
                 /*
                     TODO: On some Android devices position.directionValid must return
                     true so the statusMessage isn't shown when navigation first starts
@@ -1191,6 +1199,7 @@ Item {
                 else {
                     noPositionSource = true;
                     directionArrow.opacity = 0.2;
+                    statusMessage.message = startMovingMessage;
                     statusMessage.show();
                 }
             }

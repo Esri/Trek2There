@@ -515,7 +515,6 @@ Item {
 
                         text: currentDevice && (currentDevice.name === name) ? isConnecting ? name + qsTr(" (Connecting...)") : isConnected ? name + qsTr(" (Connected)") : name : name
                         color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? secondaryForegroundColor : foregroundColor
-                        font.pixelSize: baseFontSize * 0.9
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                         verticalAlignment: Text.AlignVCenter
                     }
