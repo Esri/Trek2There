@@ -789,7 +789,7 @@ Item {
                         if (navigating === false) {
                             reset();
                         }
-                        mainStackView.push(settingsView, {"originatesFrom":"NavigationView"});
+                        mainStackView.push(settingsView);
                     }
 
                     Accessible.role: Accessible.Button

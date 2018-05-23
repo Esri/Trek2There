@@ -46,18 +46,13 @@ Item {
     property bool isConnected
 
     property bool initialized
-    property string originatesFrom
 
     StackView.onActivating: {
+        reconnect();
         initialized = true;
-
-        if (originatesFrom === "NavigationView") {
-            reconnect();
-        }
     }
 
     StackView.onDeactivating: {
-        originatesFrom = "";
         initialized = false;
     }
 

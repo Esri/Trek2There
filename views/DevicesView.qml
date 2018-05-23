@@ -61,7 +61,6 @@ Item {
     }
 
     StackView.onDeactivating: {
-        discoveryAgent.stop();
         initialized = false;
     }
 
@@ -301,6 +300,10 @@ Item {
 
                                         if (checked) {
                                             connectionType = sources.eConnectionType.external;
+                                            if (currentDevice && currentDevice.name === storedDevice) {
+                                                sources.deviceSelected(currentDevice);
+                                                discoverySwitch.checked = false;
+                                            }
                                         }
                                     }
                                 }
