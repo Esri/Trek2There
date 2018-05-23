@@ -52,9 +52,7 @@ Item {
         initialized = true;
 
         if (originatesFrom === "NavigationView") {
-            if (externalChecked.checked && !isConnecting && !isConnected ) {
-                discoveryAgent.start();
-            }
+            reconnect();
         }
     }
 
@@ -439,8 +437,9 @@ Item {
 
                             onCheckedChanged: {
                                 if (initialized && checked) {
+                                    connectionType = sources.eConnectionType.internal;
                                     sources.disconnect();
-                                    app.discoveryAgent.stop();
+                                    discoveryAgent.stop();
                                 }
                             }
                         }
@@ -458,13 +457,17 @@ Item {
 
                                 onCheckedChanged: {
                                     if (initialized && checked) {
-                                        if (storedDevice > "") {
+                                        if (lastConnectionType === sources.eConnectionType.external && storedDevice > "") {
+                                            connectionType = sources.eConnectionType.external;
                                             if (currentDevice && currentDevice.name === storedDevice) {
                                                 sources.deviceSelected(currentDevice);
                                             } else {
                                                 discoveryAgent.start();
                                             }
-                                        } else if (!isConnecting && !isConnected) {
+                                        } else if (lastConnectionType === sources.eConnectionType.network && hostname > "" && port > "") {
+                                            connectionType = sources.eConnectionType.network;
+                                            sources.networkHostSelected(hostname, port);
+                                        } else if (useInternalGPS || !isConnecting && !isConnected) {
                                             mainStackView.push(devicesView);
                                         }
                                     }
@@ -517,7 +520,9 @@ Item {
                                 Accessible.role: Accessible.Pane
 
                                 Text {
-                                    property string name: useExternalGPS ? (currentDevice ? currentDevice.name : "Unknown") : ((tcpSocket.remoteName && tcpSocket.remotePort) ? tcpSocket.remoteName + ":" + tcpSocket.remotePort : "Unknown")
+                                    property string name: useExternalGPS ?
+                                                              (currentDevice ? currentDevice.name : storedDevice > "" ? storedDevice : "Unknown") :
+                                                              (tcpSocket.remoteName && tcpSocket.remotePort ? tcpSocket.remoteName + ":" + tcpSocket.remotePort : (app.hostname > "" && app.port > "" ? app.hostname + ":" + app.port : "Unknown"))
 
                                     anchors.fill: parent
                                     color: isConnecting ? "green" : !isConnected && storedDevice > "" && discoveryAgent.running ? "red" : buttonTextColor

@@ -122,6 +122,10 @@ Item {
             }
         }
 
+        onErrorChanged: {
+            console.log("DeviceDiscoveryAgent error", error)
+        }
+
         onRunningChanged: {
             console.log("DeviceDiscoveryAgent running", running)
         }

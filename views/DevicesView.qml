@@ -197,6 +197,12 @@ Item {
 
                                 text: "TCP/UDP Connection"
                                 checked: !showDevices
+
+                                onCheckedChanged: {
+                                    if (initialized && checked) {
+                                        connectionType = sources.eConnectionType.network;
+                                    }
+                                }
                             }
 
                             //--------------------------------------------------------------------------
@@ -291,7 +297,11 @@ Item {
                                     if (initialized) {
                                         disconnect();
                                         showDevices = checked;
-                                        discoverySwitch.checked = false;
+                                        discoverySwitch.checked = discoveryAgent.devices.count == 0;
+
+                                        if (checked) {
+                                            connectionType = sources.eConnectionType.external;
+                                        }
                                     }
                                 }
                             }
@@ -316,7 +326,9 @@ Item {
                                     if (initialized) {
                                         if (checked) {
                                             disconnect();
-                                            discoveryAgent.start();
+                                            if (!discoveryAgent.running) {
+                                                discoveryAgent.start();
+                                            }
                                         } else {
                                             discoveryAgent.stop();
                                         }
@@ -432,6 +444,9 @@ Item {
                     Rectangle {
                         id: deviceListRect
 
+                        enabled: showDevices
+                        visible: showDevices
+
                         anchors.top: deviceTitleRowRect.bottom
                         Layout.fillWidth: true;
                         Layout.preferredHeight: deviceListColumn.height
@@ -447,9 +462,6 @@ Item {
                             spacing: 0
 
                             Repeater {
-                                enabled: showDevices
-                                visible: showDevices
-
                                 clip: true
 
                                 model: discoveryAgent.devices

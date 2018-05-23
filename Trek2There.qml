@@ -56,7 +56,6 @@ App {
     property Device currentDevice: sources.currentDevice
     property bool isConnecting: sources.isConnecting
     property bool isConnected: sources.isConnected
-    property alias connectionType: sources.connectionType
 
     readonly property bool useInternalGPS: connectionType === sources.eConnectionType.internal
     readonly property bool useExternalGPS: connectionType === sources.eConnectionType.external
@@ -73,6 +72,8 @@ App {
     property string storedDevice: settings.value("device", "");
     property string hostname: settings.value("hostname", "");
     property int port: settings.numberValue("port", "");
+    property int connectionType: settings.numberValue("connectionType", sources.eConnectionType.internal);
+    property int lastConnectionType: settings.numberValue("connectionType", sources.eConnectionType.internal);
 
     property RegExpValidator latitudeValidator: RegExpValidator { regExp: /^[-]?90$|^[-]?[1-8][0-9](\.\d{1,})?$|^[-]?[1-9](\.\d{1,})?$/g }
     property RegExpValidator longitudeValidator: RegExpValidator { regExp: /^[-]?180$|^[-]?1[0-7][0-9](\.\d{1,})?$|^[-]?[1-9][0-9](\.\d{1,})?$|^[-]?[1-9](\.\d{1,})?$/g }
@@ -108,6 +109,8 @@ App {
 
     property bool initialized
 
+    signal reconnect()
+
     //--------------------------------------------------------------------------
 
     Component.onCompleted: {
@@ -123,7 +126,11 @@ App {
     Connections {
         target: app.settings
 
-        onValueChanged: storedDevice = settings.value("device", "")
+        onValueChanged: {
+            storedDevice = settings.value("device", "")
+            hostname = settings.value("hostname", "")
+            port = settings.value("port", "")
+        }
     }
 
     // COMPONENTS //////////////////////////////////////////////////////////////
@@ -199,6 +206,23 @@ App {
 
                 errorDialog.text = currentDevice.error;
                 errorDialog.open();
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
+    Connections {
+        target: discoveryAgent
+
+        property string lastError
+
+        onErrorChanged: {
+            if (discoveryAgent.error !== lastError) {
+                errorDialog.text = discoveryAgent.error;
+                errorDialog.open();
+
+                lastError = discoveryAgent.error;
             }
         }
     }
@@ -293,6 +317,43 @@ App {
     onConnectionTypeChanged: {
         if (initialized) {
             app.settings.setValue("connectionType", connectionType);
+
+            // we have to do a direct comparison here since useInternalGPS has not been updated yet
+            if (connectionType !== sources.eConnectionType.internal) {
+                lastConnectionType = connectionType;
+            }
+        }
+    }
+
+   //--------------------------------------------------------------------------
+
+    onReconnect: {
+        if (useExternalGPS && storedDevice > "") {
+            if (!isConnecting && !isConnected) {
+                discoveryAgentRepeatTimer.start();
+            } else {
+                discoveryAgent.stop();
+            }
+        } else if (useTCPConnection && hostname > "" && port > "") {
+            if (!isConnecting && !isConnected) {
+                sources.networkHostSelected(app.hostname, app.port);
+            }
+        }
+    }
+
+    //--------------------------------------------------------------------------
+
+    Timer {
+        id: discoveryAgentRepeatTimer
+
+        interval: 2000
+        running: false
+        repeat: false
+
+        onTriggered: {
+            if (!discoveryAgent.running) {
+                discoveryAgent.start();
+            }
         }
     }
 

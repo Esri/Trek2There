@@ -103,13 +103,7 @@ Item {
     }
 
     StackView.onActivated: {
-        if (useExternalGPS) {
-            if (!isConnected) {
-                discoveryAgentRepeatTimer.start();
-            } else {
-                discoveryAgent.stop();
-            }
-        }
+        reconnect();
 
         if (requestedDestination !== null) {
             viewData.itemCoordinate = requestedDestination;
@@ -121,39 +115,10 @@ Item {
 
     //--------------------------------------------------------------------------
 
-    onStopUsingCompassForNavigationChanged: {
-        if (useExperimentalFeatures) {
-            if (stopUsingCompassForNavigation) {
-                sensors.stopCompass();
-            } else {
-                sensors.startCompass();
-            }
-        }
-    }
-
-    //--------------------------------------------------------------------------
-
     // Try to reconnect if connection to external GPS is lost
     onIsConnectedChanged: {
-        if (initialized && useExternalGPS) {
-            if (!isConnected) {
-                discoveryAgentRepeatTimer.start();
-            } else {
-                discoveryAgent.stop();
-            }
-        }
-    }
-
-    Timer {
-        id: discoveryAgentRepeatTimer
-
-        interval: 2000
-        running: false
-        repeat: false
-
-        onTriggered: {
-            connectionType = sources.eConnectionType.external
-            discoveryAgent.start();
+        if (initialized) {
+            reconnect();
         }
     }
 
@@ -163,6 +128,18 @@ Item {
         onRunningChanged: {
             if (initialized && !discoveryAgent.running && !isConnecting && !isConnected) {
                 discoveryAgentRepeatTimer.start();
+            }
+        }
+    }
+
+    //--------------------------------------------------------------------------
+
+    onStopUsingCompassForNavigationChanged: {
+        if (useExperimentalFeatures) {
+            if (stopUsingCompassForNavigation) {
+                sensors.stopCompass();
+            } else {
+                sensors.startCompass();
             }
         }
     }
@@ -738,7 +715,7 @@ Item {
         width: sf(30)
         height: width
 
-        visible: !isConnected && discoveryAgent.running
+        visible: discoveryIndicator.running
 
         anchors.top: statusMessage.visible ? statusMessageContainer.bottom : parent.top
         anchors.topMargin: sideMargin
@@ -751,9 +728,8 @@ Item {
             id: discoveryIndicator
 
             anchors.fill: parent
-            visible: !isConnected && discoveryAgent.running
 
-            running: discoveryAgent.running
+            running: !isConnected && discoveryAgent.running || isConnecting
         }
 
         ColorOverlay {
