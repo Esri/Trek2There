@@ -51,8 +51,6 @@ Item {
 
         active: true
         nmeaSource: nmeaSource.source ? nmeaSource : null
-
-        onNmeaSourceChanged: start()
     }
 
     //--------------------------------------------------------------------------
@@ -200,7 +198,6 @@ Item {
         isConnecting = false;
 
         nmeaSource.source = null;
-
         connectionType = eConnectionType.internal;
     }
 
