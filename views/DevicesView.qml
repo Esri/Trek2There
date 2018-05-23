@@ -53,7 +53,7 @@ Item {
         showDevices = !useTCPConnection;
         initialized = true;
 
-        if (showDevices && (!discoveryAgent.devices || discoveryAgent.devices.count == 0)) {
+        if (showDevices && (discoveryAgent.running || !discoveryAgent.devices || discoveryAgent.devices.count == 0)) {
             discoverySwitch.checked = true;
         } else {
             discoverySwitch.checked = false;
