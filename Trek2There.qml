@@ -246,7 +246,6 @@ App {
             id: label
 
             Layout.fillWidth: true
-            font.pixelSize: baseFontSize
             color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
         }
     }

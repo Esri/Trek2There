@@ -3,9 +3,9 @@ import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
 
 Rectangle {
-    property alias radioButton: control
-    property alias checked: control.checked
+    property alias checkBox: control
     property alias text: textItem.text
+    property alias checked: control.checked
 
     Layout.preferredHeight: sf(50)
     Layout.fillWidth: true
@@ -13,28 +13,32 @@ Rectangle {
     Accessible.role: Accessible.Pane
     Accessible.ignored: true
 
-    RadioButton {
+    CheckBox {
         id: control
 
         anchors.fill: parent
         Accessible.ignored: true
 
+        background: Rectangle {
+            anchors.fill: parent
+            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+        }
+
         indicator: Rectangle {
             implicitWidth: sf(20)
             implicitHeight: sf(20)
-            x: parent.x + sideMargin
+            x: parent.x+sideMargin
             y: parent.height / 2 - height / 2
-            radius: sf(10)
             border.width: sf(2)
             border.color: !nightMode ? "#595959" : nightModeSettings.foreground
             color: !nightMode ? "#ededed" : "#272727"
 
-            Rectangle {
-                visible: parent.parent.checked
-                anchors.fill: parent
-                anchors.margins: sf(4)
-                radius: sf(9)
-                color: !nightMode ? "#595959" : nightModeSettings.foreground
+            Image {
+                anchors.centerIn: parent
+                width: parent.width - sf(8)
+                visible: control.checked
+                source: "../images/checkmark.png"
+                fillMode: Image.PreserveAspectFit
             }
         }
 
@@ -44,10 +48,11 @@ Rectangle {
             opacity: enabled ? 1.0 : 0.3
             color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
 
-            text: qsTr("RadioButton")
+            text: qsTr("CheckBox")
             horizontalAlignment: Text.AlignLeft
             verticalAlignment: Text.AlignVCenter
             leftPadding: control.indicator.width + control.spacing + sideMargin
         }
     }
 }
+

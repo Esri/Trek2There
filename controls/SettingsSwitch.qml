@@ -3,7 +3,9 @@ import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
 
 Rectangle {
-    property alias radioButton: control
+    id: rect
+
+    property alias control: control
     property alias checked: control.checked
     property alias text: textItem.text
 
@@ -13,14 +15,14 @@ Rectangle {
     Accessible.role: Accessible.Pane
     Accessible.ignored: true
 
-    RadioButton {
+    Switch {
         id: control
 
         anchors.fill: parent
         Accessible.ignored: true
 
         indicator: Rectangle {
-            implicitWidth: sf(20)
+            implicitWidth: sf(40)
             implicitHeight: sf(20)
             x: parent.x + sideMargin
             y: parent.height / 2 - height / 2
@@ -30,10 +32,13 @@ Rectangle {
             color: !nightMode ? "#ededed" : "#272727"
 
             Rectangle {
-                visible: parent.parent.checked
-                anchors.fill: parent
-                anchors.margins: sf(4)
-                radius: sf(9)
+                implicitWidth: sf(20)
+                implicitHeight: sf(20)
+                x: control.checked ? parent.width - width : 0
+                y: parent.height / 2 - height / 2
+                radius: sf(10)
+                border.width: sf(1)
+                border.color: !nightMode ? "#595959" : nightModeSettings.foreground
                 color: !nightMode ? "#595959" : nightModeSettings.foreground
             }
         }
@@ -44,7 +49,7 @@ Rectangle {
             opacity: enabled ? 1.0 : 0.3
             color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
 
-            text: qsTr("RadioButton")
+            text: qsTr("Switch")
             horizontalAlignment: Text.AlignLeft
             verticalAlignment: Text.AlignVCenter
             leftPadding: control.indicator.width + control.spacing + sideMargin

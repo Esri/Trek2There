@@ -215,7 +215,6 @@ Item {
                                 Layout.leftMargin: sideMargin
 
                                 text: "Hostname"
-                                font.pixelSize: baseFontSize
                                 color: foregroundColor
                             }
 
@@ -231,7 +230,6 @@ Item {
 
                                 text: app.hostname
                                 placeholderText: "Hostname"
-                                font.pixelSize: baseFontSize
                             }
 
                             //--------------------------------------------------------------------------
@@ -245,7 +243,6 @@ Item {
                                 Layout.leftMargin: sideMargin
 
                                 text: "Port"
-                                font.pixelSize: baseFontSize
                                 color: foregroundColor
                             }
 
@@ -261,7 +258,6 @@ Item {
 
                                 text: app.port;
                                 placeholderText: "Port"
-                                font.pixelSize: baseFontSize
                             }
 
                             Button {
@@ -275,7 +271,6 @@ Item {
                                 Layout.rightMargin: sideMargin
 
                                 text: qsTr("Connect")
-                                font.pixelSize: baseFontSize
 
                                 onClicked: networkHostSelected(hostname, port)
                             }
@@ -311,7 +306,7 @@ Item {
 
                             //--------------------------------------------------------------------------
 
-                            Switch {
+                            SettingsSwitch {
                                 id: discoverySwitch
 
                                 enabled: showDevices && (bluetoothCheckBox.checked || usbCheckBox.checked)
@@ -319,11 +314,9 @@ Item {
 
                                 Layout.row: 4
                                 Layout.column: 0
-                                Layout.fillWidth: true
-                                Layout.leftMargin: sideMargin
+                                Layout.preferredWidth: devicePage.width/2
 
                                 text: "Discovery %1".arg(checked ? "on" : "off")
-                                font.pixelSize: baseFontSize
 
                                 onCheckedChanged: {
                                     if (initialized) {
@@ -345,7 +338,7 @@ Item {
                                 }
                             }
 
-                            CheckBox {
+                            SettingsCheckBox {
                                 id: bluetoothCheckBox
 
                                 enabled: showDevices && !discoverySwitch.checked
@@ -355,14 +348,12 @@ Item {
                                 Layout.column: 1
 
                                 text: "Bluetooth"
-                                font.pixelSize: baseFontSize
 
                                 checked: discoveryAgent.detectBluetooth
-
                                 onCheckedChanged: discoveryAgent.detectBluetooth = checked ? true : false
                             }
 
-                            CheckBox {
+                            SettingsCheckBox {
                                 id: usbCheckBox
 
                                 enabled: showDevices && !discoverySwitch.checked
@@ -373,10 +364,8 @@ Item {
                                 Layout.rightMargin: sideMargin
 
                                 text: "USB/COM"
-                                font.pixelSize: baseFontSize
 
                                 checked: discoveryAgent.detectSerialPort
-
                                 onCheckedChanged: discoveryAgent.detectSerialPort = checked ? true : false
                             }
                         }
@@ -423,6 +412,8 @@ Item {
                                 Layout.fillHeight: true
                                 Layout.preferredWidth: sf(30)
                                 anchors.bottom: parent.bottom
+                                anchors.right: parent.right
+                                anchors.rightMargin: sideMargin
                                 color: secondaryBackgroundColor
 
                                 BusyIndicator {

@@ -534,17 +534,17 @@ Item {
                                 visible: externalChecked.checked
 
                                 Layout.fillHeight: true
-                                Layout.preferredWidth: sf(100)
-                                anchors.right: parent.right
 
                                 contentItem: Text {
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: sideMargin
                                     Layout.fillHeight: true
                                     Layout.fillWidth: true
 
                                     text: "Change"
                                     color: isConnecting ? "green" : !isConnected && storedDevice > "" && discoveryAgent.running ? "red" : buttonTextColor
                                     verticalAlignment: Text.AlignVCenter
-                                    horizontalAlignment: Text.AlignHCenter
+                                    horizontalAlignment: Text.AlignRight
                                 }
 
                                 background: Rectangle {
@@ -582,68 +582,16 @@ Item {
                             }
                         }
 
-                        Rectangle {
-                            Layout.preferredHeight: sf(40)
-                            Layout.fillWidth: true
-                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                            Accessible.role: Accessible.Pane
-                            Accessible.ignored: true
+                        SettingsCheckBox {
+                            id: experimentalCheckBox
 
-                            Button {
-                                anchors.fill: parent
-                                background: Rectangle {
-                                    anchors.fill: parent
-                                    color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                                }
+                            text: qsTr("Use experimental features")
 
-                                RowLayout {
-                                    anchors.fill: parent
-                                    spacing: 0
+                            checked: useExperimentalFeatures
+                            onCheckedChanged: useExperimentalFeatures = !useExperimentalFeatures ? true : false;
 
-                                    Item {
-                                        Layout.fillHeight: true
-                                        Layout.preferredWidth: sf(18)
-                                        Layout.leftMargin: sideMargin
-
-                                        Rectangle {
-                                            width: parent.width
-                                            height: width
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            color: !nightMode ? "#ededed" : "#272727"
-                                            border.width: sf(2)
-                                            border.color: !nightMode ? "#595959" : nightModeSettings.foreground
-                                            Image {
-                                                anchors.centerIn: parent
-                                                width: parent.width - sf(8)
-                                                fillMode: Image.PreserveAspectFit
-                                                visible: useExperimentalFeatures
-                                                source: "../images/checkmark.png"
-                                                Accessible.ignored: true
-                                            }
-                                        }
-                                    }
-
-                                    Text {
-                                        Layout.fillHeight: true
-                                        Layout.fillWidth: true
-                                        Layout.leftMargin: sideMargin
-                                        text: qsTr("Use experimental features")
-                                        verticalAlignment: Text.AlignVCenter
-                                        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-                                        Accessible.ignored: true
-                                    }
-                                }
-
-                                onClicked: {
-                                    useExperimentalFeatures = !useExperimentalFeatures ? true : false;
-                                }
-
-                                Accessible.role: Accessible.Button
-                                Accessible.name: qsTr("Use experimental features")
-                                Accessible.onPressAction: {
-                                    clicked();
-                                }
-                            }
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr("Use experimental features")
                         }
 
                         Rectangle {
@@ -658,11 +606,6 @@ Item {
                                 spacing: 0
                                 anchors.leftMargin: sideMargin
                                 anchors.rightMargin: sideMargin
-
-                                Item {
-                                    Layout.fillHeight: true
-                                    Layout.preferredWidth: sf(18)
-                                }
 
                                 Text {
                                     id: xFeaturesText
@@ -684,9 +627,8 @@ Item {
 
                                     Layout.fillHeight: true
                                     Layout.fillWidth: true
-                                    Layout.bottomMargin: sf(20)
-                                    Layout.leftMargin: sideMargin
-                                    text: "Current experimental features include use of compass to establish course correction at walking speed and display of location pin on the head up display horizon. Esri Labs encourages users to use these features and provide feedback.<br><br>Please <a href='mailto:%1'>email us</a> with your feedback.<br>".arg(feedbackEmail)
+                                    Layout.leftMargin: sf(20) + sideMargin
+                                    text: qsTr("Current experimental features include use of compass to establish course correction at walking speed and display of location pin on the head up display horizon. Esri Labs encourages users to use these features and provide feedback.<br><br>Please <a href='mailto:%1'>email us</a> with your feedback.<br>").arg(feedbackEmail)
                                     verticalAlignment: Text.AlignVCenter
                                     color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                     opacity: .8
