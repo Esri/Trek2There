@@ -114,7 +114,7 @@ Item {
 
         onDeviceDiscovered: {
             if (filter(device)) {
-                console.log("Device discovered: ", device.name);
+                console.log("Device discovered - Name:", device.name, "Type:", device.deviceType);
 
                 if (!isConnecting && !isConnected && storedDevice > "" && storedDevice === device.name) {
                     deviceSelected(device);

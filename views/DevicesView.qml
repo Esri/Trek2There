@@ -58,6 +58,12 @@ Item {
         } else {
             discoverySwitch.checked = false;
         }
+
+        if (tcpRadioButton.checked) {
+            connectionType = sources.eConnectionType.network;
+        } else {
+            connectionType = sources.eConnectionType.external;
+        }
     }
 
     StackView.onDeactivating: {
