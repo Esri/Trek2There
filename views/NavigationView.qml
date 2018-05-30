@@ -59,7 +59,7 @@ Item {
 
     // 2.0 Experimental Properties ---------------------------------------------
 
-    property bool stopUsingCompassForNavigation: currentSpeed > maximumSpeedForCompass
+    property bool useCompassForNavigation: useExperimentalFeatures && sensors.hasCompass && currentSpeed <= maximumSpeedForCompass
     property double maximumSpeedForCompass: 0.9 // meters per second
     property double currentSpeed: 0.0
     property int kAzimuthRounding: 1
@@ -134,12 +134,12 @@ Item {
 
     //--------------------------------------------------------------------------
 
-    onStopUsingCompassForNavigationChanged: {
+    onUseCompassForNavigationChanged: {
         if (useExperimentalFeatures) {
-            if (stopUsingCompassForNavigation) {
-                sensors.stopCompass();
-            } else {
+            if (useCompassForNavigation) {
                 sensors.startCompass();
+            } else {
+                sensors.stopCompass();
             }
         }
     }
@@ -1019,7 +1019,7 @@ Item {
     CurrentPosition {
         id: currentPosition
 
-        usingCompass: useExperimentalFeatures && (sensors.hasCompass && sensors.compass.active)
+        usingCompass: useCompassForNavigation
 
         onDistanceToDestinationChanged: {
             if (navigating) {
@@ -1080,7 +1080,7 @@ Item {
 
         function updateBearing() {
             if (sensors.azimuthFromTrueNorth) {
-                if (viewData.observerCoordinate !== null /* && useCompass */) {
+                if (useCompassForNavigation) {
                     viewData.deviceBearing = sensors.azimuthFromTrueNorth;
                 }
             }
@@ -1166,7 +1166,7 @@ Item {
                 if (currentPosition.position.directionValid) {
                     haveDirectionOfTravel = true;
                     statusMessage.hide();
-                    if (!useExperimentalFeatures || (useExperimentalFeatures && !sensors.compass.active)) {
+                    if (!useCompassForNavigation) {
                         viewData.deviceBearing = currentPosition.position.direction;
                     }
                 } else {
@@ -1352,7 +1352,7 @@ Item {
         var distance = currentPosition.distanceToDestination;
         var azimuth = currentPosition.azimuthToDestination;
 
-        if (useExperimentalFeatures && currentPosition.usingCompass) {
+        if (useCompassForNavigation) {
             var degreesOff = viewData.observerCoordinate !==null ? azimuth - sensors.sensorAzimuth : 0;
 //            directionArrow.opacity = viewData.observerCoordinate !==null ? 1 : .4;
             currentPosition.degreesOffCourse = degreesOff;
