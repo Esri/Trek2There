@@ -62,8 +62,6 @@ Item {
     property bool useCompassForNavigation: useExperimentalFeatures && sensors.hasCompass && currentSpeed <= maximumSpeedForCompass
     property double maximumSpeedForCompass: 0.9 // meters per second
     property double currentSpeed: 0.0
-    property int kAzimuthRounding: 1
-    property int kAzimuthFilterLength: 25
     property Image mapPin: Image { source: "../images/map_pin_night.png" }
 
     // Signals /////////////////////////////////////////////////////////////////
@@ -83,22 +81,21 @@ Item {
     }
 
     StackView.onDeactivated: {
-        sensors.stopTiltSensor();
-        sensors.stopOrientationSensor();
-        sensors.stopRotationSensor();
         sensors.stopCompass();
+        sensors.stopTiltSensor();
+        sensors.stopRotationSensor();
+        sensors.stopGyroscope();
+        sensors.stopOrientationSensor();
         camera.stop();
 
         initialized = false;
     }
 
     StackView.onActivating: {
-        sensors.startTiltSensor();
         sensors.startOrientationSensor();
-        sensors.startRotationSensor();
 
         if (useExperimentalFeatures) {
-            sensors.startCompass();
+            sensors.startRequiredAttitudeSensors(false, false, false, false, sensors.azimuthFilterType, sensors.attitudeFilterType);
         }
     }
 
@@ -1064,19 +1061,25 @@ Item {
     HUDSensors {
         id: sensors
 
+        magneticDeclination: positionSource.position.magneticVariationValid ? positionSource.position.magneticVariation : 0.0
+
         azimuthFilterType: Qt.platform.os === "android" ? 1 : 0 // 0=rounding 1=smoothing
-        azimuthRounding: kAzimuthRounding // Nearest degree >> 2=0.5, 3=0.33, 4=0.25 ... 10=0.1
-        azimuthFilterLength: kAzimuthFilterLength
+        azimuthRounding: 4 // Nearest degree >> 2=0.5, 3=0.33, 4=0.25 ... 10=0.1
+        azimuthFilterLength: 50
+
         attitudeFilterType: 1 // 0=rounding 1=smoothing
-        attitudeRounding: 2  // Nearest degree >> 2=0.5, 3=0.33, 4=0.25 ... 10=0.1
-        attitudeFilterLength: 25
-        magneticDeclination: 0.0
+        attitudeRounding: 4  // Nearest degree >> 2=0.5, 3=0.33, 4=0.25 ... 10=0.1
+        attitudeFilterLength: 50
 
         onAzimuthFromTrueNorthChanged: updateBearing()
+        onMagneticDeclinationChanged: updateBearing()
+        onCompassOffsetChanged: updateBearing()
 
-        onPitchAngleChanged: updatePitch();
+        onPitchAngleChanged: updatePitch()
+        onPitchOffsetChanged: updatePitch()
 
         onRollAngleChanged: updateRoll()
+        onRollOffsetChanged: updateRoll()
 
         function updateBearing() {
             if (sensors.azimuthFromTrueNorth) {
