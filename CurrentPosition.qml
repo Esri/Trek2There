@@ -28,33 +28,36 @@ QtObject {
 
     // PROPERTIES //////////////////////////////////////////////////////////////
 
-    property var destinationCoordinate: null
-    property var position
+    property bool usingCompass
+
+    property var destinationCoordinate
     property var positionCoordinate
+    property var position
+    property var compassAzimuth
 
-    property bool usingCompass: false
+    property double distanceToDestination: NaN
+    property double azimuthToDestination: NaN
+    property double degreesOffCourse: NaN
 
-    property KalmanCoordinate kalmanCoord: KalmanCoordinate{}
+    property bool useKalman
     property double kalmanLat
     property double kalmanLong
-    property bool useKalman: false
+    property KalmanCoordinate kalmanCoord: KalmanCoordinate {}
 
-    property double distanceToDestination: 0
-    property double azimuthToDestination: NaN
-    property double degreesOffCourse: 0
-    property double etaSeconds: -1
-    property date etaToDestination: new Date()
+    // not used at present
+//    property double etaSeconds: NaN
+//    property date etaToDestination: new Date()
 
-    property int minimumArrivalTimeInSeconds: 3 // seconds
-    property double minimumAnticipatedSpeed: 1.4 // m/s
-    property double maximumAnticipatedSpeed: 28 // m/s
+//    property int minimumArrivalTimeInSeconds: 3 // seconds
+//    property double minimumAnticipatedSpeed: 1.4 // m/s
+//    property double maximumAnticipatedSpeed: 28 // m/s
 
-    property int arrivalThresholdInMeters: 20 // TODO: Update arrival logic
-    property int arrivalThresholdInSeconds: minimumArrivalTimeInSeconds
+//    property int arrivalThresholdInMeters: 20
+//    property int arrivalThresholdInSeconds: minimumArrivalTimeInSeconds
 
     signal atDestination()
 
-    // SIGNALS /////////////////////////////////////////////////////////////////
+    //--------------------------------------------------------------------------
 
     onPositionChanged: {
         if (position.coordinate.isValid) {
@@ -68,12 +71,13 @@ QtObject {
         kalmanCoord.reset();
     }
 
-    // METHODS /////////////////////////////////////////////////////////////////
+    //--------------------------------------------------------------------------
 
     function clearData() {
-        distanceToDestination = 0;
+        distanceToDestination = NaN;
         azimuthToDestination = NaN;
-        etaSeconds = -1;
+        degreesOffCourse = NaN;
+        kalmanCoord.reset();
     }
 
     //--------------------------------------------------------------------------
@@ -82,7 +86,7 @@ QtObject {
 
         positionCoordinate = position.coordinate;
 
-        if (useKalman === true) {
+        if (useKalman) {
             var accuracy = (position.horizontalAccuracyValid === true) ? position.horizontalAccuracy : 0;
             var newCoord = kalmanCoord.process(positionCoordinate.latitude, positionCoordinate.longitude, accuracy, new Date().valueOf());
             kalmanLat = newCoord[0];
@@ -91,16 +95,23 @@ QtObject {
         }
 
         distanceToDestination = positionCoordinate.distanceTo(destinationCoordinate);
+        azimuthToDestination = positionCoordinate.azimuthTo(destinationCoordinate);
+
+        if (usingCompass) {
+            degreesOffCourse = azimuthToDestination - compassAzimuth;
+        } else {
+            if (position.directionValid) {
+                degreesOffCourse = azimuthToDestination - position.direction;
+            } else {
+                degreesOffCourse = NaN;
+            }
+        }
 
         // Disabled arrival by distance logic for this version.
 
 //        if (distanceToDestination < arrivalThresholdInMeters ) {
 //            atDestination();
 //        }
-
-        azimuthToDestination = positionCoordinate.azimuthTo(destinationCoordinate);
-
-        // Disabled arrival by speed logic for this version.
 
 //        if (position.speedValid && position.speed > 0) {
 //            etaSeconds = distanceToDestination / position.speed;
@@ -115,15 +126,6 @@ QtObject {
 //            arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * 2;
 //            etaToDestination = new Date();
 //        }
-
-        if (!usingCompass) {
-            if (position.directionValid) {
-                degreesOffCourse = (azimuthToDestination - position.direction);
-            }
-            else {
-                degreesOffCourse = 0;
-            }
-        }
 
         if (logTreks) {
             // [timestamp, pos_lat, pos_long, pos_dir, klat, klong, az_to, dist_to, degrees_off]

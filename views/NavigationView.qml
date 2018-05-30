@@ -129,18 +129,6 @@ Item {
         }
     }
 
-    //--------------------------------------------------------------------------
-
-    onUseCompassForNavigationChanged: {
-        if (useExperimentalFeatures) {
-            if (useCompassForNavigation) {
-                sensors.startCompass();
-            } else {
-                sensors.stopCompass();
-            }
-        }
-    }
-
     // UI //////////////////////////////////////////////////////////////////////
 
     // MouseArea ---------------------------------------------------------------
@@ -155,16 +143,6 @@ Item {
                 toolbar.opacity = 1;
                 toolbar.enabled = true;
                 hideToolbar.start();
-            }
-        }
-
-        onPressAndHold: {
-            if (!isAndroid && !isIOS && useExperimentalFeatures) {
-                if (hudOn) {
-                    turnHudOff();
-                } else {
-                    turnHudOn();
-                }
             }
         }
 
@@ -498,7 +476,7 @@ Item {
                     font.weight: Font.Light
                     fontSizeMode: Text.Fit
                     minimumPointSize: largeFontSize
-                    color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                    color: useExperimentalFeatures ? buttonTextColor : !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
 
                     Accessible.role: Accessible.Indicator
                     Accessible.name: text
@@ -1016,6 +994,7 @@ Item {
     CurrentPosition {
         id: currentPosition
 
+        compassAzimuth: sensors.azimuthFromTrueNorth
         usingCompass: useCompassForNavigation
 
         onDistanceToDestinationChanged: {
@@ -1025,7 +1004,7 @@ Item {
         }
 
         onDegreesOffCourseChanged: {
-            if (degreesOffCourse === NaN || degreesOffCourse === 0) {
+            if (degreesOffCourse === NaN) {
                 haveDirectionOfTravel = false;
                 directionArrow.opacity = 0.2;
             } else {
@@ -1354,12 +1333,6 @@ Item {
 
         var distance = currentPosition.distanceToDestination;
         var azimuth = currentPosition.azimuthToDestination;
-
-        if (useCompassForNavigation) {
-            var degreesOff = viewData.observerCoordinate !==null ? azimuth - sensors.sensorAzimuth : 0;
-//            directionArrow.opacity = viewData.observerCoordinate !==null ? 1 : .4;
-            currentPosition.degreesOffCourse = degreesOff;
-        }
 
         var inFoV = MathLib.inFieldOfView(azimuth, viewData.deviceBearing, viewData.deviceRoll, viewData.fieldOfViewX, viewData.fieldOfViewY);
         if (!inFoV) {
