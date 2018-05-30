@@ -1,6 +1,5 @@
 import QtQuick 2.5
 import QtQuick.Window 2.2
-import QtPositioning 5.3
 import QtSensors 5.3
 
 import ArcGIS.AppFramework 1.0
@@ -23,16 +22,17 @@ Item {
     readonly property real kMaxRotationSensorCalibrationThreshold: 10
     readonly property real rotationSensorCalibrationLevel: calculateRotationSensorCalibration()
 
-//    property alias positionSource: positionSource
     property alias compass: compass
     property alias tiltSensor: tiltSensor
     property alias rotationSensor: rotationSensor
-    property alias orientationSensor: orientationSensor
     property alias gyroscope: gyroscope
+    property alias orientationSensor: orientationSensor
 
     property alias azimuthFilter: azimuthFilter
+    property alias yawAngleFilter: yawAngleFilter
     property alias pitchAngleFilter: pitchAngleFilter
     property alias rollAngleFilter: rollAngleFilter
+    property alias turnVelocityFilter: turnVelocityFilter
 
     property bool hasCompass: false
     property bool hasTiltSensor: false
@@ -44,19 +44,27 @@ Item {
     property bool hasZRotationSensor: false
     property bool useRotationZAsAzimuth: false
 
-    //--------------------------------------------------------------------------
-
+    property real lastCalibrationLevel: 0
     property real movementThreshold: 3
 
-    // filtered sensor readings
+    //--------------------------------------------------------------------------
+
+    // corrected sensor readings
     property real azimuthFromTrueNorth: useRotationZAsAzimuth
                                         ? normAngle(azimuthFromYawAngle + magneticDeclination)
                                         : normAngle(azimuthFromMagNorth + magneticDeclination)
-    property real azimuthFromMagNorth: sensorAzimuth
-    property real azimuthFromYawAngle: sensorYawAngle
-    property real pitchAngle: sensorPitchAngle
-    property real rollAngle: sensorRollAngle
-    property real turnVelocity: sensorTurnVelocity
+    property real azimuthFromMagNorth: filteredAzimuth
+    property real azimuthFromYawAngle: filteredYawAngle
+    property real pitchAngle: filteredPitchAngle
+    property real rollAngle: filteredRollAngle
+    property real turnVelocity: filteredTurnVelocity
+
+    // filtered sensor readings
+    property real filteredAzimuth: sensorAzimuth
+    property real filteredYawAngle: sensorYawAngle
+    property real filteredPitchAngle: sensorPitchAngle
+    property real filteredRollAngle: sensorRollAngle
+    property real filteredTurnVelocity: sensorTurnVelocity
 
     // unfiltered sensor readings
     property real sensorAzimuth: 0
@@ -65,8 +73,14 @@ Item {
     property real sensorRollAngle: 0
     property real sensorTurnVelocity: 0
 
+    // sensor bias corrections
+    property real magneticDeclination: 0
+    property real compassOffset: 0
+    property real pitchOffset: 0
+    property real rollOffset: 0
+    property real gyroscopeOffset: 0
+
     // raw sensor readings
-//    property Position position
     property CompassReading compassReading
     property TiltReading tiltReading
     property RotationReading rotationReading
@@ -74,34 +88,31 @@ Item {
 
     property var orientation: OrientationReading.TopUp
     property var lastOrientation: OrientationReading.TopUp
-    property real lastCalibrationLevel: 0
-    property real magneticDeclination: 0
 
-    property real azimuthSamplingRate: 0
-    property real attitudeSamplingRate: 0
-    property int azimuthSamples: 0
-    property int attitudeSamples: 0
-
-    property int azimuthStationaryDelay: 0
-    property int attitudeStationaryDelay: 0
-
+    // filter settings
     property int azimuthFilterType: 0 // 0=rounding 1=smoothing
     property int azimuthRounding: 2  // Nearest degree >> 2=0.5, 3=0.33, 4=0.25 ... 10=0.1
     property int azimuthFilterLength: 10
+    property int azimuthStationaryDelay: 0
+    property int azimuthSamples: 0
+    property real azimuthSamplingRate: 0
 
     property int attitudeFilterType: 0 // 0=rounding 1=smoothing
     property int attitudeRounding: 2  // Nearest degree >> 2=0.5, 3=0.33, 4=0.25 ... 10=0.1
     property int attitudeFilterLength: 10
+    property int attitudeStationaryDelay: 0
+    property int attitudeSamples: 0
+    property real attitudeSamplingRate: 0
 
     property bool reduceSmoothing: false
     property bool deviceTurning: false
-
-//    signal sensorPositionChanged();
+    property bool initialized: false
 
     //--------------------------------------------------------------------------
 
     Component.onCompleted: {
         checkSensorAvailability();
+        initialized = true;
     }
 
     //--------------------------------------------------------------------------
@@ -111,27 +122,31 @@ Item {
 
         if (!gyroscope.active || deviceTurning || azimuthStationaryDelay >= 0) {
             if (azimuthFilterType == 0) {
-                azimuthFromMagNorth = azimuthRounding > 0
+                filteredAzimuth = azimuthRounding > 0
                         ? Math.round(sensorAzimuth * azimuthRounding) / azimuthRounding
                         : sensorAzimuth;
             } else {
-                azimuthFromMagNorth = azimuthFilter.update(sensorAzimuth);
+                filteredAzimuth = azimuthFilter.update(sensorAzimuth);
                 if (gyroscope.active && !deviceTurning && azimuthFilterType != 0) {
                     azimuthStationaryDelay--;
                 }
             }
+
+            azimuthFromMagNorth = filteredAzimuth + compassOffset;
         }
     }
 
     onSensorYawAngleChanged: {
         if (!gyroscope.active || deviceTurning || azimuthStationaryDelay >= 0) {
             if (azimuthFilterType == 0) {
-                azimuthFromYawAngle = azimuthRounding > 0
+                filteredYawAngle = azimuthRounding > 0
                         ? Math.round(sensorYawAngle * azimuthRounding) / azimuthRounding
                         : sensorYawAngle;
             } else {
-                azimuthFromYawAngle = yawAngleFilter.update(sensorYawAngle);
+                filteredYawAngle = yawAngleFilter.update(sensorYawAngle);
             }
+
+            azimuthFromYawAngle = filteredYawAngle + compassOffset;
         }
     }
 
@@ -140,32 +155,55 @@ Item {
 
         if (!gyroscope.active || deviceTurning || attitudeStationaryDelay >= 0) {
             if (attitudeFilterType == 0) {
-                pitchAngle = attitudeRounding > 0
+                filteredPitchAngle = attitudeRounding > 0
                         ? Math.round(sensorPitchAngle * attitudeRounding) / attitudeRounding
                         : sensorPitchAngle;
             } else {
-                pitchAngle = pitchAngleFilter.update(sensorPitchAngle);
+                filteredPitchAngle = pitchAngleFilter.update(sensorPitchAngle);
                 if (gyroscope.active && !deviceTurning && attitudeFilterType != 0) {
                     attitudeStationaryDelay--;
                 }
             }
+
+            pitchAngle = filteredPitchAngle - pitchOffset;
         }
     }
 
     onSensorRollAngleChanged: {
         if (!gyroscope.active || deviceTurning || attitudeStationaryDelay >= 0) {
             if (attitudeFilterType == 0) {
-                rollAngle = attitudeRounding > 0
+                filteredRollAngle = attitudeRounding > 0
                         ? Math.round(sensorRollAngle * attitudeRounding) / attitudeRounding
                         : sensorRollAngle;
             } else {
-                rollAngle = rollAngleFilter.update(sensorRollAngle);
+                filteredRollAngle = rollAngleFilter.update(sensorRollAngle);
             }
+
+            rollAngle = filteredRollAngle - rollOffset;
         }
     }
 
     onSensorTurnVelocityChanged: {
-        turnVelocity = turnVelocityFilter.update(sensorTurnVelocity);
+        filteredTurnVelocity = turnVelocityFilter.update(sensorTurnVelocity);
+
+        turnVelocity = filteredTurnVelocity >= gyroscopeOffset ? filteredTurnVelocity - gyroscopeOffset : 0;
+    }
+
+    onCompassOffsetChanged: {
+        azimuthFromMagNorth = filteredAzimuth + compassOffset;
+        azimuthFromYawAngle = filteredYawAngle + compassOffset;
+    }
+
+    onPitchOffsetChanged: {
+        pitchAngle = filteredPitchAngle - pitchOffset;
+    }
+
+    onRollOffsetChanged: {
+        rollAngle = filteredRollAngle - rollOffset;
+    }
+
+    onGyroscopeOffsetChanged: {
+        turnVelocity = filteredTurnVelocity >= gyroscopeOffset ? filteredTurnVelocity - gyroscopeOffset : 0;
     }
 
     onTurnVelocityChanged: {
@@ -201,6 +239,22 @@ Item {
                 pitchAngleFilter.size = attitudeFilterLength;
                 rollAngleFilter.size = attitudeFilterLength;
             }
+        }
+    }
+
+    // #152 reinstate the property binding
+    onAzimuthFilterLengthChanged: {
+        if (initialized) {
+            azimuthFilter.size = Qt.binding(function() { return azimuthFilterLength; });
+            yawAngleFilter.size = Qt.binding(function() { return azimuthFilterLength; });
+        }
+    }
+
+    // #152 reinstate the property binding
+    onAttitudeFilterLengthChanged: {
+        if (initialized) {
+            pitchAngleFilter.size = Qt.binding(function() { return attitudeFilterLength; });
+            rollAngleFilter.size = Qt.binding(function() { return attitudeFilterLength; });
         }
     }
 
@@ -289,46 +343,6 @@ Item {
 
         size: kFilterSizeThreshold
     }
-
-    //--------------------------------------------------------------------------
-
-//    PositionSource {
-//        id: positionSource
-
-//        property date activatedTimestamp
-//        property bool positionUpToDate
-
-//        active: false
-
-//        onActiveChanged: {
-//            if (active) {
-//                activatedTimestamp = new Date();
-//                positionUpToDate = position.timestamp > activatedTimestamp;
-//            } else {
-//                positionUpToDate = false;
-//            }
-//        }
-
-//        onPositionChanged: {
-//            positionUpToDate = position.timestamp > activatedTimestamp;
-
-//            if (position.latitudeValid && position.longitudeValid && positionUpToDate) {
-//                sensors.position = position;
-//                // #46, #101, #142 need to signal a change or position will not be updated
-//                sensorPositionChanged();
-//            }
-//        }
-
-//        function activate() {
-//            console.log("Starting position source:", name);
-
-//            AppFramework.environment.setValue("APPSTUDIO_POSITION_DESIRED_ACCURACY", "HIGHEST");
-//            AppFramework.environment.setValue("APPSTUDIO_POSITION_ACTIVITY_MODE", "OTHERNAVIGATION");
-//            AppFramework.environment.setValue("APPSTUDIO_POSITION_MOVEMENT_THRESHOLD", movementThreshold.toString());
-
-//            start();
-//        }
-//    }
 
     //--------------------------------------------------------------------------
 
@@ -638,12 +652,6 @@ Item {
 
     //--------------------------------------------------------------------------
 
-    function startPositionSource() {
-        if (positionSource && !positionSource.active) {
-            positionSource.activate();
-        }
-    }
-
     function startCompass() {
         if (compass && !compass.active) {
             console.log("starting compass");
@@ -680,13 +688,6 @@ Item {
     }
 
     //--------------------------------------------------------------------------
-
-    function stopPositionSource() {
-        if (positionSource && positionSource.active) {
-            console.log("stopping position source");
-            positionSource.stop();
-        }
-    }
 
     function stopCompass() {
         if (compass && compass.active) {
