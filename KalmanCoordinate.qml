@@ -44,8 +44,7 @@ QtObject {
             latitude = inLat;
             longitude = inLong;
             variance = inAccuracy * inAccuracy;
-        }
-        else{
+        } else {
             var thisMomentInMilliseconds = inTimestamp - timeStampInMillseconds;
 
             if (thisMomentInMilliseconds > 0) {

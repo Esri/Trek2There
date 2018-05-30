@@ -42,7 +42,7 @@ Item {
     property bool navigating: false
     property bool arrivedAtDestination: false
     property bool autohideToolbar: true
-    property bool noPositionSource: false
+    property bool haveDirectionOfTravel: false
     property double currentDistance: 0.0
     property int currentAccuracy: 0
     property real currentAccuracyInUnits: 0
@@ -375,7 +375,7 @@ Item {
                     Image {
                         id: directionOfTravelCircle
 
-                        visible: useDirectionOfTravelCircle && !noPositionSource
+                        visible: useDirectionOfTravelCircle && haveDirectionOfTravel
 
                         anchors.centerIn: parent
                         height: directionUI.height - directionUI.imageBorder
@@ -389,7 +389,7 @@ Item {
                     Image {
                         id: directionArrow
 
-                        visible: !noPositionSource
+                        visible: haveDirectionOfTravel
 
                         anchors.centerIn: parent
                         width: 0.9 * directionOfTravelCircle.width
@@ -427,7 +427,7 @@ Item {
                     Image {
                         id: noSignalIndicator
 
-                        visible: noPositionSource && !arrivedAtDestination
+                        visible: !haveDirectionOfTravel && !arrivedAtDestination
 
                         anchors.centerIn: parent
                         height: directionUI.height - directionUI.imageBorder
@@ -711,6 +711,8 @@ Item {
         Accessible.name: qsTr("Connected to external GPS receiver")
     }
 
+    // Connecting indicator ----------------------------------------------
+
     Rectangle {
         width: sf(30)
         height: width
@@ -900,7 +902,7 @@ Item {
     onArrived: {
         arrivedAtDestination = true;
         navigating = false;
-        sources.positionSource.stop();
+        positionSource.stop();
         directionArrow.visible = false
         arrivedIcon.visible = true
         distanceReadout.text = qsTr("Arrived");
@@ -920,7 +922,7 @@ Item {
         navigating = false;
 //        if (useInternalGPS) {
 //            // this disconnects external devices, do we really need it?
-//            sources.positionSource.stop();
+//            positionSource.stop();
 //        }
 
         statusMessage.hide();
@@ -960,10 +962,8 @@ Item {
         reset(); // TODO: This may cause some hiccups as positoin source is stopped and started. even though update is called, not sure all devices allow the update immedieately.
         navigating = true;
 
-        sources.positionSource.start();
-        sources.positionSource.update();
+        positionSource.start();
         currentPosition.destinationCoordinate = requestedDestination;
-        sources.positionSource.update();
         endNavigationButton.visible = true;
         endNavigationButton.enabled = true;
 
@@ -976,8 +976,7 @@ Item {
             if (callingApplication !== null && callingApplication !== "") {
                 appMetrics.trackEvent("App called from: " + callingApplication);
             }
-        }
-        catch(e) {
+        } catch(e) {
             appMetrics.reportError(e, "onStartNavigation");
         }
 
@@ -1030,11 +1029,10 @@ Item {
 
         onDegreesOffCourseChanged: {
             if (degreesOffCourse === NaN || degreesOffCourse === 0) {
-                noPositionSource = true;
+                haveDirectionOfTravel = false;
                 directionArrow.opacity = 0.2;
-            }
-            else {
-                noPositionSource = false;
+            } else {
+                haveDirectionOfTravel = true;
                 directionArrow.opacity = 1;
                 directionArrow.rotation = degreesOffCourse;
                 hudDirectionArrow.rotation = degreesOffCourse;
@@ -1166,14 +1164,13 @@ Item {
                     message as well as the startNavigation method as well to fix this.
                 */
                 if (currentPosition.position.directionValid) {
-                    noPositionSource = false;
+                    haveDirectionOfTravel = true;
                     statusMessage.hide();
                     if (!useExperimentalFeatures || (useExperimentalFeatures && !sensors.compass.active)) {
                         viewData.deviceBearing = currentPosition.position.direction;
                     }
-                }
-                else {
-                    noPositionSource = true;
+                } else {
+                    haveDirectionOfTravel = false;
                     directionArrow.opacity = 0.2;
                     statusMessage.message = startMovingMessage;
                     statusMessage.show();
