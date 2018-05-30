@@ -355,8 +355,12 @@ Item {
 
                                 text: "Bluetooth"
 
-                                checked: discoveryAgent.detectBluetooth
-                                onCheckedChanged: discoveryAgent.detectBluetooth = checked ? true : false
+                                checked: discoveryAgent.detectBluetooth ? true : false
+                                onCheckedChanged: {
+                                    if (initialized) {
+                                        discoveryAgent.detectBluetooth = checked ? true : false
+                                    }
+                                }
                             }
 
                             SettingsCheckBox {
@@ -371,8 +375,12 @@ Item {
 
                                 text: "USB/COM"
 
-                                checked: discoveryAgent.detectSerialPort
-                                onCheckedChanged: discoveryAgent.detectSerialPort = checked ? true : false
+                                checked: discoveryAgent.detectSerialPort ? true : false
+                                onCheckedChanged: {
+                                    if (initialized) {
+                                        discoveryAgent.detectSerialPort = checked ? true : false
+                                    }
+                                }
                             }
                         }
                     }

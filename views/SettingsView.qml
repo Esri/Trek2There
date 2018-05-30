@@ -587,8 +587,12 @@ Item {
 
                             text: qsTr("Use experimental features")
 
-                            checked: useExperimentalFeatures
-                            onCheckedChanged: useExperimentalFeatures = !useExperimentalFeatures ? true : false;
+                            checked: useExperimentalFeatures ? true : false
+                            onCheckedChanged: {
+                                if (initialized) {
+                                    useExperimentalFeatures = !useExperimentalFeatures ? true : false;
+                                }
+                            }
 
                             Accessible.role: Accessible.Button
                             Accessible.name: qsTr("Use experimental features")
