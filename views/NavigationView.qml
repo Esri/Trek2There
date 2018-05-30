@@ -34,7 +34,6 @@ import "../js/MathLib.js" as MathLib
 //------------------------------------------------------------------------------
 
 Item {
-
     id: navigationView
 
     // PROPERTIES //////////////////////////////////////////////////////////////
@@ -59,9 +58,9 @@ Item {
 
     // 2.0 Experimental Properties ---------------------------------------------
 
-    property bool useCompassForNavigation: useExperimentalFeatures && sensors.hasCompass && currentSpeed <= maximumSpeedForCompass
-    property double maximumSpeedForCompass: 0.9 // meters per second
+    property double maximumSpeedForCompass: 1 // meters per second
     property double currentSpeed: 0.0
+    property bool useCompassForNavigation: useExperimentalFeatures && sensors.hasCompass && currentSpeed <= maximumSpeedForCompass
     property Image mapPin: Image { source: "../images/map_pin_night.png" }
 
     // Signals /////////////////////////////////////////////////////////////////
@@ -364,7 +363,7 @@ Item {
                     Image {
                         id: directionArrow
 
-                        visible: haveDirectionOfTravel
+                        visible: haveDirectionOfTravel && !arrivedAtDestination
 
                         anchors.centerIn: parent
                         width: 0.9 * directionOfTravelCircle.width
@@ -384,7 +383,7 @@ Item {
                     Image {
                         id: arrivedIcon
 
-                        visible: false
+                        visible: arrivedAtDestination
 
                         anchors.centerIn: parent
                         width: 0.9 * directionOfTravelCircle.width
@@ -762,12 +761,7 @@ Item {
                         source: "../images/settings.png"
                     }
 
-                    onClicked: {
-                        if (navigating === false) {
-                            reset();
-                        }
-                        mainStackView.push(settingsView);
-                    }
+                    onClicked: mainStackView.push(settingsView)
 
                     Accessible.role: Accessible.Button
                     Accessible.name: qsTr("Settings")
@@ -787,9 +781,11 @@ Item {
 
                 Button {
                     id: endNavigationButton
+
                     anchors.fill: parent
-                    visible: false
-                    enabled: false
+
+                    visible: navigating
+                    enabled: navigating
 
                     background: Rectangle {
                         anchors.fill: parent
@@ -874,76 +870,43 @@ Item {
 
     // SIGNALS /////////////////////////////////////////////////////////////////
 
-    onArrived: {
-        arrivedAtDestination = true;
-        navigating = false;
-        positionSource.stop();
-        directionArrow.visible = false
-        arrivedIcon.visible = true
-        distanceReadout.text = qsTr("Arrived");
-        try {
-            appMetrics.trackEvent("Arrived at destination.");
-        }
-        catch(e) {
-            appMetrics.reportError(e, "onArrived");
-        }
-    }
-
-    //--------------------------------------------------------------------------
-
     onReset: {
-        console.log('reseting navigation')
-
-        navigating = false;
-//        if (useInternalGPS) {
-//            // this disconnects external devices, do we really need it?
-//            positionSource.stop();
-//        }
-
         statusMessage.hide();
 
+        navigating = false;
         arrivedAtDestination = false;
-        arrivedIcon.visible = false
 
-        directionArrow.visible = true;
+        hudDirectionArrow.rotation = 0;
         directionArrow.rotation = 0;
         directionArrow.opacity = 1;
 
-        hudDirectionArrow.rotation = 0;
-
-        currentDistance = 0.0;
-        distanceReadout.text = displayDistance(currentDistance.toString());
-
+        currentDistance = 0;
         currentAccuracy = 0;
         currentAccuracyInUnits = 0;
 
+        distanceReadout.text = displayDistance(currentDistance.toString());
+
         if (autohideToolbar === true) {
-            if (hideToolbar.running) {
-                hideToolbar.stop();
-            }
-            if (fadeToolbar.running) {
-                fadeToolbar.stop();
-            }
+            hideToolbar.stop();
+            fadeToolbar.stop();
             toolbar.opacity = 1;
             toolbar.enabled = true;
         }
-
     }
 
     //--------------------------------------------------------------------------
 
-    onStartNavigation:{
-        console.log('starting navigation')
-        reset(); // TODO: This may cause some hiccups as positoin source is stopped and started. even though update is called, not sure all devices allow the update immedieately.
-        navigating = true;
+    onStartNavigation: {
+        reset();
 
-        positionSource.start();
-        currentPosition.destinationCoordinate = requestedDestination;
-        endNavigationButton.visible = true;
-        endNavigationButton.enabled = true;
+        navigating = true;
 
         if (autohideToolbar === true) {
             hideToolbar.start();
+        }
+
+        if (logTreks) {
+            trekLogger.startRecordingTrek();
         }
 
         try {
@@ -953,10 +916,6 @@ Item {
             }
         } catch(e) {
             appMetrics.reportError(e, "onStartNavigation");
-        }
-
-        if (logTreks) {
-            trekLogger.startRecordingTrek();
         }
     }
 
@@ -968,11 +927,8 @@ Item {
     //--------------------------------------------------------------------------
 
     onEndNavigation: {
-        console.log('ending navigation')
         reset();
-        navigating = false;
-        endNavigationButton.visible = false;
-        endNavigationButton.enabled = false;
+
         requestedDestination = null;
 
         if (logTreks) {
@@ -980,13 +936,31 @@ Item {
         }
 
         try {
-            if (arrivedAtDestination === false) {
-                appMetrics.trackEvent("Ended navigation without arrival.");
-            }
+            appMetrics.trackEvent("Ended navigation without arrival.");
         } catch(e) {
             appMetrics.reportError(e, "onEndNavigation");
         }
+    }
 
+    //--------------------------------------------------------------------------
+
+    onArrived: {
+        reset();
+
+        requestedDestination = null;
+
+        arrivedAtDestination = true;
+        distanceReadout.text = qsTr("Arrived");
+
+        if (logTreks) {
+            trekLogger.stopRecordingTrek();
+        }
+
+        try {
+            appMetrics.trackEvent("Arrived at destination.");
+        } catch(e) {
+            appMetrics.reportError(e, "onArrived");
+        }
     }
 
     // COMPONENTS //////////////////////////////////////////////////////////////
@@ -994,6 +968,7 @@ Item {
     CurrentPosition {
         id: currentPosition
 
+        destinationCoordinate: requestedDestination
         compassAzimuth: sensors.azimuthFromTrueNorth
         usingCompass: useCompassForNavigation
 
@@ -1093,6 +1068,8 @@ Item {
         }
     }
 
+    //--------------------------------------------------------------------------
+
     Connections {
         target: positionSource
 
@@ -1108,6 +1085,18 @@ Item {
 
             if (currentPosition.position.coordinate.isValid) {
                 viewData.observerCoordinate = QtPositioning.coordinate(currentPosition.position.coordinate.latitude, currentPosition.position.coordinate.longitude, currentPosition.position.coordinate.altitude);
+
+                if (currentPosition.position.directionValid) {
+                    haveDirectionOfTravel = true;
+                    statusMessage.hide();
+                    if (!useCompassForNavigation) {
+                        viewData.deviceBearing = currentPosition.position.direction;
+                    }
+                } else {
+                    haveDirectionOfTravel = false;
+                    statusMessage.message = startMovingMessage;
+                    statusMessage.show();
+                }
             } else {
                 statusMessage.message = noLocationMessage;
                 statusMessage.show();
@@ -1135,28 +1124,6 @@ Item {
 
             if (currentPosition.position.speedValid) {
                 currentSpeed = currentPosition.position.speed;
-            }
-
-            if (requestedDestination !== null && currentPosition.position.coordinate.isValid) {
-                /*
-                    TODO: On some Android devices position.directionValid must return
-                    true so the statusMessage isn't shown when navigation first starts
-                    in order to inform the user to move. This isn't an issue on iOS.
-                    May need to evaluate reset() method that hides the status
-                    message as well as the startNavigation method as well to fix this.
-                */
-                if (currentPosition.position.directionValid) {
-                    haveDirectionOfTravel = true;
-                    statusMessage.hide();
-                    if (!useCompassForNavigation) {
-                        viewData.deviceBearing = currentPosition.position.direction;
-                    }
-                } else {
-                    haveDirectionOfTravel = false;
-                    directionArrow.opacity = 0.2;
-                    statusMessage.message = startMovingMessage;
-                    statusMessage.show();
-                }
             }
         }
     }
