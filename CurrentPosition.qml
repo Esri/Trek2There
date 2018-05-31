@@ -45,15 +45,15 @@ QtObject {
     property KalmanCoordinate kalmanCoord: KalmanCoordinate {}
 
     // not used at present
-//    property double etaSeconds: NaN
-//    property date etaToDestination: new Date()
+    property double etaSeconds: NaN
+    property date etaToDestination: new Date()
 
-//    property int minimumArrivalTimeInSeconds: 3 // seconds
-//    property double minimumAnticipatedSpeed: 1.4 // m/s
-//    property double maximumAnticipatedSpeed: 28 // m/s
+    property int minimumArrivalTimeInSeconds: 3 // seconds
+    property double minimumAnticipatedSpeed: 1.4 // m/s
+    property double maximumAnticipatedSpeed: 28 // m/s
 
-//    property int arrivalThresholdInMeters: 20
-//    property int arrivalThresholdInSeconds: minimumArrivalTimeInSeconds
+    property int arrivalThresholdInMeters: 20
+    property int arrivalThresholdInSeconds: minimumArrivalTimeInSeconds
 
     signal atDestination()
 
@@ -107,25 +107,23 @@ QtObject {
             }
         }
 
-        // Disabled arrival by distance logic for this version.
+        if (distanceToDestination < arrivalThresholdInMeters ) {
+            atDestination();
+        }
 
-//        if (distanceToDestination < arrivalThresholdInMeters ) {
-//            atDestination();
-//        }
-
-//        if (position.speedValid && position.speed > 0) {
-//            etaSeconds = distanceToDestination / position.speed;
-//            arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * (position.speed / minimumAnticipatedSpeed);
-//            etaToDestination = new Date((new Date().valueOf()) + etaSeconds * 1000);
-//            if (etaSeconds < arrivalThresholdInSeconds) {
-//                atDestination();
-//            }
-//        }
-//        else {
-//            etaSeconds = -1;
-//            arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * 2;
-//            etaToDestination = new Date();
-//        }
+        if (position.speedValid && position.speed > 0) {
+            etaSeconds = distanceToDestination / position.speed;
+            arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * (position.speed / minimumAnticipatedSpeed);
+            etaToDestination = new Date((new Date().valueOf()) + etaSeconds * 1000);
+            if (etaSeconds < arrivalThresholdInSeconds) {
+                atDestination();
+            }
+        }
+        else {
+            etaSeconds = -1;
+            arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * 2;
+            etaToDestination = new Date();
+        }
 
         if (logTreks) {
             // [timestamp, pos_lat, pos_long, pos_dir, klat, klong, az_to, dist_to, degrees_off]
