@@ -46,13 +46,12 @@ QtObject {
 
     // not used at present
     property double etaSeconds: NaN
-    property date etaToDestination: new Date()
 
     property int minimumArrivalTimeInSeconds: 3 // seconds
     property double minimumAnticipatedSpeed: 1.4 // m/s
     property double maximumAnticipatedSpeed: 28 // m/s
 
-    property int arrivalThresholdInMeters: 20
+    property int arrivalThresholdInMeters: position.horizontalAccuracyValid && position.horizontalAccuracy < 20 ? position.horizontalAccuracy : 20
     property int arrivalThresholdInSeconds: minimumArrivalTimeInSeconds
 
     signal atDestination()
@@ -111,18 +110,13 @@ QtObject {
             atDestination();
         }
 
-        if (position.speedValid && position.speed > 0) {
+        // XXX this needs thinking about
+        if (position.speedValid && position.speed > minimumAnticipatedSpeed) {
             etaSeconds = distanceToDestination / position.speed;
             arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * (position.speed / minimumAnticipatedSpeed);
-            etaToDestination = new Date((new Date().valueOf()) + etaSeconds * 1000);
-            if (etaSeconds < arrivalThresholdInSeconds) {
+             if (etaSeconds < arrivalThresholdInSeconds) {
                 atDestination();
             }
-        }
-        else {
-            etaSeconds = -1;
-            arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * 2;
-            etaToDestination = new Date();
         }
 
         if (logTreks) {
