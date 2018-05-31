@@ -148,7 +148,13 @@ Item {
 
             for (var i in types) {
                 if (device.deviceType === types[i]) {
-                    return true;
+                    if (device.deviceType === Device.DeviceTypeBluetooth) {
+                        if (device.pairingStatus === Device.PairingStatusPaired || device.pairingStatus === Device.PairingStatusAuthorizedPaired) {
+                            return true;
+                        }
+                    } else if (device.deviceType === Device.DeviceTypeSerialPort) {
+                        return true;
+                    }
                 }
             }
 
