@@ -38,23 +38,26 @@ Item {
 
     // PROPERTIES //////////////////////////////////////////////////////////////
 
-    property bool navigating: false
-    property bool arrivedAtDestination: false
+    property bool hudOn
+    property bool navigating
+    property bool arrivedAtDestination
+    property bool haveDirectionOfTravel
+
+    property double currentAccuracyInUnits
+    property int currentAccuracy
+
     property bool autohideToolbar: true
-    property bool haveDirectionOfTravel: false
-    property double currentDistance: 0.0
-    property int currentAccuracy: 0
-    property real currentAccuracyInUnits: 0
-    property int sideMargin: 14 * AppFramework.displayScaleFactor
-    property bool hudOn: false
 
     property bool isConnecting
     property bool isConnected
 
     property bool initialized
 
+    readonly property int sideMargin: 14 * AppFramework.displayScaleFactor
     readonly property string startMovingMessage: qsTr("Start moving to determine direction.")
     readonly property string noLocationMessage: qsTr("Waiting for location...")
+    readonly property string soonToArriveMessage: qsTr("You will arrive in %1 s.").arg(currentPosition.etaSeconds)
+    readonly property string arrivedMessage: qsTr("You have arrived.")
 
     // 2.0 Experimental Properties ---------------------------------------------
 
@@ -65,11 +68,10 @@ Item {
 
     // Signals /////////////////////////////////////////////////////////////////
 
-    signal arrived()
-    signal reset()
     signal startNavigation()
-    signal pauseNavigation()
     signal endNavigation()
+    signal arrivingSoon()
+    signal arrived()
 
     //--------------------------------------------------------------------------
 
@@ -349,7 +351,7 @@ Item {
                     Image {
                         id: directionOfTravelCircle
 
-                        visible: useDirectionOfTravelCircle && haveDirectionOfTravel
+                        visible: haveDirectionOfTravel && !arrivedAtDestination
 
                         anchors.centerIn: parent
                         height: directionUI.height - directionUI.imageBorder
@@ -468,7 +470,7 @@ Item {
 
                     Layout.fillWidth: true
 
-                    text: displayDistance(currentDistance.toString())
+                    text: displayDistance(0)
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                     font.pointSize: extraLargeFontSize
@@ -489,15 +491,17 @@ Item {
                     Text {
                         id: bearingReadout
 
-                        text: qsTr("%1° %2").arg(Math.round((currentPosition.degreesOffCourse+360) % 360).toFixed(0)).arg(cardinalDirection(directionArrow.rotation))
+                        text: currentPosition.degreesOffCourse ? qsTr("%1° %2").arg(Math.round((currentPosition.degreesOffCourse+360) % 360).toFixed(0)).arg(cardinalDirection(directionArrow.rotation))  : "----"
                         horizontalAlignment: Text.AlignRight
                         verticalAlignment: Text.AlignVCenter
                         font.pointSize: largeFontSize
                         minimumPointSize: largeFontSize
-                        color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
+                        color: !currentPosition.degreesOffCourse ? "#aaa" : buttonTextColor
+                        opacity: currentPosition.degreesOffCourse ? 1 : .4
+                        textFormat: Text.RichText
 
                         Accessible.role: Accessible.Indicator
-                        Accessible.name: text
+                        Accessible.name: qsTr("Bearing is: %1 degrees".arg(text))
                         Accessible.description: qsTr("Bearing in degrees")
                     }
 
@@ -555,7 +559,7 @@ Item {
                         textFormat: Text.RichText
 
                         Accessible.role: Accessible.Indicator
-                        Accessible.name: qsTr("Accuracy in units is: %1".arg(text))
+                        Accessible.name: qsTr("Accuracy is: %1 %2".arg(text).arg(usesMetric ? "meter" : "feet"))
                         Accessible.description: qsTr("This denotes the current location accuracy in units rounded upward to the nearest %1".arg(usesMetric ? "meter" : "foot"))
                     }
                 }
@@ -870,38 +874,21 @@ Item {
 
     // SIGNALS /////////////////////////////////////////////////////////////////
 
-    onReset: {
-        statusMessage.hide();
-
-        navigating = false;
+    onStartNavigation: {
+        navigating = true;
         arrivedAtDestination = false;
+        currentPosition.clearData();
 
-        hudDirectionArrow.rotation = 0;
-        directionArrow.rotation = 0;
-        directionArrow.opacity = 1;
-
-        currentDistance = 0;
         currentAccuracy = 0;
         currentAccuracyInUnits = 0;
-
-        distanceReadout.text = displayDistance(currentDistance.toString());
+        distanceReadout.text = displayDistance(0);
 
         if (autohideToolbar === true) {
             hideToolbar.stop();
             fadeToolbar.stop();
             toolbar.opacity = 1;
             toolbar.enabled = true;
-        }
-    }
 
-    //--------------------------------------------------------------------------
-
-    onStartNavigation: {
-        reset();
-
-        navigating = true;
-
-        if (autohideToolbar === true) {
             hideToolbar.start();
         }
 
@@ -921,15 +908,12 @@ Item {
 
     //--------------------------------------------------------------------------
 
-    onPauseNavigation: {
-    }
-
-    //--------------------------------------------------------------------------
-
     onEndNavigation: {
-        reset();
-
+        navigating = false;
+        arrivedAtDestination = false;
         requestedDestination = null;
+
+        statusMessage.hide();
 
         if (logTreks) {
             trekLogger.stopRecordingTrek();
@@ -944,13 +928,19 @@ Item {
 
     //--------------------------------------------------------------------------
 
+    onArrivingSoon: {
+        if (currentPosition.etaSeconds) {
+            statusMessage.message = soonToArriveMessage;
+            statusMessage.show();
+        }
+    }
+
+    //--------------------------------------------------------------------------
+
     onArrived: {
-        reset();
-
-        requestedDestination = null;
-
         arrivedAtDestination = true;
-        distanceReadout.text = qsTr("Arrived");
+        statusMessage.message = arrivedMessage;
+        statusMessage.show();
 
         if (logTreks) {
             trekLogger.stopRecordingTrek();
@@ -968,9 +958,64 @@ Item {
     CurrentPosition {
         id: currentPosition
 
+        position: positionSource.position
         destinationCoordinate: requestedDestination
         compassAzimuth: sensors.azimuthFromTrueNorth
         usingCompass: useCompassForNavigation
+
+        onUpdateUI: {
+            if (position.coordinate.isValid) {
+                viewData.observerCoordinate = QtPositioning.coordinate(position.coordinate.latitude, position.coordinate.longitude, position.coordinate.altitude);
+
+                if (position.directionValid && !useCompassForNavigation) {
+                    viewData.deviceBearing = position.direction;
+                }
+
+                if (!degreesOffCourse && degreesOffCourse != 0) {
+                    haveDirectionOfTravel = false;
+                    directionArrow.opacity = 0.2;
+
+                    statusMessage.message = startMovingMessage;
+                    statusMessage.show();
+                } else {
+                    haveDirectionOfTravel = true;
+                    directionArrow.opacity = 1;
+                    directionArrow.rotation = degreesOffCourse;
+                    hudDirectionArrow.rotation = degreesOffCourse;
+
+                    if (!arrivedAtDestination) {
+                        statusMessage.hide();
+                    }
+                }
+            } else {
+                statusMessage.message = noLocationMessage;
+                statusMessage.show();
+            }
+
+            if (position.horizontalAccuracyValid) {
+                var accuracy = position.horizontalAccuracy;
+                if (accuracy > 1e-6 && accuracy <= 5) {
+                    currentAccuracy = 4;
+                } else if (accuracy > 5 && accuracy <= 10) {
+                    currentAccuracy = 3;
+                } else if (accuracy > 10 && accuracy <= 25) {
+                    currentAccuracy = 2;
+                } else if (accuracy > 25 && accuracy <= 250) {
+                    currentAccuracy = 1;
+                } else {
+                    currentAccuracy = 0;
+                }
+
+                currentAccuracyInUnits = accuracy > 1e-6 && accuracy <= 250 ? usesMetric ? Math.round(accuracy * 100) / 100 : Math.round(accuracy * 3.28084 * 100) / 100 : 0
+            } else {
+                currentAccuracy = 0;
+                currentAccuracyInUnits = 0;
+            }
+
+            if (position.speedValid) {
+                currentSpeed = position.speed;
+            }
+        }
 
         onDistanceToDestinationChanged: {
             if (navigating) {
@@ -978,34 +1023,15 @@ Item {
             }
         }
 
-        onDegreesOffCourseChanged: {
-            if (degreesOffCourse === NaN) {
-                haveDirectionOfTravel = false;
-                directionArrow.opacity = 0.2;
-            } else {
-                haveDirectionOfTravel = true;
-                directionArrow.opacity = 1;
-                directionArrow.rotation = degreesOffCourse;
-                hudDirectionArrow.rotation = degreesOffCourse;
+        onSoonAtDestination: {
+            if (navigating) {
+                arrivingSoon();
             }
         }
 
         onAtDestination: {
             if (navigating) {
                 arrived();
-            }
-        }
-    }
-
-    //--------------------------------------------------------------------------
-
-    Connections {
-        target: app
-
-        onRequestedDestinationChanged: {
-            console.log("requested Destination: ", requestedDestination);
-            if (requestedDestination !== null) {
-                startNavigation();
             }
         }
     }
@@ -1036,10 +1062,8 @@ Item {
         onRollOffsetChanged: updateRoll()
 
         function updateBearing() {
-            if (sensors.azimuthFromTrueNorth) {
-                if (useCompassForNavigation) {
-                    viewData.deviceBearing = sensors.azimuthFromTrueNorth;
-                }
+            if (sensors.azimuthFromTrueNorth && useCompassForNavigation) {
+                viewData.deviceBearing = sensors.azimuthFromTrueNorth;
             }
         }
 
@@ -1071,59 +1095,12 @@ Item {
     //--------------------------------------------------------------------------
 
     Connections {
-        target: positionSource
+        target: app
 
-        onActiveChanged: {
-            if (positionSource.active && viewData.observerCoordinate === null) {
-                statusMessage.message = startMovingMessage;
-                statusMessage.show();
-            }
-        }
-
-        onPositionChanged: {
-            currentPosition.position = positionSource.position;
-
-            if (currentPosition.position.coordinate.isValid) {
-                viewData.observerCoordinate = QtPositioning.coordinate(currentPosition.position.coordinate.latitude, currentPosition.position.coordinate.longitude, currentPosition.position.coordinate.altitude);
-
-                if (currentPosition.position.directionValid) {
-                    haveDirectionOfTravel = true;
-                    statusMessage.hide();
-                    if (!useCompassForNavigation) {
-                        viewData.deviceBearing = currentPosition.position.direction;
-                    }
-                } else {
-                    haveDirectionOfTravel = false;
-                    statusMessage.message = startMovingMessage;
-                    statusMessage.show();
-                }
-            } else {
-                statusMessage.message = noLocationMessage;
-                statusMessage.show();
-            }
-
-            if (currentPosition.position.horizontalAccuracyValid) {
-                var accuracy = currentPosition.position.horizontalAccuracy;
-                if (accuracy > 1e-6 && accuracy <= 5) {
-                    currentAccuracy = 4;
-                } else if (accuracy > 5 && accuracy <= 10) {
-                    currentAccuracy = 3;
-                } else if (accuracy > 10 && accuracy <= 25) {
-                    currentAccuracy = 2;
-                } else if (accuracy > 25 && accuracy <= 10000) {
-                    currentAccuracy = 1;
-                } else {
-                    currentAccuracy = 0;
-                }
-
-                currentAccuracyInUnits = accuracy > 1e-6 && accuracy <= 10000 ? usesMetric ? Math.round(accuracy * 100) / 100 : Math.round(accuracy * 3.28084 * 100) / 100 : 0
-            } else {
-                currentAccuracy = 0;
-                currentAccuracyInUnits = 0;
-            }
-
-            if (currentPosition.position.speedValid) {
-                currentSpeed = currentPosition.position.speed;
+        onRequestedDestinationChanged: {
+            console.log("requested Destination: ", requestedDestination);
+            if (requestedDestination !== null) {
+                startNavigation();
             }
         }
     }

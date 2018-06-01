@@ -86,7 +86,6 @@ App {
     property string localStoragePath: fileFolder.path + "/ArcGIS/My Treks"
 
     property bool isLandscape: isLandscapeOrientation() //(Screen.primaryOrientation === 2) ? true : false
-    property bool useDirectionOfTravelCircle: true
 
     property var requestedDestination: null
     property var openParameters: null

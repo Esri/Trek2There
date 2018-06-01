@@ -30,38 +30,39 @@ QtObject {
 
     property bool usingCompass
 
-    property var destinationCoordinate
-    property var positionCoordinate
     property var position
-    property var compassAzimuth
+    property var destinationCoordinate
+    property double compassAzimuth
 
     property double distanceToDestination: NaN
     property double azimuthToDestination: NaN
     property double degreesOffCourse: NaN
+    property double etaSeconds: NaN
 
     property bool useKalman
     property double kalmanLat
     property double kalmanLong
     property KalmanCoordinate kalmanCoord: KalmanCoordinate {}
 
-    // not used at present
-    property double etaSeconds: NaN
-
     property int minimumArrivalTimeInSeconds: 3 // seconds
-    property double minimumAnticipatedSpeed: 1.4 // m/s
+    property double minimumAnticipatedSpeed: 1 // m/s
     property double maximumAnticipatedSpeed: 28 // m/s
 
-    property int arrivalThresholdInMeters: position.horizontalAccuracyValid && position.horizontalAccuracy < 20 ? position.horizontalAccuracy : 20
+    property int arrivalThresholdInMeters: position && position.horizontalAccuracyValid && position.horizontalAccuracy < 10 ? position.horizontalAccuracy : 10
     property int arrivalThresholdInSeconds: minimumArrivalTimeInSeconds
 
+    signal soonAtDestination()
     signal atDestination()
+    signal updateUI()
 
     //--------------------------------------------------------------------------
 
     onPositionChanged: {
-        if (position.coordinate.isValid) {
+        if (destinationCoordinate.isValid && position.coordinate.isValid) {
             calculate();
         }
+
+        updateUI();
     }
 
     //--------------------------------------------------------------------------
@@ -76,6 +77,7 @@ QtObject {
         distanceToDestination = NaN;
         azimuthToDestination = NaN;
         degreesOffCourse = NaN;
+        etaSeconds = NaN;
         kalmanCoord.reset();
     }
 
@@ -83,7 +85,7 @@ QtObject {
 
     function calculate() {
 
-        positionCoordinate = position.coordinate;
+        var positionCoordinate = position.coordinate;
 
         if (useKalman) {
             var accuracy = (position.horizontalAccuracyValid === true) ? position.horizontalAccuracy : 0;
@@ -98,24 +100,21 @@ QtObject {
 
         if (usingCompass) {
             degreesOffCourse = azimuthToDestination - compassAzimuth;
+        } else if (position.directionValid) {
+            degreesOffCourse = azimuthToDestination - position.direction;
         } else {
-            if (position.directionValid) {
-                degreesOffCourse = azimuthToDestination - position.direction;
-            } else {
-                degreesOffCourse = NaN;
-            }
+            degreesOffCourse = NaN;
         }
 
         if (distanceToDestination < arrivalThresholdInMeters ) {
             atDestination();
         }
 
-        // XXX this needs thinking about
         if (position.speedValid && position.speed > minimumAnticipatedSpeed) {
             etaSeconds = distanceToDestination / position.speed;
-            arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * (position.speed / minimumAnticipatedSpeed);
-             if (etaSeconds < arrivalThresholdInSeconds) {
-                atDestination();
+            arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * ((position.speed < maximumAnticipatedSpeed ? position.speed : maximumAnticipatedSpeed) / minimumAnticipatedSpeed) / 2;
+            if (etaSeconds < arrivalThresholdInSeconds) {
+                soonAtDestination();
             }
         }
 
