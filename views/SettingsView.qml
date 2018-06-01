@@ -578,24 +578,8 @@ Item {
                                 color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                 Accessible.role: Accessible.Heading
                                 Accessible.name: text
-                                Accessible.description: qsTr("Turn experimental features on or off. This will enable compass assisted navigation for walking and provide a visual marker on the head up display horizon that denotes yoru destination.")
+                                Accessible.description: qsTr("Turn experimental features on or off. This will enable compass assisted navigation for walking and provide a visual marker on the head up display that denotes your destination.")
                             }
-                        }
-
-                        SettingsCheckBox {
-                            id: experimentalCheckBox
-
-                            text: qsTr("Use experimental features")
-
-                            checked: useExperimentalFeatures ? true : false
-                            onCheckedChanged: {
-                                if (initialized) {
-                                    useExperimentalFeatures = !useExperimentalFeatures ? true : false;
-                                }
-                            }
-
-                            Accessible.role: Accessible.Button
-                            Accessible.name: qsTr("Use experimental features")
                         }
 
                         Rectangle {
@@ -607,9 +591,7 @@ Item {
 
                             RowLayout {
                                 anchors.fill: parent
-                                spacing: 0
-                                anchors.leftMargin: sideMargin
-                                anchors.rightMargin: sideMargin
+                                anchors.topMargin: sf(5)
 
                                 Text {
                                     id: xFeaturesText
@@ -631,8 +613,9 @@ Item {
 
                                     Layout.fillHeight: true
                                     Layout.fillWidth: true
-                                    Layout.leftMargin: sf(20) + sideMargin
-                                    text: qsTr("Current experimental features include use of compass to establish course correction at walking speed and display of location pin on the head up display horizon. Esri Labs encourages users to use these features and provide feedback.<br><br>Please <a href='mailto:%1'>email us</a> with your feedback.<br>").arg(feedbackEmail)
+                                    Layout.leftMargin: sideMargin
+                                    Layout.rightMargin: sideMargin
+                                    text: qsTr("Esri Labs encourages users to use these features and provide feedback. Please <a href='mailto:%1'>email us</a> with your feedback.<br>").arg(feedbackEmail)
                                     verticalAlignment: Text.AlignVCenter
                                     color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                     opacity: .8
@@ -646,6 +629,100 @@ Item {
                                         console.log(link);
                                         Qt.openUrlExternally(link);
                                     }
+                                }
+                            }
+                        }
+
+                        SettingsCheckBox {
+                            id: compassCheckBox
+
+                            text: qsTr("Use compass")
+
+                            checked: useCompass ? true : false
+                            onCheckedChanged: {
+                                if (initialized) {
+                                    useCompass = !useCompass ? true : false;
+                                }
+                            }
+
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr("Use compass to establish course correction at walking speed.")
+                        }
+
+                        Rectangle {
+                            Layout.preferredHeight: xFeaturesText1.contentHeight
+                            Layout.fillWidth: true
+                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                            Accessible.role: Accessible.Pane
+                            Accessible.ignored: true
+
+                            RowLayout {
+                                anchors.fill: parent
+                                spacing: 0
+                                anchors.leftMargin: sideMargin
+                                anchors.rightMargin: sideMargin
+
+                                Text {
+                                    id: xFeaturesText1
+
+                                    Layout.fillHeight: true
+                                    Layout.fillWidth: true
+                                    Layout.leftMargin: sf(20) + sideMargin
+                                    text: qsTr("Use compass to establish course correction at walking speed.")
+                                    verticalAlignment: Text.AlignVCenter
+                                    color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                                    opacity: .8
+                                    Accessible.ignored: true
+                                    font.pointSize: 10
+                                    wrapMode: Text.Wrap
+                                    textFormat: Text.StyledText
+                                }
+                            }
+                        }
+
+                        SettingsCheckBox {
+                            id: hudCheckBox
+
+                            text: qsTr("Use augmented reality display")
+
+                            checked: useHUD ? true : false
+                            onCheckedChanged: {
+                                if (initialized) {
+                                    useHUD = !useHUD ? true : false;
+                                }
+                            }
+
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr("Use experimental features")
+                        }
+
+                        Rectangle {
+                            Layout.preferredHeight: xFeaturesText2.contentHeight + sf(5)
+                            Layout.fillWidth: true
+                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
+                            Accessible.role: Accessible.Pane
+                            Accessible.ignored: true
+
+                            RowLayout {
+                                anchors.fill: parent
+                                spacing: 0
+                                anchors.leftMargin: sideMargin
+                                anchors.rightMargin: sideMargin
+
+                                Text {
+                                    id: xFeaturesText2
+
+                                    Layout.fillHeight: true
+                                    Layout.fillWidth: true
+                                    Layout.leftMargin: sf(20) + sideMargin
+                                    text: qsTr("Activate the augmented reality display and show a location pin if the device is held upright.")
+                                    verticalAlignment: Text.AlignVCenter
+                                    color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                                    opacity: .8
+                                    Accessible.ignored: true
+                                    font.pointSize: 10
+                                    wrapMode: Text.Wrap
+                                    textFormat: Text.StyledText
                                 }
                             }
                         }

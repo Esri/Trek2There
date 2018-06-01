@@ -68,7 +68,8 @@ App {
     property bool nightMode: app.settings.boolValue("nightMode", false)
     property int coordinateFormat: app.settings.numberValue("coordinateFormat", 0)
     property bool usesMetric: app.settings.boolValue("usesMetric", localeIsMetric())
-    property bool useExperimentalFeatures: app.settings.boolValue("useExperimentalFeatures", false)
+    property bool useCompass: app.settings.boolValue("useCompass", false)
+    property bool useHUD: app.settings.boolValue("useHUD", false)
     property string storedDevice: settings.value("device", "");
     property string hostname: settings.value("hostname", "");
     property int port: settings.numberValue("port", "");
@@ -305,9 +306,17 @@ App {
 
     //--------------------------------------------------------------------------
 
-    onUseExperimentalFeaturesChanged: {
+    onUseCompassChanged: {
         if (initialized) {
-            app.settings.setValue("useExperimentalFeatures", useExperimentalFeatures);
+            app.settings.setValue("useCompass", useCompass);
+        }
+    }
+
+    //--------------------------------------------------------------------------
+
+    onUseHUDChanged: {
+        if (initialized) {
+            app.settings.setValue("useHUD", useHUD);
         }
     }
 

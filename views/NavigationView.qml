@@ -60,7 +60,7 @@ Item {
 
     property double maximumSpeedForCompass: 1 // meters per second
     property double currentSpeed: 0.0
-    property bool useCompassForNavigation: useExperimentalFeatures && sensors.hasCompass && currentSpeed <= maximumSpeedForCompass
+    property bool useCompassForNavigation: useCompass && sensors.hasCompass && currentSpeed <= maximumSpeedForCompass
     property Image mapPin: Image { source: "../images/map_pin_night.png" }
 
     // Signals /////////////////////////////////////////////////////////////////
@@ -93,7 +93,7 @@ Item {
     StackView.onActivating: {
         sensors.startOrientationSensor();
 
-        if (useExperimentalFeatures) {
+        if (useCompass || useHUD) {
             sensors.startRequiredAttitudeSensors(false, false, false, false, sensors.azimuthFilterType, sensors.attitudeFilterType);
         }
     }
@@ -475,7 +475,7 @@ Item {
                     font.weight: Font.Light
                     fontSizeMode: Text.Fit
                     minimumPointSize: largeFontSize
-                    color: useExperimentalFeatures ? buttonTextColor : !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                    color: hudOn ? buttonTextColor : !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
 
                     Accessible.role: Accessible.Indicator
                     Accessible.name: text
@@ -1045,7 +1045,7 @@ Item {
 
         function updatePitch() {
             if (!fadeHudIn.running && !fadeHudOut.running) {
-                if (useExperimentalFeatures) {
+                if (useHUD) {
                     if (!hudOn && Math.abs(sensors.pitchAngle) <= 30) {
                         turnHudOn();
                     } else if (hudOn && Math.abs(sensors.pitchAngle) > 30) {
