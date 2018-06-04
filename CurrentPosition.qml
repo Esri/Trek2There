@@ -57,7 +57,7 @@ QtObject {
     //--------------------------------------------------------------------------
 
     onPositionChanged: {
-        if (destinationCoordinate.isValid && position.coordinate.isValid) {
+        if (destinationCoordinate && destinationCoordinate.isValid && position && position.coordinate.isValid) {
             calculate();
         }
 
