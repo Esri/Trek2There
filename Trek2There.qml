@@ -103,6 +103,8 @@ App {
     readonly property bool isAndroid: Qt.platform.os === "android"
     readonly property bool isIOS: Qt.platform.os === "ios"
 
+    readonly property double maximumSpeedForCompass: 0.5 // meters per second
+
     property bool initialized
 
     signal reconnect()

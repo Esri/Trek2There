@@ -45,7 +45,6 @@ QtObject {
     property KalmanCoordinate kalmanCoord: KalmanCoordinate {}
 
     property int minimumArrivalTimeInSeconds: 3 // seconds
-    property double minimumAnticipatedSpeed: 1 // m/s
     property double maximumAnticipatedSpeed: 28 // m/s
 
     property int arrivalThresholdInMeters: position && position.horizontalAccuracyValid && position.horizontalAccuracy < 10 ? position.horizontalAccuracy : 10
@@ -108,11 +107,9 @@ QtObject {
 
         if (distanceToDestination < arrivalThresholdInMeters ) {
             atDestination();
-        }
-
-        if (position.speedValid && position.speed > minimumAnticipatedSpeed) {
+        } else if (position.speedValid && position.speed > maximumSpeedForCompass) {
             etaSeconds = distanceToDestination / position.speed;
-            arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * ((position.speed < maximumAnticipatedSpeed ? position.speed : maximumAnticipatedSpeed) / minimumAnticipatedSpeed) / 2;
+            arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * ((position.speed < maximumAnticipatedSpeed ? position.speed : maximumAnticipatedSpeed) / maximumSpeedForCompass) / 2;
             if (etaSeconds < arrivalThresholdInSeconds) {
                 soonAtDestination();
             }

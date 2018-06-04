@@ -646,7 +646,7 @@ Item {
                             }
 
                             Accessible.role: Accessible.Button
-                            Accessible.name: qsTr("Use compass to establish course correction at walking speed.")
+                            Accessible.name: xFeaturesText1.text
                         }
 
                         Rectangle {
@@ -668,7 +668,7 @@ Item {
                                     Layout.fillHeight: true
                                     Layout.fillWidth: true
                                     Layout.leftMargin: sf(20) + sideMargin
-                                    text: qsTr("Use compass to establish course correction at walking speed.")
+                                    text: qsTr("Use compass to establish bearing to target if stationary.")
                                     verticalAlignment: Text.AlignVCenter
                                     color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                     opacity: .8
@@ -693,7 +693,7 @@ Item {
                             }
 
                             Accessible.role: Accessible.Button
-                            Accessible.name: qsTr("Use experimental features")
+                            Accessible.name: xFeaturesText2.text
                         }
 
                         Rectangle {
