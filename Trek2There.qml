@@ -21,31 +21,31 @@ import QtQuick.Controls 2.2
 
 import QtPositioning 5.2 // needed for the call to QtPositioning.coordinate()
 
-//------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
 import ArcGIS.AppFramework.Networking 1.0
 import ArcGIS.AppFramework.Positioning 1.0
 
-//------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 import "AppMetrics"
 import "IconFont"
 import "views"
 import "controls"
 
-//------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 App {
     id: app
 
-    width: 480 * windowScaleFactor
-    height: 640 * windowScaleFactor
+    width: 480
+    height: 640
 
     Accessible.role: Accessible.Window
 
-    // PROPERTIES //////////////////////////////////////////////////////////////
+    // Properties --------------------------------------------------------------
 
     property alias positionSource: sources.positionSource
     property alias satelliteInfoSource: sources.satelliteInfoSource
@@ -57,37 +57,29 @@ App {
     property bool isConnecting: sources.isConnecting
     property bool isConnected: sources.isConnected
 
-    readonly property bool useInternalGPS: connectionType === sources.eConnectionType.internal
-    readonly property bool useExternalGPS: connectionType === sources.eConnectionType.external
-    readonly property bool useTCPConnection: connectionType === sources.eConnectionType.network
-
     property bool safteyWarningAccepted: app.settings.boolValue("safteyWarningAccepted", false)
     property bool showSafetyWarning: app.settings.boolValue("showSafetyWarning", true)
     property bool listenToClipboard: app.settings.boolValue("listenToClipboard", true)
     property bool logTreks: app.settings.boolValue("logTreks", false)
     property bool nightMode: app.settings.boolValue("nightMode", false)
-    property int coordinateFormat: app.settings.numberValue("coordinateFormat", 0)
     property bool usesMetric: app.settings.boolValue("usesMetric", localeIsMetric())
     property bool useCompass: app.settings.boolValue("useCompass", false)
     property bool useHUD: app.settings.boolValue("useHUD", false)
-    property string storedDevice: settings.value("device", "");
-    property string hostname: settings.value("hostname", "");
+    property int coordinateFormat: app.settings.numberValue("coordinateFormat", 0)
+    property int connectionType: app.settings.numberValue("connectionType", sources.eConnectionType.internal);
+    property int lastConnectionType: app.settings.numberValue("connectionType", sources.eConnectionType.internal);
+    property string storedDevice: app.settings.value("device", "");
+    property string hostname: app.settings.value("hostname", "");
     property int port: settings.numberValue("port", "");
-    property int connectionType: settings.numberValue("connectionType", sources.eConnectionType.internal);
-    property int lastConnectionType: settings.numberValue("connectionType", sources.eConnectionType.internal);
 
     property RegExpValidator latitudeValidator: RegExpValidator { regExp: /^[-]?90$|^[-]?[1-8][0-9](\.\d{1,})?$|^[-]?[1-9](\.\d{1,})?$/g }
     property RegExpValidator longitudeValidator: RegExpValidator { regExp: /^[-]?180$|^[-]?1[0-7][0-9](\.\d{1,})?$|^[-]?[1-9][0-9](\.\d{1,})?$|^[-]?[1-9](\.\d{1,})?$/g }
-
-    property var locale: Qt.locale()
-
     property TrekLogger trekLogger: TrekLogger{}
     property FileFolder fileFolder: FileFolder{ path: AppFramework.userHomePath }
     property string localStoragePath: fileFolder.path + "/ArcGIS/My Treks"
 
-    property bool isLandscape: isLandscapeOrientation() //(Screen.primaryOrientation === 2) ? true : false
-
     property var requestedDestination: null
+    property var locale: Qt.locale()
     property var openParameters: null
     property string callingApplication: ""
     property string applicationCallback: ""
@@ -103,7 +95,11 @@ App {
     readonly property var dayModeSettings: { "background": "#f8f8f8", "foreground": "#000", "secondaryBackground": "#efefef", "buttonBorder": "#ddd" }
     readonly property string buttonTextColor: "#007ac2"
 
-    readonly property real windowScaleFactor: !(Qt.platform.os === "windows" || Qt.platform.os === "unix" || Qt.platform.os === "linux") ? 1 : AppFramework.displayScaleFactor
+    readonly property bool useInternalGPS: connectionType === sources.eConnectionType.internal
+    readonly property bool useExternalGPS: connectionType === sources.eConnectionType.external
+    readonly property bool useTCPConnection: connectionType === sources.eConnectionType.network
+
+    readonly property bool isLandscape: isLandscapeOrientation() //(Screen.primaryOrientation === 2) ? true : false
     readonly property bool isAndroid: Qt.platform.os === "android"
     readonly property bool isIOS: Qt.platform.os === "ios"
 
@@ -111,7 +107,7 @@ App {
 
     signal reconnect()
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     Component.onCompleted: {
         fileFolder.makePath(localStoragePath);
@@ -121,60 +117,26 @@ App {
         initialized = true;
     }
 
-    //--------------------------------------------------------------------------
-
-    Connections {
-        target: app.settings
-
-        onValueChanged: {
-            storedDevice = settings.value("device", "")
-            hostname = settings.value("hostname", "")
-            port = settings.value("port", "")
-        }
-    }
-
-    // COMPONENTS //////////////////////////////////////////////////////////////
+    // Components --------------------------------------------------------------
 
     AppMetrics {
         id: appMetrics
         releaseType: "beta"
     }
 
-    //------------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     MainView {
         anchors.fill: parent
     }
 
-    //------------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     IconFont {
         id: icons
     }
 
-    //------------------------------------------------------------------------------
-
-    ClipboardDialog {
-        id: clipboardDialog
-
-        clipLat: appClipboard.inLat
-        clipLon: appClipboard.inLon
-
-        onUseCoordinates: {
-            if (clipLat !== "" && clipLon !== "") {
-                console.log("lat: %1, lon:%2".arg(clipLat).arg(clipLon))
-                requestedDestination = QtPositioning.coordinate(clipLat.toString(), clipLon.toString());
-                dismissCoordinates();
-            }
-        }
-
-        onDismissCoordinates: {
-            appClipboard.inLat = "";
-            appClipboard.inLon = "";
-        }
-    }
-
-    //--------------------------------------------------------------------------
+    // External position sources -----------------------------------------------
 
     PositioningSources {
         id: sources
@@ -182,13 +144,13 @@ App {
         storedDevice: app.storedDevice
     }
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     Connections {
         target: tcpSocket
 
         onErrorChanged: {
-            console.log("Connection error:", tcpSocket.error, tcpSocket.errorString)
+            console.log("TCP connection error:", tcpSocket.error, tcpSocket.errorString)
 
             errorDialog.text = tcpSocket.errorString;
             errorDialog.open();
@@ -202,7 +164,7 @@ App {
 
         onErrorChanged: {
             if (currentDevice) {
-                console.log("Connection error:", currentDevice.error)
+                console.log("Device connection error:", currentDevice.error)
 
                 errorDialog.text = currentDevice.error;
                 errorDialog.open();
@@ -219,6 +181,8 @@ App {
 
         onErrorChanged: {
             if (discoveryAgent.error !== lastError) {
+                console.log("Device discovery agent error:", discoveryAgent.error)
+
                 errorDialog.text = discoveryAgent.error;
                 errorDialog.open();
 
@@ -250,105 +214,7 @@ App {
         }
     }
 
-    // SIGNALS /////////////////////////////////////////////////////////////////
-
-    onOpenUrl: {
-        var urlInfo = AppFramework.urlInfo(url);
-        openParameters = urlInfo.queryParameters;
-
-        if (openParameters.hasOwnProperty("stop")) {
-            var inCoord = openParameters.stop.split(',');
-            requestedDestination =  QtPositioning.coordinate(inCoord[0].trim(), inCoord[1].trim());
-        }
-
-        if (openParameters.hasOwnProperty("callbackprompt")) {
-            callingApplication = openParameters.callbackprompt;
-
-        }
-
-        if (openParameters.hasOwnProperty("callback")) {
-            applicationCallback = openParameters.callback;
-        }
-    }
-
-    //--------------------------------------------------------------------------
-
-    onLogTreksChanged: {
-        if (initialized) {
-            app.settings.setValue("logTreks", logTreks);
-        }
-    }
-
-    //--------------------------------------------------------------------------
-
-    onNightModeChanged: {
-        if (initialized) {
-            app.settings.setValue("nightMode", nightMode);
-        }
-    }
-
-    //--------------------------------------------------------------------------
-
-    onCoordinateFormatChanged: {
-        if (initialized) {
-            app.settings.setValue("coordinateFormat", coordinateFormat);
-        }
-    }
-
-    //--------------------------------------------------------------------------
-
-    onUsesMetricChanged: {
-        if (initialized) {
-            app.settings.setValue("usesMetric", usesMetric);
-        }
-    }
-
-    //--------------------------------------------------------------------------
-
-    onUseCompassChanged: {
-        if (initialized) {
-            app.settings.setValue("useCompass", useCompass);
-        }
-    }
-
-    //--------------------------------------------------------------------------
-
-    onUseHUDChanged: {
-        if (initialized) {
-            app.settings.setValue("useHUD", useHUD);
-        }
-    }
-
-    //--------------------------------------------------------------------------
-
-    onConnectionTypeChanged: {
-        if (initialized) {
-            app.settings.setValue("connectionType", connectionType);
-
-            // we have to do a direct comparison here since useInternalGPS has not been updated yet
-            if (connectionType !== sources.eConnectionType.internal) {
-                lastConnectionType = connectionType;
-            }
-        }
-    }
-
-   //--------------------------------------------------------------------------
-
-    onReconnect: {
-        if (useExternalGPS && storedDevice > "") {
-            if (!isConnecting && !isConnected) {
-                discoveryAgentRepeatTimer.start();
-            } else {
-                discoveryAgent.stop();
-            }
-        } else if (useTCPConnection && hostname > "" && port > "") {
-            if (!isConnecting && !isConnected) {
-                sources.networkHostSelected(app.hostname, app.port);
-            }
-        }
-    }
-
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     Timer {
         id: discoveryAgentRepeatTimer
@@ -364,60 +230,153 @@ App {
         }
     }
 
-    // FUNCTIONS ///////////////////////////////////////////////////////////////
+    // -------------------------------------------------------------------------
 
-    function localeIsMetric() {
-        switch (locale.measurementSystem) {
-            case Locale.ImperialUSSystem:
-            case Locale.ImperialUKSystem:
-                return false;
-
-            default :
-                return true;
+    onReconnect: {
+        if (useExternalGPS && storedDevice > "") {
+            if (!isConnecting && !isConnected) {
+                discoveryAgentRepeatTimer.start();
+            } else {
+                discoveryAgent.stop();
+            }
+        } else if (useTCPConnection && hostname > "" && port > "") {
+            if (!isConnecting && !isConnected) {
+                sources.networkHostSelected(app.hostname, app.port);
+            }
         }
     }
 
-    //--------------------------------------------------------------------------
+    // Settings ----------------------------------------------------------------
 
-    function validCoordinates(lat,lon) {
-        if (lon.search(longitudeValidator.regExp) > -1 && lat.search(latitudeValidator.regExp) > -1) {
-            return true;
-        } else {
-            return false;
+    Connections {
+        target: app.settings
+
+        onValueChanged: {
+            storedDevice = app.settings.value("device", "")
+            hostname = app.settings.value("hostname", "")
+            port = app.settings.value("port", "")
         }
     }
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
-    function isLandscapeOrientation() {
-        var isLandscape = false;
+    onListenToClipboardChanged: {
+        if (initialized) {
+            app.settings.setValue("listenToClipboard", listenToClipboard);
+        }
+    }
 
-        if (isAndroid || isIOS) {
-            isLandscape = Screen.orientation === Qt.LandscapeOrientation || Screen.orientation === Qt.InvertedLandscapeOrientation;
-        } else {
-            isLandscape = app.width > app.height;
+    // -------------------------------------------------------------------------
+
+    onLogTreksChanged: {
+        if (initialized) {
+            app.settings.setValue("logTreks", logTreks);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
+    onNightModeChanged: {
+        if (initialized) {
+            app.settings.setValue("nightMode", nightMode);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
+    onUsesMetricChanged: {
+        if (initialized) {
+            app.settings.setValue("usesMetric", usesMetric);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
+    onUseCompassChanged: {
+        if (initialized) {
+            app.settings.setValue("useCompass", useCompass);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
+    onUseHUDChanged: {
+        if (initialized) {
+            app.settings.setValue("useHUD", useHUD);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
+    onCoordinateFormatChanged: {
+        if (initialized) {
+            app.settings.setValue("coordinateFormat", coordinateFormat);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
+    onConnectionTypeChanged: {
+        if (initialized) {
+            app.settings.setValue("connectionType", connectionType);
+
+            // we have to do a direct comparison here since useInternalGPS has not been updated yet
+            if (connectionType !== sources.eConnectionType.internal) {
+                lastConnectionType = connectionType;
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
+    onLastConnectionTypeChanged: {
+        if (initialized) {
+            app.settings.setValue("lastConnectionType", lastConnectionType);
+        }
+    }
+
+    // External callbacks ------------------------------------------------------
+
+    onOpenUrl: {
+        var urlInfo = AppFramework.urlInfo(url);
+        openParameters = urlInfo.queryParameters;
+
+        if (openParameters.hasOwnProperty("stop")) {
+            var inCoord = openParameters.stop.split(',');
+            requestedDestination = QtPositioning.coordinate(inCoord[0].trim(), inCoord[1].trim());
         }
 
-        return isLandscape;
+        if (openParameters.hasOwnProperty("callbackprompt")) {
+            callingApplication = openParameters.callbackprompt;
+        }
+
+        if (openParameters.hasOwnProperty("callback")) {
+            applicationCallback = openParameters.callback;
+        }
     }
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
-    function sf(val) {
-        return val * AppFramework.displayScaleFactor;
+    ClipboardDialog {
+        id: clipboardDialog
+
+        onUseCoordinates: {
+            if (clipLat !== "" && clipLon !== "") {
+                console.log("lat: %1, lon:%2".arg(clipLat).arg(clipLon))
+                requestedDestination = QtPositioning.coordinate(clipLat.toString(), clipLon.toString());
+                dismissCoordinates();
+            }
+        }
     }
 
-    // CONNECTIONS /////////////////////////////////////////////////////////////
+    // -------------------------------------------------------------------------
 
     Connections {
         id: appClipboard
+
         target: AppFramework.clipboard
 
-        property string inLat: ""
-        property string inLon: ""
-
         onDataChanged: {
-
             console.log('there is data on the clipboard');
 
             var lat = "";
@@ -440,9 +399,7 @@ App {
                     }
                 } finally {
                     if (lat !== "" && lon !== "") {
-                        if (validCoordinates(lat, lon)) {
-                            appClipboard.inLat = lat;
-                            appClipboard.inLon = lon;
+                        if (validateCoordinates(lat, lon)) {
                             clipboardDialog.clipLat = lat;
                             clipboardDialog.clipLon = lon;
                             clipboardDialog.open();
@@ -453,6 +410,48 @@ App {
         }
     }
 
-    // END /////////////////////////////////////////////////////////////////////
+    // Functions ---------------------------------------------------------------
 
+    function localeIsMetric() {
+        switch (locale.measurementSystem) {
+        case Locale.ImperialUSSystem:
+        case Locale.ImperialUKSystem:
+            return false;
+
+        default :
+            return true;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
+    function validateCoordinates(lat,lon) {
+        if (lon.search(longitudeValidator.regExp) > -1 && lat.search(latitudeValidator.regExp) > -1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
+    function isLandscapeOrientation() {
+        var isLandscape = false;
+
+        if (isAndroid || isIOS) {
+            isLandscape = Screen.orientation === Qt.LandscapeOrientation || Screen.orientation === Qt.InvertedLandscapeOrientation;
+        } else {
+            isLandscape = app.width > app.height;
+        }
+
+        return isLandscape;
+    }
+
+    // -------------------------------------------------------------------------
+
+    function sf(val) {
+        return val * AppFramework.displayScaleFactor;
+    }
+
+    // -------------------------------------------------------------------------
 }

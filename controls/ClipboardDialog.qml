@@ -167,7 +167,7 @@ Dialog {
 
                             onClicked: {
                                 console.log("lat:%1, lon:%2".arg(clipLat).arg(clipLon))
-                                if (validCoordinates(clipLon,clipLat)) {
+                                if (validateCoordinates(clipLon,clipLat)) {
                                     var newLon = clipLat;
                                     clipLat = clipLon;
                                     clipLon = newLon;
