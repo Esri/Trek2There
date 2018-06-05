@@ -199,7 +199,7 @@ Item {
                 position: Camera.BackFace
 
                 onCameraStatusChanged: {
-                    if (cameraStatus === Camera.ActiveStatus) {
+                    if (initialized && useHUD && cameraStatus === Camera.ActiveStatus) {
                         fadeHudIn.start();
                     }
                 }
