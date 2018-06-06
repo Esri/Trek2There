@@ -66,6 +66,18 @@ QtObject {
 
     //--------------------------------------------------------------------------
 
+    onCompassAzimuthChanged: {
+        if (usingCompass) {
+            if (destinationCoordinate && destinationCoordinate.isValid && position && position.coordinate.isValid) {
+                calculate();
+            }
+
+            updateUI();
+        }
+    }
+
+    //--------------------------------------------------------------------------
+
     onAtDestination: {
         kalmanCoord.reset();
     }

@@ -469,7 +469,7 @@ Item {
 
                     Layout.fillWidth: true
 
-                    text: displayDistance(0)
+                    text: displayDistance(NaN)
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                     font.pointSize: extraLargeFontSize
@@ -490,13 +490,13 @@ Item {
                     Text {
                         id: bearingReadout
 
-                        text: currentPosition.degreesOffCourse ? qsTr("%1° %2").arg(Math.round((currentPosition.degreesOffCourse+360) % 360).toFixed(0)).arg(cardinalDirection(directionArrow.rotation))  : "----"
+                        text: currentPosition.degreesOffCourse || currentPosition.degreesOffCourse == 0 ? qsTr("%1° %2").arg(Math.round((currentPosition.degreesOffCourse+360) % 360).toFixed(0)).arg(cardinalDirection(directionArrow.rotation))  : "----"
                         horizontalAlignment: Text.AlignRight
                         verticalAlignment: Text.AlignVCenter
                         font.pointSize: largeFontSize
                         minimumPointSize: largeFontSize
-                        color: !currentPosition.degreesOffCourse ? "#aaa" : buttonTextColor
-                        opacity: currentPosition.degreesOffCourse ? 1 : .4
+                        color: !currentPosition.degreesOffCourse && currentPosition.degreesOffCourse != 0  ? "#aaa" : buttonTextColor
+                        opacity: currentPosition.degreesOffCourse || currentPosition.degreesOffCourse == 0  ? 1 : .4
                         textFormat: Text.RichText
 
                         Accessible.role: Accessible.Indicator
@@ -902,7 +902,7 @@ Item {
 
         currentAccuracy = 0;
         currentAccuracyInUnits = 0;
-        distanceReadout.text = displayDistance(0);
+        distanceReadout.text = displayDistance(NaN);
 
         if (autohideToolbar === true) {
             hideToolbar.stop();
@@ -951,6 +951,7 @@ Item {
 
     onArrivingSoon: {
         if (currentPosition.etaSeconds) {
+            arrivedAtDestination = false;
             statusMessage.message = soonToArriveMessage;
             statusMessage.show();
         }
@@ -959,18 +960,20 @@ Item {
     //--------------------------------------------------------------------------
 
     onArrived: {
-        arrivedAtDestination = true;
-        statusMessage.message = arrivedMessage;
-        statusMessage.show();
+        if (!arrivedAtDestination) {
+            arrivedAtDestination = true;
+            statusMessage.message = arrivedMessage;
+            statusMessage.show();
 
-        if (logTreks) {
-            trekLogger.stopRecordingTrek();
-        }
+            if (logTreks) {
+                trekLogger.stopRecordingTrek();
+            }
 
-        try {
-            appMetrics.trackEvent("Arrived at destination.");
-        } catch(e) {
-            appMetrics.reportError(e, "onArrived");
+            try {
+                appMetrics.trackEvent("Arrived at destination.");
+            } catch(e) {
+                appMetrics.reportError(e, "onArrived");
+            }
         }
     }
 
@@ -985,7 +988,10 @@ Item {
         usingCompass: useCompassForNavigation
 
         onUpdateUI: {
-            if (position.coordinate.isValid) {
+            if (!position.coordinate.isValid) {
+                statusMessage.message = noLocationMessage;
+                statusMessage.show();
+            } else {
                 viewData.observerCoordinate = QtPositioning.coordinate(position.coordinate.latitude, position.coordinate.longitude, position.coordinate.altitude);
 
                 if (position.directionValid && !useCompassForNavigation) {
@@ -996,8 +1002,12 @@ Item {
                     haveDirectionOfTravel = false;
                     directionArrow.opacity = 0.2;
 
-                    statusMessage.message = startMovingMessage;
-                    statusMessage.show();
+                    if (!useCompassForNavigation) {
+                        statusMessage.message = startMovingMessage;
+                        statusMessage.show();
+                    } else if (!arrivedAtDestination) {
+                        statusMessage.hide();
+                    }
                 } else {
                     haveDirectionOfTravel = true;
                     directionArrow.opacity = 1;
@@ -1008,9 +1018,6 @@ Item {
                         statusMessage.hide();
                     }
                 }
-            } else {
-                statusMessage.message = noLocationMessage;
-                statusMessage.show();
             }
 
             if (position.horizontalAccuracyValid) {
@@ -1083,7 +1090,7 @@ Item {
         onRollOffsetChanged: updateRoll()
 
         function updateBearing() {
-            if (sensors.azimuthFromTrueNorth && useCompassForNavigation) {
+            if ((sensors.azimuthFromTrueNorth || sensors.azimuthFromTrueNorth == 0) && useCompassForNavigation) {
                 viewData.deviceBearing = sensors.azimuthFromTrueNorth;
             }
         }
@@ -1326,6 +1333,10 @@ Item {
 
     function displayDistance(distance) {
 
+        if (!distance && distance !== 0) {
+            return "----";
+        }
+
         if (usesMetric === false) {
             var distanceFt = distance * 3.28084;
             if (distanceFt < 3.28084) {
@@ -1336,8 +1347,7 @@ Item {
                 var distanceMiles = distance * 0.000621371;
                 return "%1 mi".arg((Math.round(distanceMiles * 10) / 10).toLocaleString(locale, "f", distanceMiles < 10 ? 1 : 0))
             }
-        }
-        else {
+        } else {
             if (distance < 1) {
                 return "%1 cm".arg(Math.round(distance*100).toLocaleString(locale, "f", 0))
             } else if (distance < 1000) {
