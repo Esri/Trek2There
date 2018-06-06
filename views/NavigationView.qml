@@ -666,7 +666,7 @@ Item {
         }
     }
 
-    // External GPS indicator ----------------------------------------------
+    // External GPS indicator --------------------------------------------------
 
     Image {
         id: externalGPSIndicator
@@ -686,6 +686,28 @@ Item {
 
         Accessible.role: Accessible.Indicator
         Accessible.name: qsTr("Connected to external GPS receiver")
+    }
+
+    // Compass indicator -------------------------------------------------------
+
+    Image {
+        id: compassIndicator
+
+        width: sf(30)
+        height: width
+
+        visible: useCompassForNavigation
+
+        anchors.top: statusMessage.visible ? statusMessageContainer.bottom : parent.top
+        anchors.topMargin: sideMargin
+        anchors.left: parent.left
+        anchors.leftMargin: sideMargin
+
+        source: !nightMode ? "../images/compass_day.png" : "../images/compass_night.png"
+        fillMode: Image.PreserveAspectFit
+
+        Accessible.role: Accessible.Indicator
+        Accessible.name: qsTr("Magnetic compass is in use.")
     }
 
     // Connecting indicator ----------------------------------------------
