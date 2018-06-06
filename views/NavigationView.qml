@@ -41,6 +41,7 @@ Item {
     property bool hudOn
     property bool navigating
     property bool arrivedAtDestination
+    property bool arrivingAtDestination
     property bool haveDirectionOfTravel
 
     property double currentAccuracyInUnits
@@ -69,7 +70,6 @@ Item {
 
     signal startNavigation()
     signal endNavigation()
-    signal arrivingSoon()
     signal arrived()
 
     //--------------------------------------------------------------------------
@@ -469,7 +469,7 @@ Item {
 
                     Layout.fillWidth: true
 
-                    text: displayDistance(NaN)
+                    text: displayDistance(currentPosition.distanceToDestination)
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                     font.pointSize: extraLargeFontSize
@@ -898,11 +898,10 @@ Item {
     onStartNavigation: {
         navigating = true;
         arrivedAtDestination = false;
-        currentPosition.clearData();
+        arrivingAtDestination = false;
 
         currentAccuracy = 0;
         currentAccuracyInUnits = 0;
-        distanceReadout.text = displayDistance(NaN);
 
         if (autohideToolbar === true) {
             hideToolbar.stop();
@@ -932,6 +931,7 @@ Item {
     onEndNavigation: {
         navigating = false;
         arrivedAtDestination = false;
+        arrivingAtDestination = false;
         requestedDestination = null;
 
         statusMessage.hide();
@@ -949,31 +949,15 @@ Item {
 
     //--------------------------------------------------------------------------
 
-    onArrivingSoon: {
-        if (currentPosition.etaSeconds) {
-            arrivedAtDestination = false;
-            statusMessage.message = soonToArriveMessage;
-            statusMessage.show();
-        }
-    }
-
-    //--------------------------------------------------------------------------
-
     onArrived: {
-        if (!arrivedAtDestination) {
-            arrivedAtDestination = true;
-            statusMessage.message = arrivedMessage;
-            statusMessage.show();
+        if (logTreks) {
+            trekLogger.stopRecordingTrek();
+        }
 
-            if (logTreks) {
-                trekLogger.stopRecordingTrek();
-            }
-
-            try {
-                appMetrics.trackEvent("Arrived at destination.");
-            } catch(e) {
-                appMetrics.reportError(e, "onArrived");
-            }
+        try {
+            appMetrics.trackEvent("Arrived at destination.");
+        } catch(e) {
+            appMetrics.reportError(e, "onArrived");
         }
     }
 
@@ -986,6 +970,7 @@ Item {
         destinationCoordinate: requestedDestination
         compassAzimuth: sensors.azimuthFromTrueNorth
         usingCompass: useCompassForNavigation
+        navigating: navigationView.navigating
 
         onUpdateUI: {
             if (!position.coordinate.isValid) {
@@ -998,6 +983,16 @@ Item {
                     viewData.deviceBearing = position.direction;
                 }
 
+                if (arrivingAtDestination) {
+                    statusMessage.message = soonToArriveMessage;
+                    statusMessage.show();
+                } else if (arrivedAtDestination) {
+                    statusMessage.message = arrivedMessage;
+                    statusMessage.show();
+                } else {
+                    statusMessage.hide();
+                }
+
                 if (!degreesOffCourse && degreesOffCourse != 0) {
                     haveDirectionOfTravel = false;
                     directionArrow.opacity = 0.2;
@@ -1005,18 +1000,12 @@ Item {
                     if (!useCompassForNavigation) {
                         statusMessage.message = startMovingMessage;
                         statusMessage.show();
-                    } else if (!arrivedAtDestination) {
-                        statusMessage.hide();
                     }
                 } else {
                     haveDirectionOfTravel = true;
                     directionArrow.opacity = 1;
                     directionArrow.rotation = degreesOffCourse;
                     hudDirectionArrow.rotation = degreesOffCourse;
-
-                    if (!arrivedAtDestination) {
-                        statusMessage.hide();
-                    }
                 }
             }
 
@@ -1045,22 +1034,26 @@ Item {
             }
         }
 
-        onDistanceToDestinationChanged: {
-            if (navigating) {
-                distanceReadout.text = displayDistance(distanceToDestination);
-            }
+        onNavigatingToDestination: {
+            arrivingAtDestination = false;
+            arrivedAtDestination = false;
+            updateUI();
         }
 
         onSoonAtDestination: {
-            if (navigating) {
-                arrivingSoon();
-            }
+            arrivedAtDestination = false;
+            arrivingAtDestination = true;
+            updateUI();
         }
 
         onAtDestination: {
-            if (navigating) {
+            if (!arrivedAtDestination) {
                 arrived();
             }
+
+            arrivedAtDestination = true;
+            arrivingAtDestination = false;
+            updateUI();
         }
     }
 

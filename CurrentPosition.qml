@@ -28,6 +28,7 @@ QtObject {
 
     // PROPERTIES //////////////////////////////////////////////////////////////
 
+    property bool navigating
     property bool usingCompass
 
     property var position
@@ -44,12 +45,10 @@ QtObject {
     property double kalmanLong
     property KalmanCoordinate kalmanCoord: KalmanCoordinate {}
 
-    property int minimumArrivalTimeInSeconds: 3 // seconds
-    property double maximumAnticipatedSpeed: 28 // m/s
-
     property int arrivalThresholdInMeters: position && position.horizontalAccuracyValid && position.horizontalAccuracy < 10 ? position.horizontalAccuracy : 10
-    property int arrivalThresholdInSeconds: minimumArrivalTimeInSeconds
+    property int arrivalThresholdInSeconds: 30
 
+    signal navigatingToDestination()
     signal soonAtDestination()
     signal atDestination()
     signal updateUI()
@@ -57,29 +56,31 @@ QtObject {
     //--------------------------------------------------------------------------
 
     onPositionChanged: {
-        if (destinationCoordinate && destinationCoordinate.isValid && position && position.coordinate.isValid) {
+        if (navigating && destinationCoordinate && destinationCoordinate.isValid && position && position.coordinate.isValid) {
             calculate();
-        }
-
-        updateUI();
-    }
-
-    //--------------------------------------------------------------------------
-
-    onCompassAzimuthChanged: {
-        if (usingCompass) {
-            if (destinationCoordinate && destinationCoordinate.isValid && position && position.coordinate.isValid) {
-                calculate();
-            }
-
+        } else {
             updateUI();
         }
     }
 
     //--------------------------------------------------------------------------
 
-    onAtDestination: {
-        kalmanCoord.reset();
+    onCompassAzimuthChanged: {
+        if (usingCompass) {
+            if (navigating && destinationCoordinate && destinationCoordinate.isValid && position && position.coordinate.isValid) {
+                calculate();
+            } else {
+                updateUI();
+            }
+        }
+    }
+
+    //--------------------------------------------------------------------------
+
+    onNavigatingChanged: {
+        if (navigating) {
+            clearData();
+        }
     }
 
     //--------------------------------------------------------------------------
@@ -95,7 +96,6 @@ QtObject {
     //--------------------------------------------------------------------------
 
     function calculate() {
-
         var positionCoordinate = position.coordinate;
 
         if (useKalman) {
@@ -121,10 +121,13 @@ QtObject {
             atDestination();
         } else if (position.speedValid && position.speed > maximumSpeedForCompass) {
             etaSeconds = distanceToDestination / position.speed;
-            arrivalThresholdInSeconds = minimumArrivalTimeInSeconds * ((position.speed < maximumAnticipatedSpeed ? position.speed : maximumAnticipatedSpeed) / maximumSpeedForCompass) / 2;
-            if (etaSeconds < arrivalThresholdInSeconds) {
+            if (etaSeconds <= arrivalThresholdInSeconds) {
                 soonAtDestination();
+            } else {
+                navigatingToDestination();
             }
+        } else {
+            navigatingToDestination();
         }
 
         if (logTreks) {
