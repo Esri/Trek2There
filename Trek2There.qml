@@ -68,6 +68,8 @@ App {
     property int coordinateFormat: app.settings.numberValue("coordinateFormat", 0)
     property int connectionType: app.settings.numberValue("connectionType", sources.eConnectionType.internal);
     property int lastConnectionType: app.settings.numberValue("connectionType", sources.eConnectionType.internal);
+    property string lastLatitude: app.settings.value("lastLatitude", "")
+    property string lastLongitude: app.settings.value("lastLongitude", "")
     property string storedDevice: app.settings.value("device", "");
     property string hostname: app.settings.value("hostname", "");
     property int port: settings.numberValue("port", "");
@@ -116,6 +118,12 @@ App {
         AppFramework.offlineStoragePath = fileFolder.path + "/ArcGIS/My Treks";
 
         connectionType = app.settings.value("connectionType", sources.eConnectionType.internal)
+
+        if (validateCoordinates(lastLongitude, lastLatitude)) {
+            console.log("Navigating to last destination at lat: %1, lon:%2".arg(lastLatitude).arg(lastLongitude));
+            requestedDestination = QtPositioning.coordinate(lastLatitude, lastLongitude);
+        }
+
         initialized = true;
     }
 
@@ -334,6 +342,15 @@ App {
     onLastConnectionTypeChanged: {
         if (initialized) {
             app.settings.setValue("lastConnectionType", lastConnectionType);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
+    onRequestedDestinationChanged: {
+        if (initialized) {
+            app.settings.setValue("lastLatitude", requestedDestination.latitude);
+            app.settings.setValue("lastLongitude", requestedDestination.longitude);
         }
     }
 
