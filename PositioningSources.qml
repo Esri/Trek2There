@@ -110,6 +110,7 @@ Item {
         id: discoveryAgent
 
         deviceFilter: function(device) { return filter(device); }
+        sortCompare: function(device1, device2) { return sort(device1, device2); }
 
         onDeviceDiscovered: {
             if (filter(device)) {
@@ -158,6 +159,40 @@ Item {
             }
 
             return false;
+        }
+
+        function sort(device1, device2) {
+            switch (device1.deviceType) {
+            case Device.DeviceTypeBluetooth:
+                if (device2.deviceType === Device.DeviceTypeBluetooth) {
+                    return device1.name.localeCompare(device2.name) < 0 ? true : false;
+                }
+                return true;
+            case Device.DeviceTypeBluetoothLE:
+                if (device2.deviceType === Device.DeviceTypeBluetooth) {
+                    return false;
+                }
+                if (device2.deviceType === Device.DeviceTypeBluetoothLE) {
+                    return device1.name.localeCompare(device2.name) < 0 ? true : false;
+                }
+                return true;
+            case Device.DeviceTypeSerialPort:
+                if (device2.deviceType === Device.DeviceTypeBluetooth) {
+                    return false;
+                }
+                if (device2.deviceType === Device.DeviceTypeBluetoothLE) {
+                    return false;
+                }
+                if (device2.deviceType === Device.DeviceTypeSerialPort) {
+                    return device1.name.localeCompare(device2.name) < 0 ? true : false;
+                }
+                return true;
+            case Device.DeviceTypeUnknown:
+                if (device2.deviceType === Device.DeviceTypeUnknown) {
+                    return device1.name.localeCompare(device2.name) < 0 ? true : false;
+                }
+                return false;
+            }
         }
     }
 
