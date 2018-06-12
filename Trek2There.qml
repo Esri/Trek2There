@@ -65,6 +65,8 @@ App {
     property bool usesMetric: app.settings.boolValue("usesMetric", localeIsMetric())
     property bool useCompass: app.settings.boolValue("useCompass", false)
     property bool useHUD: app.settings.boolValue("useHUD", false)
+    property bool discoverBluetooth: app.settings.boolValue("discoverBluetooth", true)
+    property bool discoverSerialPort: app.settings.boolValue("discoverSerialPort", false)
     property int coordinateFormat: app.settings.numberValue("coordinateFormat", 0)
     property int connectionType: app.settings.numberValue("connectionType", sources.eConnectionType.internal);
     property int lastConnectionType: app.settings.numberValue("connectionType", sources.eConnectionType.internal);
@@ -152,6 +154,8 @@ App {
         id: sources
 
         storedDevice: app.storedDevice
+        discoverBluetooth: app.discoverBluetooth
+        discoverSerialPort: app.discoverSerialPort
     }
 
     // -------------------------------------------------------------------------
@@ -313,6 +317,22 @@ App {
     onUseHUDChanged: {
         if (initialized) {
             app.settings.setValue("useHUD", useHUD);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
+    onDiscoverBluetoothChanged: {
+        if (initialized) {
+            app.settings.setValue("discoverBluetooth", discoverBluetooth);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
+    onDiscoverSerialPortChanged: {
+        if (initialized) {
+            app.settings.setValue("discoverSerialPort", discoverSerialPort);
         }
     }
 

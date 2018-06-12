@@ -355,10 +355,10 @@ Item {
 
                                 text: "Bluetooth"
 
-                                checked: discoveryAgent.detectBluetooth ? true : false
+                                checked: discoverBluetooth ? true : false
                                 onCheckedChanged: {
                                     if (initialized) {
-                                        discoveryAgent.detectBluetooth = checked ? true : false
+                                        discoverBluetooth = checked ? true : false
                                     }
                                 }
                             }
@@ -375,10 +375,10 @@ Item {
 
                                 text: "USB/COM"
 
-                                checked: discoveryAgent.detectSerialPort ? true : false
+                                checked: discoverSerialPort ? true : false
                                 onCheckedChanged: {
                                     if (initialized) {
-                                        discoveryAgent.detectSerialPort = checked ? true : false
+                                        discoverSerialPort = checked ? true : false
                                     }
                                 }
                             }

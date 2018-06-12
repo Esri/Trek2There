@@ -34,6 +34,8 @@ Item {
     property alias discoveryAgent: discoveryAgent
 
     property string storedDevice
+    property bool discoverBluetooth: true
+    property bool discoverSerialPort: false
 
     property Device currentDevice
     property bool isConnecting
@@ -107,9 +109,6 @@ Item {
     DeviceDiscoveryAgent {
         id: discoveryAgent
 
-        property bool detectBluetooth: true
-        property bool detectSerialPort: false
-
         deviceFilter: function(device) { return filter(device); }
 
         onDeviceDiscovered: {
@@ -138,16 +137,16 @@ Item {
         function filter(device) {
             var types = [];
 
-            if (detectBluetooth) {
+            if (discoverBluetooth) {
                 types.push(Device.DeviceTypeBluetooth);
             }
 
-            if (detectSerialPort) {
+            if (discoverSerialPort) {
                 types.push(Device.DeviceTypeSerialPort);
             }
 
             for (var i in types) {
-                if (device.deviceType === types[i]) {
+                if (device && device.deviceType === types[i]) {
                     if (device.deviceType === Device.DeviceTypeBluetooth) {
                         if (device.pairingStatus === Device.PairingStatusPaired || device.pairingStatus === Device.PairingStatusAuthorizedPaired) {
                             return true;
