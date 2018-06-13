@@ -31,7 +31,7 @@ Item {
         Layout.fillWidth: true
         Layout.fillHeight: true
 
-        // initialItem: (showSafetyWarning === true || safteyWarningAccepted === false) ? disclaimerView : navigationView // disabled for v1.0
+        // initialItem: (showSafetyWarning === true || safetyWarningAccepted === false) ? disclaimerView : navigationView // disabled for v1.0
         initialItem: disclaimerView
     }
 

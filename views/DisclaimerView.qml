@@ -294,8 +294,9 @@ Item {
                                 if (doNotShowWarningAgain.checked) {
                                     app.settings.setValue("showSafetyWarning", false);
                                 }
-                                app.settings.setValue("safteyWarningAccepted", true);
+                                app.settings.setValue("safetyWarningAccepted", true);
                                 */
+                                safetyWarningAccepted = true;
                                 mainStackView.push(navigationView, {}, StackView.ReplaceTransition);
                             }
 

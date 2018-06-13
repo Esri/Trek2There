@@ -57,7 +57,7 @@ App {
     property bool isConnecting: sources.isConnecting
     property bool isConnected: sources.isConnected
 
-    property bool safteyWarningAccepted: app.settings.boolValue("safteyWarningAccepted", false)
+    property bool safetyWarningAccepted: app.settings.boolValue("safetyWarningAccepted", false)
     property bool showSafetyWarning: app.settings.boolValue("showSafetyWarning", true)
     property bool listenToClipboard: app.settings.boolValue("listenToClipboard", true)
     property bool logTreks: app.settings.boolValue("logTreks", false)
@@ -416,40 +416,57 @@ App {
         target: AppFramework.clipboard
 
         onDataChanged: {
-            console.log('there is data on the clipboard');
+            checkClip();
+        }
+    }
 
-            var lat = "";
-            var lon = "";
+    // -------------------------------------------------------------------------
 
-            if (AppFramework.clipboard.dataAvailable && listenToClipboard) {
-                try {
-                    var inJson = JSON.parse(AppFramework.clipboard.text);
-                    if (inJson.hasOwnProperty("latitude") && inJson.hasOwnProperty("longitude")) {
-                        lat = inJson.latitude.toString().trim();
-                        lon = inJson.longitude.toString().trim();
+    Connections {
+        target: Qt.application
+
+        onStateChanged: {
+            // Needed for UWP
+            if(safetyWarningAccepted && Qt.application.state === Qt.ApplicationActive) {
+                checkClip();
+            }
+        }
+    }
+
+    // Functions ---------------------------------------------------------------
+
+    function checkClip() {
+        var lat = "";
+        var lon = "";
+
+        if (AppFramework.clipboard.dataAvailable && listenToClipboard) {
+            try {
+                var inJson = JSON.parse(AppFramework.clipboard.text);
+                if (inJson.hasOwnProperty("latitude") && inJson.hasOwnProperty("longitude")) {
+                    lat = inJson.latitude.toString().trim();
+                    lon = inJson.longitude.toString().trim();
+                }
+            } catch(e) {
+                if (e.toString().indexOf("JSON.parse: Parse error") > -1) {
+                    var incoords = AppFramework.clipboard.text.split(',');
+                    if (incoords.length === 2) {
+                        lat = incoords[0].toString().trim();
+                        lon = incoords[1].toString().trim();
                     }
-                } catch(e) {
-                    if (e.toString().indexOf("JSON.parse: Parse error") > -1) {
-                        var incoords = AppFramework.clipboard.text.split(',');
-                        if (incoords.length === 2) {
-                            lat = incoords[0].toString().trim();
-                            lon = incoords[1].toString().trim();
-                        }
-                    }
-                } finally {
-                    if (lat !== "" && lon !== "") {
-                        if (validateCoordinates(lat, lon)) {
-                            clipboardDialog.clipLat = lat;
-                            clipboardDialog.clipLon = lon;
-                            clipboardDialog.open();
-                        }
+                }
+            } finally {
+                if (lat !== "" && lon !== "") {
+                    if (validateCoordinates(lat, lon)) {
+                        clipboardDialog.clipLat = lat;
+                        clipboardDialog.clipLon = lon;
+                        clipboardDialog.open();
                     }
                 }
             }
         }
     }
 
-    // Functions ---------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     function localeIsMetric() {
         switch (locale.measurementSystem) {
