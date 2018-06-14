@@ -40,8 +40,8 @@ import "controls"
 App {
     id: app
 
-    width: 480
-    height: 640
+    width: 480 * AppFramework.displayScaleFactor
+    height: 640 * AppFramework.displayScaleFactor
 
     Accessible.role: Accessible.Window
 
@@ -460,6 +460,8 @@ App {
                         clipboardDialog.clipLat = lat;
                         clipboardDialog.clipLon = lon;
                         clipboardDialog.open();
+
+                        AppFramework.clipboard.clear();
                     }
                 }
             }
