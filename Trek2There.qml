@@ -223,8 +223,9 @@ App {
         Label {
             id: label
 
-            Layout.fillWidth: true
+            width: errorDialog.width
             color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+            wrapMode: Text.WordWrap
         }
     }
 
