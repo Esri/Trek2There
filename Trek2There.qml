@@ -57,6 +57,14 @@ App {
     property bool isConnecting: sources.isConnecting
     property bool isConnected: sources.isConnected
 
+    property bool discoverBluetooth: app.settings.boolValue("discoverBluetooth", true)
+    property bool discoverSerialPort: app.settings.boolValue("discoverSerialPort", false)
+    property string storedDevice: app.settings.value("device", "");
+    property string hostname: app.settings.value("hostname", "");
+    property int port: settings.numberValue("port", "");
+    property int connectionType: app.settings.numberValue("connectionType", sources.eConnectionType.internal);
+    property int lastConnectionType: app.settings.numberValue("connectionType", sources.eConnectionType.internal);
+
     property bool safetyWarningAccepted: app.settings.boolValue("safetyWarningAccepted", false)
     property bool showSafetyWarning: app.settings.boolValue("showSafetyWarning", true)
     property bool listenToClipboard: app.settings.boolValue("listenToClipboard", true)
@@ -65,16 +73,9 @@ App {
     property bool usesMetric: app.settings.boolValue("usesMetric", localeIsMetric())
     property bool useCompass: app.settings.boolValue("useCompass", false)
     property bool useHUD: app.settings.boolValue("useHUD", false)
-    property bool discoverBluetooth: app.settings.boolValue("discoverBluetooth", true)
-    property bool discoverSerialPort: app.settings.boolValue("discoverSerialPort", false)
     property int coordinateFormat: app.settings.numberValue("coordinateFormat", 0)
-    property int connectionType: app.settings.numberValue("connectionType", sources.eConnectionType.internal);
-    property int lastConnectionType: app.settings.numberValue("connectionType", sources.eConnectionType.internal);
     property string lastLatitude: app.settings.value("lastLatitude", "")
     property string lastLongitude: app.settings.value("lastLongitude", "")
-    property string storedDevice: app.settings.value("device", "");
-    property string hostname: app.settings.value("hostname", "");
-    property int port: settings.numberValue("port", "");
 
     property RegExpValidator latitudeValidator: RegExpValidator { regExp: /^[-]?90$|^[-]?[1-8][0-9](\.\d{1,})?$|^[-]?[1-9](\.\d{1,})?$/g }
     property RegExpValidator longitudeValidator: RegExpValidator { regExp: /^[-]?180$|^[-]?1[0-7][0-9](\.\d{1,})?$|^[-]?[1-9][0-9](\.\d{1,})?$|^[-]?[1-9](\.\d{1,})?$/g }

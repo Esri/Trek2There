@@ -364,30 +364,48 @@ Item {
 
                         //------------------------------------------------------
 
-                        SettingsRadioButton {
-                            id: metricChecked
+                        Rectangle {
+                            Layout.preferredHeight: sf(50)
+                            Layout.fillWidth: true
+                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
 
-                            text: "Metric"
-                            checked: usesMetric
+                            SettingsRadioButton {
+                                id: metricChecked
 
-                            onCheckedChanged: {
-                                if (initialized && checked) {
-                                    usesMetric = true;
+                                anchors.fill: parent
+                                anchors.leftMargin: sideMargin
+
+                                text: "Metric"
+                                checked: usesMetric
+
+                                onCheckedChanged: {
+                                    if (initialized && checked) {
+                                        usesMetric = true;
+                                    }
                                 }
                             }
                         }
 
                         //------------------------------------------------------
 
-                        SettingsRadioButton {
-                            id: imperialChecked
+                        Rectangle {
+                            Layout.preferredHeight: sf(50)
+                            Layout.fillWidth: true
+                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
 
-                            text: "Imperial"
-                            checked: !usesMetric
+                            SettingsRadioButton {
+                                id: imperialChecked
 
-                            onCheckedChanged: {
-                                if (initialized && checked) {
-                                    usesMetric = false;
+                                anchors.fill: parent
+                                anchors.leftMargin: sideMargin
+
+                                text: "Imperial"
+                                checked: !usesMetric
+
+                                onCheckedChanged: {
+                                    if (initialized && checked) {
+                                        usesMetric = false;
+                                    }
                                 }
                             }
                         }
@@ -424,17 +442,26 @@ Item {
 
                         //------------------------------------------------------
 
-                        SettingsRadioButton {
-                            id: internalChecked
+                        Rectangle {
+                            Layout.preferredHeight: sf(50)
+                            Layout.fillWidth: true
+                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
 
-                            text: "Use built-in location sensor"
-                            checked: useInternalGPS
+                            SettingsRadioButton {
+                                id: internalChecked
 
-                            onCheckedChanged: {
-                                if (initialized && checked) {
-                                    connectionType = sources.eConnectionType.internal;
-                                    sources.disconnect();
-                                    discoveryAgent.stop();
+                                anchors.fill: parent
+                                anchors.leftMargin: sideMargin
+
+                                text: "Use built-in location sensor"
+                                checked: useInternalGPS
+
+                                onCheckedChanged: {
+                                    if (initialized && checked) {
+                                        connectionType = sources.eConnectionType.internal;
+                                        sources.disconnect();
+                                        discoveryAgent.stop();
+                                    }
                                 }
                             }
                         }
@@ -444,26 +471,35 @@ Item {
                         RowLayout {
                             spacing: 0
 
-                            SettingsRadioButton {
-                                id: externalChecked
+                            Rectangle {
+                                Layout.preferredHeight: sf(50)
+                                Layout.fillWidth: true
+                                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
 
-                                text: "Use external receiver"
-                                checked: !useInternalGPS
+                                SettingsRadioButton {
+                                    id: externalChecked
 
-                                onCheckedChanged: {
-                                    if (initialized && checked) {
-                                        if (lastConnectionType === sources.eConnectionType.external && storedDevice > "") {
-                                            connectionType = sources.eConnectionType.external;
-                                            if (currentDevice && currentDevice.name === storedDevice) {
-                                                sources.deviceSelected(currentDevice);
-                                            } else {
-                                                discoveryAgent.start();
+                                    anchors.fill: parent
+                                    anchors.leftMargin: sideMargin
+
+                                    text: "Use external receiver"
+                                    checked: !useInternalGPS
+
+                                    onCheckedChanged: {
+                                        if (initialized && checked) {
+                                            if (lastConnectionType === sources.eConnectionType.external && storedDevice > "") {
+                                                connectionType = sources.eConnectionType.external;
+                                                if (currentDevice && currentDevice.name === storedDevice) {
+                                                    sources.deviceSelected(currentDevice);
+                                                } else {
+                                                    discoveryAgent.start();
+                                                }
+                                            } else if (lastConnectionType === sources.eConnectionType.network && hostname > "" && port > "") {
+                                                connectionType = sources.eConnectionType.network;
+                                                sources.networkHostSelected(hostname, port);
+                                            } else if (useInternalGPS || !isConnecting && !isConnected) {
+                                                mainStackView.push(devicesView);
                                             }
-                                        } else if (lastConnectionType === sources.eConnectionType.network && hostname > "" && port > "") {
-                                            connectionType = sources.eConnectionType.network;
-                                            sources.networkHostSelected(hostname, port);
-                                        } else if (useInternalGPS || !isConnecting && !isConnected) {
-                                            mainStackView.push(devicesView);
                                         }
                                     }
                                 }
@@ -633,20 +669,29 @@ Item {
                             }
                         }
 
-                        SettingsCheckBox {
-                            id: compassCheckBox
+                        Rectangle {
+                            Layout.preferredHeight: sf(50)
+                            Layout.fillWidth: true
+                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
 
-                            text: qsTr("Use compass")
+                            SettingsCheckBox {
+                                id: compassCheckBox
 
-                            checked: useCompass ? true : false
-                            onCheckedChanged: {
-                                if (initialized) {
-                                    useCompass = !useCompass ? true : false;
+                                anchors.fill: parent
+                                anchors.leftMargin: sideMargin
+
+                                text: qsTr("Use compass")
+
+                                checked: useCompass ? true : false
+                                onCheckedChanged: {
+                                    if (initialized) {
+                                        useCompass = !useCompass ? true : false;
+                                    }
                                 }
-                            }
 
-                            Accessible.role: Accessible.Button
-                            Accessible.name: xFeaturesText1.text
+                                Accessible.role: Accessible.Button
+                                Accessible.name: xFeaturesText1.text
+                            }
                         }
 
                         Rectangle {
@@ -680,20 +725,29 @@ Item {
                             }
                         }
 
-                        SettingsCheckBox {
-                            id: hudCheckBox
+                        Rectangle {
+                            Layout.preferredHeight: sf(50)
+                            Layout.fillWidth: true
+                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
 
-                            text: qsTr("Use augmented reality display")
+                            SettingsCheckBox {
+                                id: hudCheckBox
 
-                            checked: useHUD ? true : false
-                            onCheckedChanged: {
-                                if (initialized) {
-                                    useHUD = !useHUD ? true : false;
+                                anchors.fill: parent
+                                anchors.leftMargin: sideMargin
+
+                                text: qsTr("Use augmented reality display")
+
+                                checked: useHUD ? true : false
+                                onCheckedChanged: {
+                                    if (initialized) {
+                                        useHUD = !useHUD ? true : false;
+                                    }
                                 }
-                            }
 
-                            Accessible.role: Accessible.Button
-                            Accessible.name: xFeaturesText2.text
+                                Accessible.role: Accessible.Button
+                                Accessible.name: xFeaturesText2.text
+                            }
                         }
 
                         Rectangle {

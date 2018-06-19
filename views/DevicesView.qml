@@ -19,6 +19,7 @@ import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.3
 import QtGraphicalEffects 1.0
 
+import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
 
 import "../controls"
@@ -38,10 +39,15 @@ Item {
     property bool showDevices
     property bool initialized
 
+    property double scaleFactor: AppFramework.displayScaleFactor
+    property int sideMargin: 15 * scaleFactor
+
     property string backgroundColor: !nightMode ? dayModeSettings.background : nightModeSettings.background
     property string secondaryBackgroundColor: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
     property string foregroundColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
     property string secondaryForegroundColor: buttonTextColor
+
+    property string imageLocation: "../images/"
 
     signal networkHostSelected(string hostname, int port)
     signal deviceSelected(Device device)
@@ -148,7 +154,7 @@ Item {
 
                         anchors.top: parent.top
                         Layout.fillWidth: true
-                        Layout.preferredHeight: sf(50)
+                        Layout.preferredHeight: 50 * scaleFactor
 
                         color: secondaryBackgroundColor
                         Accessible.role: Accessible.Pane
@@ -158,7 +164,7 @@ Item {
 
                             anchors.fill: parent
                             anchors.leftMargin: sideMargin
-                            anchors.bottomMargin: sf(5)
+                            anchors.bottomMargin: 5 * scaleFactor
 
                             text: qsTr("CONNECTION SETTINGS")
                             verticalAlignment: Text.AlignBottom
@@ -199,6 +205,7 @@ Item {
                                 Layout.row: 0
                                 Layout.column: 0
                                 Layout.columnSpan: 3
+                                Layout.leftMargin: sideMargin
 
                                 text: "TCP/UDP Connection"
                                 checked: !showDevices
@@ -289,6 +296,7 @@ Item {
                                 Layout.row: 3
                                 Layout.column: 0
                                 Layout.columnSpan: 3
+                                Layout.leftMargin: sideMargin
 
                                 text: "External device"
                                 checked: showDevices
@@ -320,7 +328,8 @@ Item {
 
                                 Layout.row: 4
                                 Layout.column: 0
-                                Layout.preferredWidth: devicePage.width/2
+                                Layout.fillWidth: true
+                                Layout.leftMargin: sideMargin
 
                                 text: "Discovery %1".arg(checked ? "on" : "off")
 
@@ -392,7 +401,7 @@ Item {
 
                         anchors.top: connectionTypeGridRect.bottom
                         Layout.fillWidth: true;
-                        Layout.preferredHeight: sf(50)
+                        Layout.preferredHeight: 50 * scaleFactor
 
                         color: secondaryBackgroundColor
                         Accessible.role: Accessible.Pane
@@ -409,7 +418,7 @@ Item {
                                 Layout.fillHeight: true
                                 Layout.fillWidth: true
                                 Layout.leftMargin: sideMargin
-                                Layout.bottomMargin: sf(5)
+                                Layout.bottomMargin: 5 * scaleFactor
 
                                 text: qsTr("SELECT A DEVICE")
                                 verticalAlignment: Text.AlignBottom
@@ -424,7 +433,7 @@ Item {
                                 id: discoveryIndicatorRect
 
                                 Layout.fillHeight: true
-                                Layout.preferredWidth: sf(30)
+                                Layout.preferredWidth: 30 * scaleFactor
                                 anchors.bottom: parent.bottom
                                 anchors.right: parent.right
                                 anchors.rightMargin: sideMargin
@@ -506,20 +515,20 @@ Item {
                 RowLayout {
                     id: rowLayout
 
-                    height: sf(45)
+                    height: 45 * scaleFactor
                     Layout.fillWidth: true
 
                     Image {
                         id: leftImage
 
-                        width: sf(25)
+                        width: 25 * scaleFactor
                         height: rowLayout.height
                         Layout.preferredWidth: leftImage.width
                         Layout.preferredHeight: leftImage.height
                         anchors.left: parent.left
-                        anchors.leftMargin: sf(10)
+                        anchors.leftMargin: 10 * scaleFactor
 
-                        source:"../images/deviceType-%1.png".arg(deviceType)
+                        source: imageLocation + "deviceType-%1.png".arg(deviceType)
                         fillMode: Image.PreserveAspectFit
                     }
 
@@ -542,14 +551,14 @@ Item {
                     Image {
                         id: rightImage
 
-                        width: sf(25)
+                        width: 25 * scaleFactor
                         height: rowLayout.height
                         Layout.preferredWidth: rightImage.width
                         Layout.preferredHeight: rightImage.height
                         anchors.right: parent.right
-                        anchors.rightMargin: sf(10)
+                        anchors.rightMargin: 10 * scaleFactor
 
-                        source:"../images/right.png"
+                        source: imageLocation + "right.png"
                         fillMode: Image.PreserveAspectFit
                     }
 
@@ -563,7 +572,7 @@ Item {
                 Rectangle {
                     id: separator
 
-                    height: sf(1)
+                    height: 1 * scaleFactor
                     Layout.fillWidth: true
                     color: secondaryBackgroundColor
                 }
@@ -592,7 +601,7 @@ Item {
         running: isConnecting
         visible: running
 
-        height: sf(48)
+        height: 48 * scaleFactor
         width: height
         anchors.centerIn: parent
     }
