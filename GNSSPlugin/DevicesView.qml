@@ -33,11 +33,11 @@ Item {
     property string hostname: hostnameTF.text
     property string port: portTF.text
 
+    readonly property double scaleFactor: AppFramework.displayScaleFactor
     readonly property bool bluetoothOnly: Qt.platform.os === "ios" || Qt.platform.os === "android"
     property bool showDevices
     property bool initialized
 
-    property double scaleFactor: AppFramework.displayScaleFactor
     property int sideMargin: 15 * scaleFactor
 
     property string backgroundColor: !nightMode ? dayModeSettings.background : nightModeSettings.background

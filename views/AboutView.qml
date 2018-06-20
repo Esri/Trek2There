@@ -25,8 +25,6 @@ import ArcGIS.AppFramework 1.0
 Item {
     id: aboutView
 
-    property int sideMargin: sf(14)
-
     // UI //////////////////////////////////////////////////////////////////////
 
     Rectangle {
