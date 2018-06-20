@@ -26,9 +26,12 @@ import QtMultimedia 5.8
 import QtSensors 5.5
 
 import ArcGIS.AppFramework 1.0
+import ArcGIS.AppFramework.Devices 1.0
+import ArcGIS.AppFramework.Positioning 1.0
 
 import "../"
 import "../controls"
+import "../GNSSPlugin"
 import "../js/MathLib.js" as MathLib
 
 //------------------------------------------------------------------------------
@@ -37,6 +40,9 @@ Item {
     id: navigationView
 
     // PROPERTIES //////////////////////////////////////////////////////////////
+
+    property PositioningSources sources
+    property PositioningSourcesController controller
 
     property bool hudOn
     property bool navigating
@@ -49,12 +55,15 @@ Item {
 
     property bool autohideToolbar: true
 
-    property bool isConnecting
-    property bool isConnected
-
     property bool initialized
 
     readonly property int sideMargin: 14 * AppFramework.displayScaleFactor
+    readonly property PositionSource positionSource: sources.positionSource
+    readonly property DeviceDiscoveryAgent discoveryAgent: sources.discoveryAgent
+
+    readonly property bool isConnecting: controller.isConnecting
+    readonly property bool isConnected: controller.isConnected
+
     readonly property string startMovingMessage: qsTr("Start moving to determine direction.")
     readonly property string noLocationMessage: qsTr("Waiting for location.")
     readonly property string soonToArriveMessage: qsTr("You will arrive in %1 s.").arg(currentPosition.etaSeconds.toFixed(0))
@@ -100,7 +109,7 @@ Item {
     }
 
     StackView.onActivated: {
-        reconnect();
+        controller.reconnect();
 
         if (requestedDestination !== null) {
             viewData.itemCoordinate = requestedDestination;
@@ -115,7 +124,7 @@ Item {
     // Try to reconnect if connection to external GPS is lost
     onIsConnectedChanged: {
         if (initialized) {
-            reconnect();
+            controller.reconnect();
         }
     }
 
@@ -124,7 +133,7 @@ Item {
 
         onRunningChanged: {
             if (initialized && !discoveryAgent.running && !isConnecting && !isConnected) {
-                discoveryAgentRepeatTimer.start();
+                controller.startTimer();
             }
         }
     }

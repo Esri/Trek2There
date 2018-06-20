@@ -34,6 +34,7 @@ import "AppMetrics"
 import "IconFont"
 import "views"
 import "controls"
+import "GNSSPlugin"
 
 // -----------------------------------------------------------------------------
 
@@ -47,22 +48,9 @@ App {
 
     // Properties --------------------------------------------------------------
 
-    property alias positionSource: sources.positionSource
-    property alias satelliteInfoSource: sources.satelliteInfoSource
-    property alias nmeaSource: sources.nmeaSource
-    property alias tcpSocket: sources.tcpSocket
-    property alias discoveryAgent: sources.discoveryAgent
+    property alias sources: sources
+    property alias controller: controller
 
-    property Device currentDevice: sources.currentDevice
-    property bool isConnecting: sources.isConnecting
-    property bool isConnected: sources.isConnected
-
-    property bool discoverBluetooth: app.settings.boolValue("discoverBluetooth", true)
-    property bool discoverSerialPort: app.settings.boolValue("discoverSerialPort", false)
-    property string storedDevice: app.settings.value("device", "");
-    property string hostname: app.settings.value("hostname", "");
-    property int port: settings.numberValue("port", "");
-    property int connectionType: app.settings.numberValue("connectionType", sources.eConnectionType.internal);
     property int lastConnectionType: app.settings.numberValue("connectionType", sources.eConnectionType.internal);
 
     property bool safetyWarningAccepted: app.settings.boolValue("safetyWarningAccepted", false)
@@ -100,10 +88,6 @@ App {
     readonly property var dayModeSettings: { "background": "#f8f8f8", "foreground": "#000", "secondaryBackground": "#efefef", "buttonBorder": "#ddd" }
     readonly property string buttonTextColor: "#007ac2"
 
-    readonly property bool useInternalGPS: connectionType === sources.eConnectionType.internal
-    readonly property bool useExternalGPS: connectionType === sources.eConnectionType.external
-    readonly property bool useTCPConnection: connectionType === sources.eConnectionType.network
-
     readonly property bool isLandscape: isLandscapeOrientation() //(Screen.primaryOrientation === 2) ? true : false
     readonly property bool isAndroid: Qt.platform.os === "android"
     readonly property bool isIOS: Qt.platform.os === "ios"
@@ -112,15 +96,13 @@ App {
 
     property bool initialized
 
-    signal reconnect()
-
     // -------------------------------------------------------------------------
 
     Component.onCompleted: {
         fileFolder.makePath(localStoragePath);
         AppFramework.offlineStoragePath = fileFolder.path + "/ArcGIS/My Treks";
 
-        connectionType = app.settings.value("connectionType", sources.eConnectionType.internal)
+        controller.connectionType = app.settings.value("connectionType", sources.eConnectionType.internal)
 
         if (validateCoordinates(lastLongitude, lastLatitude)) {
             console.log("Navigating to last destination at lat: %1, lon:%2".arg(lastLatitude).arg(lastLongitude));
@@ -154,127 +136,20 @@ App {
     PositioningSources {
         id: sources
 
-        storedDevice: app.storedDevice
-        discoverBluetooth: app.discoverBluetooth
-        discoverSerialPort: app.discoverSerialPort
+        storedDevice: controller.storedDevice
+        discoverBluetooth: controller.discoverBluetooth
+        discoverSerialPort: controller.discoverSerialPort
     }
 
     // -------------------------------------------------------------------------
 
-    Connections {
-        target: tcpSocket
+    PositioningSourcesController {
+        id: controller
 
-        onErrorChanged: {
-            console.log("TCP connection error:", tcpSocket.error, tcpSocket.errorString)
-
-            errorDialog.text = tcpSocket.errorString;
-            errorDialog.open();
-        }
-    }
-
-    // -------------------------------------------------------------------------
-
-    Connections {
-        target: currentDevice
-
-        onErrorChanged: {
-            if (currentDevice) {
-                console.log("Device connection error:", currentDevice.error)
-
-                errorDialog.text = currentDevice.error;
-                errorDialog.open();
-            }
-        }
-    }
-
-    // -------------------------------------------------------------------------
-
-    Connections {
-        target: discoveryAgent
-
-        property string lastError
-
-        onErrorChanged: {
-            if (discoveryAgent.error !== lastError) {
-                console.log("Device discovery agent error:", discoveryAgent.error)
-
-                errorDialog.text = discoveryAgent.error;
-                errorDialog.open();
-
-                lastError = discoveryAgent.error;
-            }
-        }
-    }
-
-    // -------------------------------------------------------------------------
-
-    Dialog {
-        id: errorDialog
-
-        property alias text: label.text
-
-        x: (parent.width - width) / 2
-        y: (parent.height - height) / 2
-        modal: true
-
-        standardButtons: Dialog.Ok
-        title: qsTr("Unable to connect");
-        text: ""
-
-        Label {
-            id: label
-
-            width: errorDialog.width
-            color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-            wrapMode: Text.WordWrap
-        }
-    }
-
-    // -------------------------------------------------------------------------
-
-    Timer {
-        id: discoveryAgentRepeatTimer
-
-        interval: 2000
-        running: false
-        repeat: false
-
-        onTriggered: {
-            if (!discoveryAgent.running) {
-                discoveryAgent.start();
-            }
-        }
-    }
-
-    // -------------------------------------------------------------------------
-
-    onReconnect: {
-        if (useExternalGPS && storedDevice > "") {
-            if (!isConnecting && !isConnected) {
-                discoveryAgentRepeatTimer.start();
-            } else {
-                discoveryAgent.stop();
-            }
-        } else if (useTCPConnection && hostname > "" && port > "") {
-            if (!isConnecting && !isConnected) {
-                sources.networkHostSelected(app.hostname, app.port);
-            }
-        }
+        sources: sources
     }
 
     // Settings ----------------------------------------------------------------
-
-    Connections {
-        target: app.settings
-
-        onValueChanged: {
-            storedDevice = app.settings.value("device", "")
-            hostname = app.settings.value("hostname", "")
-            port = app.settings.value("port", "")
-        }
-    }
-
-    // -------------------------------------------------------------------------
 
     onListenToClipboardChanged: {
         if (initialized) {
@@ -324,22 +199,6 @@ App {
 
     // -------------------------------------------------------------------------
 
-    onDiscoverBluetoothChanged: {
-        if (initialized) {
-            app.settings.setValue("discoverBluetooth", discoverBluetooth);
-        }
-    }
-
-    // -------------------------------------------------------------------------
-
-    onDiscoverSerialPortChanged: {
-        if (initialized) {
-            app.settings.setValue("discoverSerialPort", discoverSerialPort);
-        }
-    }
-
-    // -------------------------------------------------------------------------
-
     onCoordinateFormatChanged: {
         if (initialized) {
             app.settings.setValue("coordinateFormat", coordinateFormat);
@@ -348,13 +207,15 @@ App {
 
     // -------------------------------------------------------------------------
 
-    onConnectionTypeChanged: {
-        if (initialized) {
-            app.settings.setValue("connectionType", connectionType);
+    Connections {
+        target: controller
 
-            // we have to do a direct comparison here since useInternalGPS has not been updated yet
-            if (connectionType !== sources.eConnectionType.internal) {
-                lastConnectionType = connectionType;
+        onConnectionTypeChanged: {
+            if (initialized) {
+                // we have to do a direct comparison here since useInternalGPS has not been updated yet
+                if (controller.connectionType !== controller.sources.eConnectionType.internal) {
+                    lastConnectionType = controller.connectionType;
+                }
             }
         }
     }

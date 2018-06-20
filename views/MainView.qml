@@ -18,6 +18,8 @@ import QtQuick 2.8
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
 
+import "../GNSSPlugin"
+
 Item {
 
     id: mainView
@@ -55,8 +57,8 @@ Item {
               Layout.fillHeight: true
               Layout.fillWidth: true
 
-              isConnecting: app.isConnecting
-              isConnected: app.isConnected
+              sources: app.sources
+              controller: app.controller
           }
       }
 
@@ -69,8 +71,8 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            isConnecting: app.isConnecting
-            isConnected: app.isConnected
+            sources: app.sources
+            controller: app.controller
         }
     }
 
@@ -83,10 +85,8 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            discoveryAgent: app.discoveryAgent
-            currentDevice: app.currentDevice
-            isConnecting: app.isConnecting
-            isConnected: app.isConnected
+            sources: app.sources
+            controller: app.controller
         }
     }
 

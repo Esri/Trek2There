@@ -27,10 +27,8 @@ import "../controls"
 Item {
     id: devicePage
 
-    property DeviceDiscoveryAgent discoveryAgent
-    property Device currentDevice
-    property bool isConnecting
-    property bool isConnected
+    property PositioningSources sources
+    property PositioningSourcesController controller
 
     property string hostname: hostnameTF.text
     property string port: portTF.text
@@ -47,7 +45,13 @@ Item {
     property string foregroundColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
     property string secondaryForegroundColor: buttonTextColor
 
-    property string imageLocation: "../images/"
+    property string imageLocation: "./images/"
+
+    readonly property DeviceDiscoveryAgent discoveryAgent: sources.discoveryAgent
+    readonly property Device currentDevice: sources.currentDevice
+
+    readonly property bool isConnecting: controller.isConnecting
+    readonly property bool isConnected: controller.isConnected
 
     signal networkHostSelected(string hostname, int port)
     signal deviceSelected(Device device)
@@ -56,7 +60,7 @@ Item {
     //--------------------------------------------------------------------------
 
     StackView.onActivating: {
-        showDevices = !useTCPConnection;
+        showDevices = !controller.useTCPConnection;
         initialized = true;
 
         if (showDevices && (discoveryAgent.running || !discoveryAgent.devices || discoveryAgent.devices.count == 0)) {
@@ -66,9 +70,9 @@ Item {
         }
 
         if (tcpRadioButton.checked) {
-            connectionType = sources.eConnectionType.network;
+            controller.connectionType = sources.eConnectionType.network;
         } else {
-            connectionType = sources.eConnectionType.external;
+            controller.connectionType = sources.eConnectionType.external;
         }
     }
 
@@ -212,7 +216,7 @@ Item {
 
                                 onCheckedChanged: {
                                     if (initialized && checked) {
-                                        connectionType = sources.eConnectionType.network;
+                                        controller.connectionType = sources.eConnectionType.network;
                                     }
                                 }
                             }
@@ -241,7 +245,7 @@ Item {
                                 Layout.column: 1
                                 Layout.fillWidth: true
 
-                                text: app.hostname
+                                text: controller.hostname
                                 placeholderText: "Hostname"
                             }
 
@@ -269,7 +273,7 @@ Item {
                                 Layout.column: 1
                                 Layout.fillWidth: true
 
-                                text: app.port;
+                                text: controller.port;
                                 placeholderText: "Port"
                             }
 
@@ -308,8 +312,8 @@ Item {
                                         discoverySwitch.checked = discoveryAgent.devices.count == 0;
 
                                         if (checked) {
-                                            connectionType = sources.eConnectionType.external;
-                                            if (currentDevice && currentDevice.name === storedDevice) {
+                                            controller.connectionType = sources.eConnectionType.external;
+                                            if (currentDevice && currentDevice.name === controller.storedDevice) {
                                                 sources.deviceSelected(currentDevice);
                                                 discoverySwitch.checked = false;
                                             }
@@ -364,10 +368,10 @@ Item {
 
                                 text: "Bluetooth"
 
-                                checked: discoverBluetooth ? true : false
+                                checked: controller.discoverBluetooth ? true : false
                                 onCheckedChanged: {
                                     if (initialized) {
-                                        discoverBluetooth = checked ? true : false
+                                        controller.discoverBluetooth = checked ? true : false
                                     }
                                 }
                             }
@@ -384,10 +388,10 @@ Item {
 
                                 text: "USB/COM"
 
-                                checked: discoverSerialPort ? true : false
+                                checked: controller.discoverSerialPort ? true : false
                                 onCheckedChanged: {
                                     if (initialized) {
-                                        discoverSerialPort = checked ? true : false
+                                        controller.discoverSerialPort = checked ? true : false
                                     }
                                 }
                             }

@@ -23,14 +23,19 @@ import QtPositioning 5.4
 
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Sql 1.0
+import ArcGIS.AppFramework.Devices 1.0
 import ArcGIS.AppFramework.Networking 1.0
 
 import "../controls"
+import "../GNSSPlugin"
 
 Item {
     id: settingsView
 
     // PROPERTIES //////////////////////////////////////////////////////////////
+
+    property PositioningSources sources
+    property PositioningSourcesController controller
 
     property var distanceFormats: ["Decimal degrees", "Degrees, minutes, seconds", "Degrees, decimal minutes", "UTM (WGS84)", "MGRS"]
 
@@ -42,13 +47,17 @@ Item {
     property var utmZone: requestedDestination && requestedDestination.isValid && coordinateInfo && coordinateInfo.zone && coordinateInfo.band ? coordinateInfo.zone + coordinateInfo.band : ""
     property var gridReference: requestedDestination && requestedDestination.isValid && coordinateInfo && coordinateInfo.text ? coordinateInfo.text : ""
 
-    property bool isConnecting
-    property bool isConnected
+    readonly property TcpSocket tcpSocket: sources.tcpSocket
+    readonly property DeviceDiscoveryAgent discoveryAgent: sources.discoveryAgent
+    readonly property Device currentDevice: sources.currentDevice
+
+    readonly property bool isConnecting: controller.isConnecting
+    readonly property bool isConnected: controller.isConnected
 
     property bool initialized
 
     StackView.onActivating: {
-        reconnect();
+        controller.reconnect();
         initialized = true;
     }
 
@@ -454,11 +463,11 @@ Item {
                                 anchors.leftMargin: sideMargin
 
                                 text: "Use built-in location sensor"
-                                checked: useInternalGPS
+                                checked: controller.useInternalGPS
 
                                 onCheckedChanged: {
                                     if (initialized && checked) {
-                                        connectionType = sources.eConnectionType.internal;
+                                        controller.connectionType = sources.eConnectionType.internal;
                                         sources.disconnect();
                                         discoveryAgent.stop();
                                     }
@@ -483,21 +492,21 @@ Item {
                                     anchors.leftMargin: sideMargin
 
                                     text: "Use external receiver"
-                                    checked: !useInternalGPS
+                                    checked: !controller.useInternalGPS
 
                                     onCheckedChanged: {
                                         if (initialized && checked) {
-                                            if (lastConnectionType === sources.eConnectionType.external && storedDevice > "") {
-                                                connectionType = sources.eConnectionType.external;
-                                                if (currentDevice && currentDevice.name === storedDevice) {
+                                            if (lastConnectionType === sources.eConnectionType.external && controller.storedDevice > "") {
+                                                controller.connectionType = sources.eConnectionType.external;
+                                                if (currentDevice && currentDevice.name === controller.storedDevice) {
                                                     sources.deviceSelected(currentDevice);
                                                 } else {
                                                     discoveryAgent.start();
                                                 }
-                                            } else if (lastConnectionType === sources.eConnectionType.network && hostname > "" && port > "") {
-                                                connectionType = sources.eConnectionType.network;
-                                                sources.networkHostSelected(hostname, port);
-                                            } else if (useInternalGPS || !isConnecting && !isConnected) {
+                                            } else if (lastConnectionType === sources.eConnectionType.network && controller.hostname > "" && controller.port > "") {
+                                                controller.connectionType = sources.eConnectionType.network;
+                                                sources.networkHostSelected(controller.hostname, controller.port);
+                                            } else if (controller.useInternalGPS || !isConnecting && !isConnected) {
                                                 mainStackView.push(devicesView);
                                             }
                                         }
@@ -551,13 +560,13 @@ Item {
                                 Accessible.role: Accessible.Pane
 
                                 Text {
-                                    property string name: useExternalGPS ?
-                                                              (currentDevice ? currentDevice.name : storedDevice > "" ? storedDevice : "Unknown") :
-                                                              (tcpSocket.remoteName && tcpSocket.remotePort ? tcpSocket.remoteName + ":" + tcpSocket.remotePort : (app.hostname > "" && app.port > "" ? app.hostname + ":" + app.port : "Unknown"))
+                                    property string name: controller.useExternalGPS ?
+                                                              (currentDevice ? currentDevice.name : controller.storedDevice > "" ? controller.storedDevice : "Unknown") :
+                                                              (tcpSocket.remoteName && tcpSocket.remotePort ? tcpSocket.remoteName + ":" + tcpSocket.remotePort : (controller.hostname > "" && controller.port > "" ? controller.hostname + ":" + controller.port : "Unknown"))
 
                                     anchors.fill: parent
-                                    color: isConnecting ? "green" : !isConnected && storedDevice > "" && discoveryAgent.running ? "red" : buttonTextColor
-                                    text: isConnecting ? "Connecting to " + name : isConnected ? "Connected to " + name : storedDevice > "" && discoveryAgent.running ? "Looking for " + storedDevice : qsTr("Not connected")
+                                    color: isConnecting ? "green" : !isConnected && controller.storedDevice > "" && discoveryAgent.running ? "red" : buttonTextColor
+                                    text: isConnecting ? "Connecting to " + name : isConnected ? "Connected to " + name : controller.storedDevice > "" && discoveryAgent.running ? "Looking for " + controller.storedDevice : qsTr("Not connected")
                                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                     verticalAlignment: Text.AlignVCenter
                                     leftPadding: /*radioButton.indicator.width + 2*externalChecked.radioButton.spacing +*/ sideMargin
@@ -578,7 +587,7 @@ Item {
                                     Layout.fillWidth: true
 
                                     text: "Change"
-                                    color: isConnecting ? "green" : !isConnected && storedDevice > "" && discoveryAgent.running ? "red" : buttonTextColor
+                                    color: isConnecting ? "green" : !isConnected && controller.storedDevice > "" && discoveryAgent.running ? "red" : buttonTextColor
                                     verticalAlignment: Text.AlignVCenter
                                     horizontalAlignment: Text.AlignRight
                                 }
