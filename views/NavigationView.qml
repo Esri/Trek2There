@@ -43,22 +43,21 @@ Item {
     property bool arrivedAtDestination
     property bool arrivingAtDestination
     property bool haveDirectionOfTravel
+    property bool autohideToolbar: true
 
     property double currentAccuracyInUnits
     property int currentAccuracy
 
-    property bool autohideToolbar: true
-
     property bool isConnecting
     property bool isConnected
 
-    property bool initialized
 
-    readonly property int sideMargin: 14 * AppFramework.displayScaleFactor
     readonly property string startMovingMessage: qsTr("Start moving to determine direction.")
     readonly property string noLocationMessage: qsTr("Waiting for location.")
     readonly property string soonToArriveMessage: qsTr("You will arrive in %1 s.").arg(currentPosition.etaSeconds.toFixed(0))
     readonly property string arrivedMessage: qsTr("You have arrived.")
+
+    property bool initialized
 
     // 2.0 Experimental Properties ---------------------------------------------
 
