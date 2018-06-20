@@ -54,7 +54,6 @@ Item {
     property double currentAccuracyInUnits
     property int currentAccuracy
 
-
     readonly property PositionSource positionSource: sources.positionSource
     readonly property DeviceDiscoveryAgent discoveryAgent: sources.discoveryAgent
 

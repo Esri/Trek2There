@@ -22,6 +22,7 @@ import QtGraphicalEffects 1.0
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
 
+import "./controls"
 import "../controls"
 
 Item {
@@ -30,28 +31,28 @@ Item {
     property PositioningSources sources
     property PositioningSourcesController controller
 
+    property string foregroundColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+    property string secondaryForegroundColor: !nightMode ? "#595959" : nightModeSettings.foreground
+    property string backgroundColor: !nightMode ? dayModeSettings.background : nightModeSettings.background
+    property string secondaryBackgroundColor: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
+    property string connectedColor: buttonTextColor
+
+    property string imageLocation: "./images/"
+    property int sideMargin: 15 * scaleFactor
+
     property string hostname: hostnameTF.text
     property string port: portTF.text
 
-    readonly property double scaleFactor: AppFramework.displayScaleFactor
-    readonly property bool bluetoothOnly: Qt.platform.os === "ios" || Qt.platform.os === "android"
-    property bool showDevices
-    property bool initialized
-
-    property int sideMargin: 15 * scaleFactor
-
-    property string backgroundColor: !nightMode ? dayModeSettings.background : nightModeSettings.background
-    property string secondaryBackgroundColor: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
-    property string foregroundColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-    property string secondaryForegroundColor: buttonTextColor
-
-    property string imageLocation: "./images/"
-
     readonly property DeviceDiscoveryAgent discoveryAgent: sources.discoveryAgent
     readonly property Device currentDevice: sources.currentDevice
-
     readonly property bool isConnecting: controller.isConnecting
     readonly property bool isConnected: controller.isConnected
+
+    readonly property double scaleFactor: AppFramework.displayScaleFactor
+    readonly property bool bluetoothOnly: Qt.platform.os === "ios" || Qt.platform.os === "android"
+
+    property bool showDevices
+    property bool initialized
 
     signal networkHostSelected(string hostname, int port)
     signal deviceSelected(Device device)
@@ -203,13 +204,18 @@ Item {
 
                             //--------------------------------------------------------------------------
 
-                            SettingsRadioButton {
+                            GNSSRadioButton {
                                 id: tcpRadioButton
 
                                 Layout.row: 0
                                 Layout.column: 0
                                 Layout.columnSpan: 3
                                 Layout.leftMargin: sideMargin
+
+                                foregroundColor: devicePage.foregroundColor
+                                secondaryForegroundColor: devicePage.secondaryForegroundColor
+                                backgroundColor: devicePage.backgroundColor
+                                secondaryBackgroundColor: devicePage.secondaryBackgroundColor
 
                                 text: "TCP/UDP Connection"
                                 checked: !showDevices
@@ -294,13 +300,18 @@ Item {
 
                             //--------------------------------------------------------------------------
 
-                            SettingsRadioButton {
+                            GNSSRadioButton {
                                 id: deviceRadioButton
 
                                 Layout.row: 3
                                 Layout.column: 0
                                 Layout.columnSpan: 3
                                 Layout.leftMargin: sideMargin
+
+                                foregroundColor: devicePage.foregroundColor
+                                secondaryForegroundColor: devicePage.secondaryForegroundColor
+                                backgroundColor: devicePage.backgroundColor
+                                secondaryBackgroundColor: devicePage.secondaryBackgroundColor
 
                                 text: "External device"
                                 checked: showDevices
@@ -324,7 +335,7 @@ Item {
 
                             //--------------------------------------------------------------------------
 
-                            SettingsSwitch {
+                            GNSSSwitch {
                                 id: discoverySwitch
 
                                 enabled: showDevices && (bluetoothCheckBox.checked || usbCheckBox.checked)
@@ -334,6 +345,11 @@ Item {
                                 Layout.column: 0
                                 Layout.fillWidth: true
                                 Layout.leftMargin: sideMargin
+
+                                foregroundColor: devicePage.foregroundColor
+                                secondaryForegroundColor: devicePage.secondaryForegroundColor
+                                backgroundColor: devicePage.backgroundColor
+                                secondaryBackgroundColor: devicePage.secondaryBackgroundColor
 
                                 text: "Discovery %1".arg(checked ? "on" : "off")
 
@@ -357,7 +373,7 @@ Item {
                                 }
                             }
 
-                            SettingsCheckBox {
+                            GNSSCheckBox {
                                 id: bluetoothCheckBox
 
                                 enabled: showDevices && !discoverySwitch.checked
@@ -365,6 +381,11 @@ Item {
 
                                 Layout.row: 4
                                 Layout.column: 1
+
+                                foregroundColor: devicePage.foregroundColor
+                                secondaryForegroundColor: devicePage.secondaryForegroundColor
+                                backgroundColor: devicePage.backgroundColor
+                                secondaryBackgroundColor: devicePage.secondaryBackgroundColor
 
                                 text: "Bluetooth"
 
@@ -376,7 +397,7 @@ Item {
                                 }
                             }
 
-                            SettingsCheckBox {
+                            GNSSCheckBox {
                                 id: usbCheckBox
 
                                 enabled: showDevices && !discoverySwitch.checked
@@ -387,6 +408,11 @@ Item {
                                 Layout.rightMargin: sideMargin
 
                                 text: "USB/COM"
+
+                                foregroundColor: devicePage.foregroundColor
+                                secondaryForegroundColor: devicePage.secondaryForegroundColor
+                                backgroundColor: devicePage.backgroundColor
+                                secondaryBackgroundColor: devicePage.secondaryBackgroundColor
 
                                 checked: controller.discoverSerialPort ? true : false
                                 onCheckedChanged: {
@@ -454,7 +480,7 @@ Item {
                                 ColorOverlay {
                                     anchors.fill: discoveryIndicator
                                     source: discoveryIndicator
-                                    color: secondaryForegroundColor
+                                    color: connectedColor
                                 }
                             }
                         }
@@ -532,14 +558,14 @@ Item {
                         anchors.left: parent.left
                         anchors.leftMargin: 10 * scaleFactor
 
-                        source: imageLocation + "deviceType-%1.png".arg(deviceType)
+                        source: "./images/deviceType-%1.png".arg(deviceType)
                         fillMode: Image.PreserveAspectFit
                     }
 
                     ColorOverlay {
                         anchors.fill: leftImage
                         source: leftImage
-                        color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? secondaryForegroundColor : foregroundColor
+                        color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? connectedColor : foregroundColor
                     }
 
                     Text {
@@ -547,7 +573,7 @@ Item {
                         Layout.fillHeight: true
 
                         text: currentDevice && (currentDevice.name === name) ? isConnecting ? name + qsTr(" (Connecting...)") : isConnected ? name + qsTr(" (Connected)") : name : name
-                        color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? secondaryForegroundColor : foregroundColor
+                        color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? connectedColor : foregroundColor
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -562,14 +588,14 @@ Item {
                         anchors.right: parent.right
                         anchors.rightMargin: 10 * scaleFactor
 
-                        source: imageLocation + "right.png"
+                        source: "./images/right.png"
                         fillMode: Image.PreserveAspectFit
                     }
 
                     ColorOverlay {
                         anchors.fill: rightImage
                         source: rightImage
-                        color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? secondaryForegroundColor : foregroundColor
+                        color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? connectedColor : foregroundColor
                     }
                 }
 
@@ -613,7 +639,7 @@ Item {
     ColorOverlay {
         anchors.fill: connectingIndicator
         source: connectingIndicator
-        color: secondaryForegroundColor
+        color: connectedColor
     }
 
     //--------------------------------------------------------------------------
