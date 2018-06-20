@@ -31,22 +31,23 @@ Item {
     property PositioningSources sources
     property PositioningSourcesController controller
 
-    property string foregroundColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-    property string secondaryForegroundColor: !nightMode ? "#595959" : nightModeSettings.foreground
-    property string backgroundColor: !nightMode ? dayModeSettings.background : nightModeSettings.background
-    property string secondaryBackgroundColor: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
-    property string connectedColor: buttonTextColor
+    property color foregroundColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+    property color secondaryForegroundColor: !nightMode ? "#595959" : nightModeSettings.foreground
+    property color backgroundColor: !nightMode ? dayModeSettings.background : nightModeSettings.background
+    property color secondaryBackgroundColor: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
+    property color connectedColor: buttonTextColor
 
-    property string imageLocation: "./images/"
     property int sideMargin: 15 * scaleFactor
 
-    property string hostname: hostnameTF.text
-    property string port: portTF.text
+    // Internal properties -----------------------------------------------------
 
     readonly property DeviceDiscoveryAgent discoveryAgent: sources.discoveryAgent
     readonly property Device currentDevice: sources.currentDevice
     readonly property bool isConnecting: controller.isConnecting
     readonly property bool isConnected: controller.isConnected
+
+    readonly property string hostname: hostnameTF.text
+    readonly property string port: portTF.text
 
     readonly property double scaleFactor: AppFramework.displayScaleFactor
     readonly property bool bluetoothOnly: Qt.platform.os === "ios" || Qt.platform.os === "android"
@@ -58,7 +59,7 @@ Item {
     signal deviceSelected(Device device)
     signal disconnect()
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     StackView.onActivating: {
         showDevices = !controller.useTCPConnection;
@@ -81,7 +82,7 @@ Item {
         initialized = false;
     }
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     onIsConnectedChanged: {
         if (initialized && isConnected) {
@@ -89,7 +90,7 @@ Item {
         }
     }
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     onNetworkHostSelected: {
         app.settings.setValue("hostname", hostname);
@@ -98,7 +99,7 @@ Item {
         sources.networkHostSelected(hostname, port);
     }
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     onDeviceSelected: {
         app.settings.setValue("device", device.name);
@@ -106,13 +107,13 @@ Item {
         sources.deviceSelected(device);
     }
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     onDisconnect: {
         sources.disconnect();
     }
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     ButtonGroup {
         id: buttonGroup
@@ -120,7 +121,7 @@ Item {
         buttons: [tcpRadioButton.radioButton, deviceRadioButton.radioButton]
     }
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     Rectangle {
         anchors.fill: parent
@@ -136,7 +137,7 @@ Item {
                 text: qsTr("Search external receiver")
             }
 
-            //--------------------------------------------------------------------------
+            // -------------------------------------------------------------------------
 
             Flickable {
                 Layout.fillWidth: true
@@ -152,7 +153,7 @@ Item {
                 ColumnLayout {
                     anchors.fill: parent
 
-                    //--------------------------------------------------------------------------
+                    // -------------------------------------------------------------------------
 
                     Rectangle {
                         id: connectionTitleRect
@@ -181,7 +182,7 @@ Item {
                         }
                     }
 
-                    //--------------------------------------------------------------------------
+                    // -------------------------------------------------------------------------
 
                     Rectangle {
                         id: connectionTypeGridRect
@@ -202,7 +203,7 @@ Item {
                             anchors.left: parent.left
                             anchors.right: parent.right
 
-                            //--------------------------------------------------------------------------
+                            // -------------------------------------------------------------------------
 
                             GNSSRadioButton {
                                 id: tcpRadioButton
@@ -227,7 +228,7 @@ Item {
                                 }
                             }
 
-                            //--------------------------------------------------------------------------
+                            // -------------------------------------------------------------------------
 
                             Label {
                                 enabled: !showDevices
@@ -255,7 +256,7 @@ Item {
                                 placeholderText: "Hostname"
                             }
 
-                            //--------------------------------------------------------------------------
+                            // -------------------------------------------------------------------------
 
                             Label {
                                 enabled: !showDevices
@@ -298,7 +299,7 @@ Item {
                                 onClicked: networkHostSelected(hostname, port)
                             }
 
-                            //--------------------------------------------------------------------------
+                            // -------------------------------------------------------------------------
 
                             GNSSRadioButton {
                                 id: deviceRadioButton
@@ -333,7 +334,7 @@ Item {
                                 }
                             }
 
-                            //--------------------------------------------------------------------------
+                            // -------------------------------------------------------------------------
 
                             GNSSSwitch {
                                 id: discoverySwitch
@@ -407,12 +408,12 @@ Item {
                                 Layout.column: 2
                                 Layout.rightMargin: sideMargin
 
-                                text: "USB/COM"
-
                                 foregroundColor: devicePage.foregroundColor
                                 secondaryForegroundColor: devicePage.secondaryForegroundColor
                                 backgroundColor: devicePage.backgroundColor
                                 secondaryBackgroundColor: devicePage.secondaryBackgroundColor
+
+                                text: "USB/COM"
 
                                 checked: controller.discoverSerialPort ? true : false
                                 onCheckedChanged: {
@@ -424,7 +425,7 @@ Item {
                         }
                     }
 
-                    //--------------------------------------------------------------------------
+                    // -------------------------------------------------------------------------
 
                     Rectangle {
                         id: deviceTitleRowRect
@@ -486,7 +487,7 @@ Item {
                         }
                     }
 
-                    //--------------------------------------------------------------------------
+                    // -------------------------------------------------------------------------
 
                     Rectangle {
                         id: deviceListRect
@@ -521,7 +522,7 @@ Item {
         }
     }
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     Component {
         id: deviceDelegate
@@ -623,7 +624,7 @@ Item {
         }
     }
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     BusyIndicator {
         id: connectingIndicator
@@ -642,5 +643,5 @@ Item {
         color: connectedColor
     }
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 }
