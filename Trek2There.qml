@@ -231,7 +231,7 @@ App {
     // -------------------------------------------------------------------------
 
     onRequestedDestinationChanged: {
-        if (initialized) {
+        if (initialized && requestedDestination) {
             app.settings.setValue("lastLatitude", requestedDestination.latitude);
             app.settings.setValue("lastLongitude", requestedDestination.longitude);
         }
