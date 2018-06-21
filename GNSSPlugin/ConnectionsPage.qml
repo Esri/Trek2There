@@ -51,6 +51,8 @@ Item {
     readonly property double scaleFactor: AppFramework.displayScaleFactor
     readonly property bool bluetoothOnly: Qt.platform.os === "ios" || Qt.platform.os === "android"
 
+    property bool showInternal
+    property bool showNetwork
     property bool showDevices
     property bool initialized
 
@@ -61,10 +63,12 @@ Item {
     // -------------------------------------------------------------------------
 
     Component.onCompleted: {
-        showDevices = !controller.useTCPConnection;
+        showInternal = controller.useInternalGPS;
+        showNetwork = controller.useTCPConnection;
+        showDevices = controller.useExternalGPS;
         initialized = true;
 
-        if (showDevices && (discoveryAgent.running || !discoveryAgent.devices || discoveryAgent.devices.count == 0)) {
+        if (!isConnecting && !isConnected && showDevices  && (discoveryAgent.running || !discoveryAgent.devices || discoveryAgent.devices.count == 0)) {
             discoverySwitch.checked = true;
         } else {
             discoverySwitch.checked = false;
@@ -105,7 +109,7 @@ Item {
     ButtonGroup {
         id: buttonGroup
 
-        buttons: [tcpRadioButton.radioButton, deviceRadioButton.radioButton]
+        buttons: [internalRadioButton.radioButton, tcpRadioButton.radioButton, deviceRadioButton.radioButton]
     }
 
     // -------------------------------------------------------------------------
@@ -180,7 +184,7 @@ Item {
                             id: connectionTypeGrid
 
                             columns: 3
-                            rows: 5
+                            rows: 6
 
                             anchors.left: parent.left
                             anchors.right: parent.right
@@ -189,7 +193,7 @@ Item {
                             // -------------------------------------------------------------------------
 
                             GNSSRadioButton {
-                                id: tcpRadioButton
+                                id: internalRadioButton
 
                                 Layout.row: 0
                                 Layout.column: 0
@@ -202,12 +206,48 @@ Item {
                                 backgroundColor: devicePage.backgroundColor
                                 secondaryBackgroundColor: devicePage.secondaryBackgroundColor
 
-                                text: "TCP/UDP connection"
-                                checked: !showDevices
+                                text: "Built-in location sensor"
+                                checked: showInternal ? true : false
 
                                 onCheckedChanged: {
-                                    if (initialized && checked) {
-                                        controller.connectionType = sources.eConnectionType.network;
+                                    if (initialized) {
+                                        disconnect();
+                                        showInternal = checked ? true : false;
+                                        if (checked) {
+                                            controller.connectionType = sources.eConnectionType.internal;
+                                            discoverySwitch.checked = false;
+                                        }
+                                    }
+                                }
+                            }
+
+                            // -------------------------------------------------------------------------
+
+                            GNSSRadioButton {
+                                id: tcpRadioButton
+
+                                Layout.row: 1
+                                Layout.column: 0
+                                Layout.columnSpan: 3
+                                Layout.leftMargin: sideMargin
+                                Accessible.role: Accessible.RadioButton
+
+                                foregroundColor: devicePage.foregroundColor
+                                secondaryForegroundColor: devicePage.secondaryForegroundColor
+                                backgroundColor: devicePage.backgroundColor
+                                secondaryBackgroundColor: devicePage.secondaryBackgroundColor
+
+                                text: "TCP/UDP connection"
+                                checked: showNetwork ? true : false
+
+                                onCheckedChanged: {
+                                    if (initialized) {
+                                        disconnect();
+                                        showNetwork = checked ? true : false;
+                                        if (checked) {
+                                            controller.connectionType = sources.eConnectionType.network;
+                                            discoverySwitch.checked = false;
+                                        }
                                     }
                                 }
                             }
@@ -215,10 +255,10 @@ Item {
                             // -------------------------------------------------------------------------
 
                             Label {
-                                enabled: !showDevices
-                                visible: !showDevices
+                                enabled: showNetwork
+                                visible: showNetwork
 
-                                Layout.row: 1
+                                Layout.row: 2
                                 Layout.column: 0
                                 Layout.leftMargin: sideMargin
 
@@ -229,10 +269,10 @@ Item {
                             TextField {
                                 id: hostnameTF
 
-                                enabled: !showDevices
-                                visible: !showDevices
+                                enabled: showNetwork
+                                visible: showNetwork
 
-                                Layout.row: 1
+                                Layout.row: 2
                                 Layout.column: 1
                                 Layout.fillWidth: true
 
@@ -243,10 +283,10 @@ Item {
                             // -------------------------------------------------------------------------
 
                             Label {
-                                enabled: !showDevices
-                                visible: !showDevices
+                                enabled: showNetwork
+                                visible: showNetwork
 
-                                Layout.row: 2
+                                Layout.row: 3
                                 Layout.column: 0
                                 Layout.leftMargin: sideMargin
 
@@ -257,10 +297,10 @@ Item {
                             TextField {
                                 id: portTF
 
-                                enabled: !showDevices
-                                visible: !showDevices
+                                enabled: showNetwork
+                                visible: showNetwork
 
-                                Layout.row: 2
+                                Layout.row: 3
                                 Layout.column: 1
                                 Layout.fillWidth: true
 
@@ -271,10 +311,10 @@ Item {
                             Button {
                                 id: connectBtn
 
-                                enabled: !showDevices && hostname && port
-                                visible: !showDevices
+                                enabled: showNetwork && hostname && port
+                                visible: showNetwork
 
-                                Layout.row: 2
+                                Layout.row: 3
                                 Layout.column: 2
                                 Layout.rightMargin: sideMargin
                                 Accessible.role: Accessible.Button
@@ -289,7 +329,7 @@ Item {
                             GNSSRadioButton {
                                 id: deviceRadioButton
 
-                                Layout.row: 3
+                                Layout.row: 4
                                 Layout.column: 0
                                 Layout.columnSpan: 3
                                 Layout.leftMargin: sideMargin
@@ -301,20 +341,22 @@ Item {
                                 secondaryBackgroundColor: devicePage.secondaryBackgroundColor
 
                                 text: "External GNSS receiver"
-                                checked: showDevices
+                                checked: showDevices ? true : false
 
                                 onCheckedChanged: {
                                     if (initialized) {
                                         disconnect();
-                                        showDevices = checked;
-                                        discoverySwitch.checked = discoveryAgent.devices.count == 0;
+                                        showDevices = checked ? true : false;
 
                                         if (checked) {
                                             controller.connectionType = sources.eConnectionType.external;
                                             if (currentDevice && currentDevice.name === controller.storedDevice) {
                                                 sources.deviceSelected(currentDevice);
-                                                discoverySwitch.checked = false;
+                                            } else {
+                                                discoverySwitch.checked = discoveryAgent.devices.count == 0;
                                             }
+                                        } else {
+                                            discoverySwitch.checked = false;
                                         }
                                     }
                                 }
@@ -328,7 +370,7 @@ Item {
                                 enabled: showDevices && (bluetoothCheckBox.checked || usbCheckBox.checked)
                                 visible: showDevices
 
-                                Layout.row: 4
+                                Layout.row: 5
                                 Layout.column: 0
                                 Layout.fillWidth: true
                                 Layout.leftMargin: sideMargin
@@ -367,7 +409,7 @@ Item {
                                 enabled: showDevices && !discoverySwitch.checked
                                 visible: showDevices && !bluetoothOnly
 
-                                Layout.row: 4
+                                Layout.row: 5
                                 Layout.column: 1
                                 Accessible.role: Accessible.CheckBox
 
@@ -392,7 +434,7 @@ Item {
                                 enabled: showDevices && !discoverySwitch.checked
                                 visible: showDevices && !bluetoothOnly
 
-                                Layout.row: 4
+                                Layout.row: 5
                                 Layout.column: 2
                                 Layout.rightMargin: sideMargin
                                 Accessible.role: Accessible.CheckBox
