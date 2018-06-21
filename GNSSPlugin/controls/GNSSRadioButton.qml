@@ -12,7 +12,9 @@ Rectangle {
     property color backgroundColor: !nightMode ? dayModeSettings.background : nightModeSettings.background
     property color secondaryBackgroundColor: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
 
-    Layout.preferredHeight: sf(50)
+    readonly property double scaleFactor: AppFramework.displayScaleFactor
+
+    Layout.preferredHeight: 50 * scaleFactor
     Layout.preferredWidth: control.width
     Layout.fillWidth: true
     color: backgroundColor
@@ -25,12 +27,12 @@ Rectangle {
         Layout.fillWidth: true
 
         indicator: Rectangle {
-            implicitWidth: sf(20)
-            implicitHeight: sf(20)
+            implicitWidth: 20 * scaleFactor
+            implicitHeight: 20 * scaleFactor
             x: parent.x
             y: parent.height / 2 - height / 2
-            radius: sf(10)
-            border.width: sf(2)
+            radius: 10 * scaleFactor
+            border.width: 2 * scaleFactor
             border.color: secondaryForegroundColor
             color: secondaryBackgroundColor
             opacity: enabled ? 1.0 : 0.3
@@ -38,8 +40,8 @@ Rectangle {
             Rectangle {
                 visible: parent.parent.checked
                 anchors.fill: parent
-                anchors.margins: sf(4)
-                radius: sf(9)
+                anchors.margins: 4 * scaleFactor
+                radius: 9 * scaleFactor
                 color: secondaryForegroundColor
             }
         }

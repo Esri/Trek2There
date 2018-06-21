@@ -12,7 +12,9 @@ Rectangle {
     property color backgroundColor: !nightMode ? dayModeSettings.background : nightModeSettings.background
     property color secondaryBackgroundColor: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
 
-    Layout.preferredHeight: sf(50)
+    readonly property double scaleFactor: AppFramework.displayScaleFactor
+
+    Layout.preferredHeight: 50 * scaleFactor
     Layout.preferredWidth: control.width
     Layout.fillWidth: true
     color: backgroundColor
@@ -25,18 +27,18 @@ Rectangle {
         Layout.fillWidth: true
 
         indicator: Rectangle {
-            implicitWidth: sf(20)
-            implicitHeight: sf(20)
+            implicitWidth: 20 * scaleFactor
+            implicitHeight: 20 * scaleFactor
             x: parent.x
             y: parent.height / 2 - height / 2
-            border.width: sf(2)
+            border.width: 2 * scaleFactor
             border.color: secondaryForegroundColor
             color: secondaryBackgroundColor
             opacity: enabled ? 1.0 : 0.3
 
             Image {
                 anchors.centerIn: parent
-                width: parent.width - sf(8)
+                width: parent.width - 8 * scaleFactor
                 visible: control.checked
                 source: "../images/checkmark.png"
                 fillMode: Image.PreserveAspectFit
