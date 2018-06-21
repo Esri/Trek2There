@@ -23,7 +23,6 @@ import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
 
 import "./controls"
-import "../controls"
 
 Item {
     id: devicePage
@@ -31,11 +30,11 @@ Item {
     property PositioningSources sources
     property PositioningSourcesController controller
 
-    property color foregroundColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-    property color secondaryForegroundColor: !nightMode ? "#595959" : nightModeSettings.foreground
-    property color backgroundColor: !nightMode ? dayModeSettings.background : nightModeSettings.background
-    property color secondaryBackgroundColor: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
-    property color connectedColor: buttonTextColor
+    property color foregroundColor: "black"
+    property color secondaryForegroundColor: "green"
+    property color backgroundColor: "#FAFAFA"
+    property color secondaryBackgroundColor: "#F0F0F0"
+    property color connectedColor: "green"
 
     property int sideMargin: 15 * scaleFactor
 
@@ -61,7 +60,7 @@ Item {
 
     // -------------------------------------------------------------------------
 
-    StackView.onActivating: {
+    Component.onCompleted: {
         showDevices = !controller.useTCPConnection;
         initialized = true;
 
@@ -75,18 +74,6 @@ Item {
             controller.connectionType = sources.eConnectionType.network;
         } else {
             controller.connectionType = sources.eConnectionType.external;
-        }
-    }
-
-    StackView.onDeactivating: {
-        initialized = false;
-    }
-
-    // -------------------------------------------------------------------------
-
-    onIsConnectedChanged: {
-        if (initialized && isConnected) {
-            mainStackView.pop();
         }
     }
 
@@ -132,12 +119,6 @@ Item {
             anchors.fill: parent
             spacing: 0
             Accessible.role: Accessible.Pane
-
-            SettingsHeader {
-                text: qsTr("Search external receiver")
-            }
-
-            // -------------------------------------------------------------------------
 
             Flickable {
                 Layout.fillWidth: true

@@ -18,8 +18,6 @@ import QtQuick 2.8
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
 
-import "../GNSSPlugin"
-
 Item {
 
     id: mainView
@@ -84,9 +82,6 @@ Item {
         DevicesView {
             Layout.fillHeight: true
             Layout.fillWidth: true
-
-            sources: app.sources
-            controller: app.controller
         }
     }
 
