@@ -133,6 +133,7 @@ Item {
 
                 ColumnLayout {
                     anchors.fill: parent
+                    Accessible.role: Accessible.Pane
 
                     // -------------------------------------------------------------------------
 
@@ -183,6 +184,7 @@ Item {
 
                             anchors.left: parent.left
                             anchors.right: parent.right
+                            Accessible.role: Accessible.Pane
 
                             // -------------------------------------------------------------------------
 
@@ -193,6 +195,7 @@ Item {
                                 Layout.column: 0
                                 Layout.columnSpan: 3
                                 Layout.leftMargin: sideMargin
+                                Accessible.role: Accessible.RadioButton
 
                                 foregroundColor: devicePage.foregroundColor
                                 secondaryForegroundColor: devicePage.secondaryForegroundColor
@@ -274,6 +277,7 @@ Item {
                                 Layout.row: 2
                                 Layout.column: 2
                                 Layout.rightMargin: sideMargin
+                                Accessible.role: Accessible.Button
 
                                 text: qsTr("Connect")
 
@@ -289,6 +293,7 @@ Item {
                                 Layout.column: 0
                                 Layout.columnSpan: 3
                                 Layout.leftMargin: sideMargin
+                                Accessible.role: Accessible.RadioButton
 
                                 foregroundColor: devicePage.foregroundColor
                                 secondaryForegroundColor: devicePage.secondaryForegroundColor
@@ -327,6 +332,7 @@ Item {
                                 Layout.column: 0
                                 Layout.fillWidth: true
                                 Layout.leftMargin: sideMargin
+                                Accessible.role: Accessible.CheckBox
 
                                 foregroundColor: devicePage.foregroundColor
                                 secondaryForegroundColor: devicePage.secondaryForegroundColor
@@ -363,6 +369,7 @@ Item {
 
                                 Layout.row: 4
                                 Layout.column: 1
+                                Accessible.role: Accessible.CheckBox
 
                                 foregroundColor: devicePage.foregroundColor
                                 secondaryForegroundColor: devicePage.secondaryForegroundColor
@@ -388,6 +395,7 @@ Item {
                                 Layout.row: 4
                                 Layout.column: 2
                                 Layout.rightMargin: sideMargin
+                                Accessible.role: Accessible.CheckBox
 
                                 foregroundColor: devicePage.foregroundColor
                                 secondaryForegroundColor: devicePage.secondaryForegroundColor
@@ -423,6 +431,7 @@ Item {
 
                             anchors.fill: parent
                             spacing: 0
+                            Accessible.role: Accessible.Pane
 
                             Text {
                                 id: deviceTitle
@@ -450,11 +459,13 @@ Item {
                                 anchors.right: parent.right
                                 anchors.rightMargin: sideMargin
                                 color: secondaryBackgroundColor
+                                Accessible.role: Accessible.Pane
 
                                 BusyIndicator {
                                     id: discoveryIndicator
 
                                     anchors.fill: parent
+                                    Accessible.role: Accessible.Pane
 
                                     running: discoveryAgent.running
                                 }
@@ -488,6 +499,7 @@ Item {
 
                             Layout.fillHeight: true
                             Layout.fillWidth: true
+                            Accessible.role: Accessible.Pane
                             spacing: 0
 
                             Repeater {
@@ -513,6 +525,7 @@ Item {
 
             Layout.preferredHeight: deviceLayout.height
             Layout.preferredWidth: deviceListRect.width
+            Accessible.role: Accessible.Pane
 
             color: backgroundColor
             opacity: parent.enabled ? 1.0 : 0.7
@@ -522,6 +535,7 @@ Item {
 
                 height: rowLayout.height + separator.height
                 width: delegateRect.width
+                Accessible.role: Accessible.Pane
                 spacing: 0
 
                 RowLayout {
@@ -529,6 +543,7 @@ Item {
 
                     height: 45 * scaleFactor
                     Layout.fillWidth: true
+                    Accessible.role: Accessible.Pane
 
                     Image {
                         id: leftImage
@@ -539,6 +554,7 @@ Item {
                         Layout.preferredHeight: leftImage.height
                         anchors.left: parent.left
                         anchors.leftMargin: 10 * scaleFactor
+                        Accessible.ignored: true
 
                         source: "./images/deviceType-%1.png".arg(deviceType)
                         fillMode: Image.PreserveAspectFit
@@ -551,8 +567,11 @@ Item {
                     }
 
                     Text {
+                        id: deviceName
+
                         Layout.fillWidth: true
                         Layout.fillHeight: true
+                        Accessible.ignored: true
 
                         text: currentDevice && (currentDevice.name === name) ? isConnecting ? name + qsTr(" (Connecting...)") : isConnected ? name + qsTr(" (Connected)") : name : name
                         color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? connectedColor : foregroundColor
@@ -569,6 +588,7 @@ Item {
                         Layout.preferredHeight: rightImage.height
                         anchors.right: parent.right
                         anchors.rightMargin: 10 * scaleFactor
+                        Accessible.ignored: true
 
                         source: "./images/right.png"
                         fillMode: Image.PreserveAspectFit
@@ -579,6 +599,9 @@ Item {
                         source: rightImage
                         color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? connectedColor : foregroundColor
                     }
+
+                    Accessible.role: Accessible.StaticText
+                    Accessible.name: deviceName.text
                 }
 
                 Rectangle {
@@ -586,6 +609,7 @@ Item {
 
                     height: 1 * scaleFactor
                     Layout.fillWidth: true
+                    Accessible.ignored: true
                     color: secondaryBackgroundColor
                 }
             }
