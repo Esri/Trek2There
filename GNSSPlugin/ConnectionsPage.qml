@@ -112,7 +112,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: backgroundColor
+        color: showDevices ? backgroundColor : secondaryBackgroundColor
         Accessible.role: Accessible.Pane
 
         ColumnLayout {
@@ -154,13 +154,13 @@ Item {
                             anchors.leftMargin: sideMargin
                             anchors.bottomMargin: 5 * scaleFactor
 
-                            text: qsTr("CONNECTION SETTINGS")
+                            text: qsTr("POSITION SOURCE")
                             verticalAlignment: Text.AlignBottom
                             color: foregroundColor
 
                             Accessible.role: Accessible.Heading
                             Accessible.name: text
-                            Accessible.description: qsTr("Choose the connection type")
+                            Accessible.description: qsTr("Choose the position source type")
                         }
                     }
 
@@ -202,7 +202,7 @@ Item {
                                 backgroundColor: devicePage.backgroundColor
                                 secondaryBackgroundColor: devicePage.secondaryBackgroundColor
 
-                                text: "TCP/UDP Connection"
+                                text: "TCP/UDP connection"
                                 checked: !showDevices
 
                                 onCheckedChanged: {
@@ -300,7 +300,7 @@ Item {
                                 backgroundColor: devicePage.backgroundColor
                                 secondaryBackgroundColor: devicePage.secondaryBackgroundColor
 
-                                text: "External device"
+                                text: "External GNSS receiver"
                                 checked: showDevices
 
                                 onCheckedChanged: {
@@ -419,6 +419,9 @@ Item {
                     Rectangle {
                         id: deviceTitleRowRect
 
+                        enabled: showDevices
+                        visible: showDevices
+
                         anchors.top: connectionTypeGridRect.bottom
                         Layout.fillWidth: true;
                         Layout.preferredHeight: 50 * scaleFactor
@@ -447,7 +450,7 @@ Item {
 
                                 Accessible.role: Accessible.Heading
                                 Accessible.name: text
-                                Accessible.description: qsTr("Choose an external GPS device")
+                                Accessible.description: qsTr("Choose an external GNSS receiver")
                             }
 
                             Rectangle {
