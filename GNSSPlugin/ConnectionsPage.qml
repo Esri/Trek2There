@@ -546,7 +546,9 @@ Item {
 
                     height: 45 * scaleFactor
                     Layout.fillWidth: true
-                    Accessible.role: Accessible.Pane
+
+                    Accessible.role: Accessible.StaticText
+                    Accessible.name: deviceName.text
 
                     Image {
                         id: leftImage
@@ -602,9 +604,6 @@ Item {
                         source: rightImage
                         color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? connectedColor : foregroundColor
                     }
-
-                    Accessible.role: Accessible.StaticText
-                    Accessible.name: deviceName.text
                 }
 
                 Rectangle {
