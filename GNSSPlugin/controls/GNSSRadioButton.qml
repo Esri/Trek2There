@@ -9,10 +9,10 @@ Rectangle {
     property alias checked: control.checked
     property alias text: textItem.text
 
-    property color foregroundColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-    property color secondaryForegroundColor: !nightMode ? "#595959" : nightModeSettings.foreground
-    property color backgroundColor: !nightMode ? dayModeSettings.background : nightModeSettings.background
-    property color secondaryBackgroundColor: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
+    property color foregroundColor: "black"
+    property color secondaryForegroundColor: "green"
+    property color backgroundColor: "#FAFAFA"
+    property color secondaryBackgroundColor: "#F0F0F0"
 
     readonly property double scaleFactor: AppFramework.displayScaleFactor
 
@@ -35,15 +35,15 @@ Rectangle {
             y: parent.height / 2 - height / 2
             radius: 10 * scaleFactor
             border.width: 2 * scaleFactor
-            border.color: secondaryForegroundColor
-            color: secondaryBackgroundColor
+            border.color: control.checked ? secondaryForegroundColor : foregroundColor
+            color: backgroundColor
             opacity: enabled ? 1.0 : 0.3
 
             Rectangle {
-                visible: parent.parent.checked
+                visible: control.checked
                 anchors.fill: parent
-                anchors.margins: 4 * scaleFactor
-                radius: 9 * scaleFactor
+                anchors.margins: 5 * scaleFactor
+                radius: 5 * scaleFactor
                 color: secondaryForegroundColor
             }
         }

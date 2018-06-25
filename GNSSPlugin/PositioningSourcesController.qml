@@ -168,7 +168,6 @@ Item {
             id: errorMessage
 
             width: errorDialog.width
-            color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
             wrapMode: Text.WordWrap
         }
     }

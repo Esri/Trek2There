@@ -1,6 +1,7 @@
 import QtQuick 2.8
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
+import QtGraphicalEffects 1.0
 
 import ArcGIS.AppFramework 1.0
 
@@ -9,10 +10,10 @@ Rectangle {
     property alias checked: control.checked
     property alias text: textItem.text
 
-    property color foregroundColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-    property color secondaryForegroundColor: !nightMode ? "#595959" : nightModeSettings.foreground
-    property color backgroundColor: !nightMode ? dayModeSettings.background : nightModeSettings.background
-    property color secondaryBackgroundColor: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
+    property color foregroundColor: "black"
+    property color secondaryForegroundColor: "green"
+    property color backgroundColor: "#FAFAFA"
+    property color secondaryBackgroundColor: "#F0F0F0"
 
     readonly property double scaleFactor: AppFramework.displayScaleFactor
 
@@ -34,16 +35,25 @@ Rectangle {
             x: parent.x
             y: parent.height / 2 - height / 2
             border.width: 2 * scaleFactor
-            border.color: secondaryForegroundColor
-            color: secondaryBackgroundColor
+            border.color: control.checked ? secondaryForegroundColor : foregroundColor
+            color: backgroundColor
             opacity: enabled ? 1.0 : 0.3
 
             Image {
+                id: image
+
                 anchors.centerIn: parent
                 width: parent.width - 8 * scaleFactor
                 visible: control.checked
                 source: "../images/checkmark.png"
                 fillMode: Image.PreserveAspectFit
+            }
+
+            ColorOverlay {
+                visible: image.visible
+                anchors.fill: image
+                source: image
+                color: secondaryForegroundColor
             }
         }
 
