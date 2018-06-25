@@ -102,8 +102,6 @@ App {
         fileFolder.makePath(localStoragePath);
         AppFramework.offlineStoragePath = fileFolder.path + "/ArcGIS/My Treks";
 
-        controller.connectionType = app.settings.value("connectionType", sources.eConnectionType.internal)
-
         if (validateCoordinates(lastLongitude, lastLatitude)) {
             console.log("Navigating to last destination at lat: %1, lon:%2".arg(lastLatitude).arg(lastLongitude));
             requestedDestination = QtPositioning.coordinate(lastLatitude, lastLongitude);
