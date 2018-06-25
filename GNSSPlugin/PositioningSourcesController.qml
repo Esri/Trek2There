@@ -29,6 +29,10 @@ Item {
     readonly property bool useExternalGPS: connectionType === sources.eConnectionType.external
     readonly property bool useTCPConnection: connectionType === sources.eConnectionType.network
 
+    readonly property string name: useInternalGPS ? positionSource.name :
+                                   useExternalGPS ? (currentDevice ? currentDevice.name : storedDevice > "" ? storedDevice : "Unknown") :
+                                                    (tcpSocket.remoteName && tcpSocket.remotePort ? tcpSocket.remoteName + ":" + tcpSocket.remotePort : (hostname > "" && port > "" ? hostname + ":" + port : "Unknown"))
+
     property bool initialized
 
     signal reconnect()
