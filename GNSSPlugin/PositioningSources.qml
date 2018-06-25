@@ -230,7 +230,7 @@ Item {
     //--------------------------------------------------------------------------
 
     onDisconnect: {
-        if (tcpSocket.valid && tcpSocket.state === AbstractSocket.StateConnected) {
+        if (tcpSocket.valid && tcpSocket.state !== AbstractSocket.StateUnConnected) {
             tcpSocket.disconnectFromHost();
         }
 
