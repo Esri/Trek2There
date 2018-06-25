@@ -133,20 +133,20 @@ App {
 
     // External position sources -----------------------------------------------
 
+    PositioningSourcesController {
+        id: controller
+
+        sources: sources
+    }
+
+    // -------------------------------------------------------------------------
+
     PositioningSources {
         id: sources
 
         storedDevice: controller.storedDevice
         discoverBluetooth: controller.discoverBluetooth
         discoverSerialPort: controller.discoverSerialPort
-    }
-
-    // -------------------------------------------------------------------------
-
-    PositioningSourcesController {
-        id: controller
-
-        sources: sources
     }
 
     // Settings ----------------------------------------------------------------

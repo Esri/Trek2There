@@ -2,6 +2,8 @@ import QtQuick 2.8
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
 
+import ArcGIS.AppFramework 1.0
+
 Rectangle {
     property alias checkBox: control
     property alias checked: control.checked
