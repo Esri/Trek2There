@@ -73,12 +73,6 @@ Item {
         } else {
             discoverySwitch.checked = false;
         }
-
-        if (tcpRadioButton.checked) {
-            controller.connectionType = sources.eConnectionType.network;
-        } else {
-            controller.connectionType = sources.eConnectionType.external;
-        }
     }
 
     // -------------------------------------------------------------------------
