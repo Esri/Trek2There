@@ -37,12 +37,6 @@ Item {
 
     signal reconnect()
 
-    // XXX to be removed
-    signal startTimer()
-    onStartTimer: {
-        discoveryAgentRepeatTimer.start();
-    }
-
     // -------------------------------------------------------------------------
 
     Component.onCompleted: {
@@ -63,6 +57,9 @@ Item {
             if (!isConnecting && !isConnected) {
                 sources.networkHostSelected(hostname, port);
             }
+            discoveryAgent.stop();
+        } else {
+            discoveryAgent.stop();
         }
     }
 

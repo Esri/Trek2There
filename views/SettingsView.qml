@@ -56,13 +56,34 @@ Item {
 
     property bool initialized
 
+    //--------------------------------------------------------------------------
+
+    StackView.onDeactivating: {
+        initialized = false;
+    }
+
     StackView.onActivating: {
         controller.reconnect();
         initialized = true;
     }
 
-    StackView.onDeactivating: {
-        initialized = false;
+    //--------------------------------------------------------------------------
+
+    // Try to reconnect if connection to external GPS is lost
+    onIsConnectedChanged: {
+        if (initialized) {
+            controller.reconnect();
+        }
+    }
+
+    Connections {
+        target: discoveryAgent
+
+        onRunningChanged: {
+            if (initialized && !discoveryAgent.running && !isConnecting && !isConnected) {
+                controller.reconnect();
+            }
+        }
     }
 
     Connections {

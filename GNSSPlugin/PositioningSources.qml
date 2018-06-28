@@ -132,7 +132,6 @@ Item {
 
         onDiscoverDevicesCompleted: {
             console.log("Device discovery completed");
-            stop();
         }
 
         function filter(device) {

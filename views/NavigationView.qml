@@ -87,7 +87,7 @@ Item {
         camera.stop();
     }
 
-    StackView.onDeactivated: {
+    StackView.onDeactivating: {
         sensors.stopCompass();
         sensors.stopTiltSensor();
         sensors.stopRotationSensor();
@@ -104,16 +104,13 @@ Item {
         if (useCompass || useHUD) {
             sensors.startRequiredAttitudeSensors(false, false, false, false, sensors.azimuthFilterType, sensors.attitudeFilterType);
         }
-    }
-
-    StackView.onActivated: {
-        controller.reconnect();
 
         if (requestedDestination !== null) {
             viewData.itemCoordinate = requestedDestination;
             startNavigation();
         }
 
+        controller.reconnect();
         initialized = true;
     }
 
@@ -131,7 +128,7 @@ Item {
 
         onRunningChanged: {
             if (initialized && !discoveryAgent.running && !isConnecting && !isConnected) {
-                controller.startTimer();
+                controller.reconnect();
             }
         }
     }
