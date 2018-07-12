@@ -10,7 +10,7 @@ Trek2There™ provides two simple pieces of continuously updated information: th
 
 ## How to use the app
 
-Download the app from the [Google Play](https://play.google.com/store/apps/details?id=com.esri.trek2there) or [iTunes](https://itunes.apple.com/au/app/trek2there/id1162308506) app store, or download the [Windows](http://links.esri.com/esrilabs/Trek2There-windows) installation file. You can enter a destination either by typing in the coorindates or by choosing a desintation from another app that can launch Trek2There. You can try this out with our simple web app https://esri.github.io/Trek2There/Trek2ThereWebLauncher.html. Launch this webpage on your device, select a location and choose to launch Trek2There.
+Download the app from the [Google Play](https://play.google.com/store/apps/details?id=com.esri.trek2there), [iTunes](https://itunes.apple.com/au/app/trek2there/id1162308506) or [Microsoft](https://www.microsoft.com/en-au/p/trek2there/9n9nlvh74l5k) app stores, or download the [Windows](http://links.esri.com/esrilabs/Trek2There-windows) installation file. You can enter a destination either by typing in the coorindates or by choosing a desintation from another app that can launch Trek2There. You can try this out with our simple web app https://esri.github.io/Trek2There/Trek2ThereWebLauncher.html. Launch this webpage on your device, select a location and choose to launch Trek2There.
 
 ## Requirements
 
