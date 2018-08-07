@@ -37,9 +37,10 @@
             "codeSignIdentity": ""
         },
         "publisherName": "",
+        "shortcutName": "",
         "uwp": {
-            "packageName": "",
-            "productID": ""
+            "packageName": "Esri.Trek2There",
+            "productID": "601bae65-c041-4fe5-99a9-1e1b6cc5cc2b"
         }
     },
     "devicesTypes": [
@@ -93,7 +94,7 @@
     "urlScheme": "arcgis-trek2there",
     "version": {
         "major": 3,
-        "micro": 36,
+        "micro": 37,
         "minor": 0
     }
 }
