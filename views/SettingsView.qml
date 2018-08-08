@@ -581,13 +581,9 @@ Item {
                                 Accessible.role: Accessible.Pane
 
                                 Text {
-                                    property string name: controller.useExternalGPS ?
-                                                              (currentDevice ? currentDevice.name : controller.storedDevice > "" ? controller.storedDevice : "Unknown") :
-                                                              (tcpSocket.remoteName && tcpSocket.remotePort ? tcpSocket.remoteName + ":" + tcpSocket.remotePort : (controller.hostname > "" && controller.port > "" ? controller.hostname + ":" + controller.port : "Unknown"))
-
                                     anchors.fill: parent
                                     color: isConnecting ? "green" : !isConnected && controller.storedDevice > "" && discoveryAgent.running ? "red" : buttonTextColor
-                                    text: isConnecting ? "Connecting to " + name : isConnected ? "Connected to " + name : controller.storedDevice > "" && discoveryAgent.running ? "Looking for " + controller.storedDevice : qsTr("Not connected")
+                                    text: isConnecting ? "Connecting to " + controller.currentName : isConnected ? "Connected to " + controller.currentName : controller.storedDevice > "" && discoveryAgent.running ? "Looking for " + controller.storedDevice : qsTr("Not connected")
                                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                     verticalAlignment: Text.AlignVCenter
                                     leftPadding: /*radioButton.indicator.width + 2*externalChecked.radioButton.spacing +*/ sideMargin

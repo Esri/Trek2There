@@ -29,9 +29,15 @@ Item {
     readonly property bool useExternalGPS: connectionType === sources.eConnectionType.external
     readonly property bool useTCPConnection: connectionType === sources.eConnectionType.network
 
-    readonly property string name: useInternalGPS ? positionSource.name :
-                                   useExternalGPS ? (currentDevice ? currentDevice.name : storedDevice > "" ? storedDevice : "Unknown") :
-                                                    (tcpSocket.remoteName && tcpSocket.remotePort ? tcpSocket.remoteName + ":" + tcpSocket.remotePort : (hostname > "" && port > "" ? hostname + ":" + port : "Unknown"))
+    readonly property string currentName:
+        !isConnecting && !isConnected ? positionSource.name :
+        useExternalGPS && currentDevice ? currentDevice.name :
+        useTCPConnection && tcpSocket.remoteName && tcpSocket.remotePort ? tcpSocket.remoteName + ":" + tcpSocket.remotePort :
+        "Unknown"
+
+    readonly property string storedName:
+        useExternalGPS && storedDevice > "" ? storedDevice :
+        useTCPConnection && hostname > "" && port > "" ? hostname + ":" + port : ""
 
     property bool initialized
 
