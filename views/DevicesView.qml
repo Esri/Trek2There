@@ -12,7 +12,7 @@ Item {
         Accessible.role: Accessible.Pane
 
         SettingsHeader {
-            text: qsTr("Search external receiver")
+            text: qsTr("Choose location service")
         }
 
         ConnectionsPage {

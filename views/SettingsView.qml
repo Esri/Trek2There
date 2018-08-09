@@ -51,6 +51,9 @@ Item {
     readonly property DeviceDiscoveryAgent discoveryAgent: sources.discoveryAgent
     readonly property Device currentDevice: sources.currentDevice
 
+    readonly property var connectionStateColor: isConnecting ? "green" : !isConnected && controller.storedDevice > "" && discoveryAgent.running ? "red" : buttonTextColor
+    readonly property var connectionStateText: isConnecting ? "Connecting to " + controller.currentName : isConnected ? "Connected to " + controller.currentName : controller.storedDevice > "" && discoveryAgent.running ? "Looking for " + controller.storedDevice : controller.currentName
+
     readonly property bool isConnecting: controller.isConnecting
     readonly property bool isConnected: controller.isConnected
 
@@ -464,161 +467,51 @@ Item {
 
                         //------------------------------------------------------
 
-                        ButtonGroup {
-                            id: gpsReceiverGroup
+                        Button {
+                            id: externalDeviceButton
 
-                            buttons: [internalChecked.radioButton, externalChecked.radioButton]
-                        }
-
-                        //------------------------------------------------------
-
-                        Rectangle {
                             Layout.preferredHeight: sf(50)
                             Layout.fillWidth: true
-                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
 
-                            SettingsRadioButton {
-                                id: internalChecked
-
+                            contentItem: RowLayout {
                                 anchors.fill: parent
                                 anchors.leftMargin: sideMargin
+                                anchors.rightMargin: sideMargin
 
-                                text: "Use built-in location sensor"
-                                checked: controller.useInternalGPS
-
-                                onCheckedChanged: {
-                                    if (initialized && checked) {
-                                        controller.connectionType = sources.eConnectionType.internal;
-                                        sources.disconnect();
-                                        discoveryAgent.stop();
-                                    }
-                                }
-                            }
-                        }
-
-                        //------------------------------------------------------
-
-                        RowLayout {
-                            spacing: 0
-
-                            Rectangle {
-                                Layout.preferredHeight: sf(50)
-                                Layout.fillWidth: true
-                                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-
-                                SettingsRadioButton {
-                                    id: externalChecked
-
-                                    anchors.fill: parent
-                                    anchors.leftMargin: sideMargin
-
-                                    text: "Use external receiver"
-                                    checked: !controller.useInternalGPS
-
-                                    onCheckedChanged: {
-                                        if (initialized && checked) {
-                                            if (lastConnectionType === sources.eConnectionType.external && controller.storedDevice > "") {
-                                                controller.connectionType = sources.eConnectionType.external;
-                                                if (currentDevice && currentDevice.name === controller.storedDevice) {
-                                                    sources.deviceSelected(currentDevice);
-                                                } else {
-                                                    discoveryAgent.start();
-                                                }
-                                            } else if (lastConnectionType === sources.eConnectionType.network && controller.hostname > "" && controller.port > "") {
-                                                controller.connectionType = sources.eConnectionType.network;
-                                                sources.networkHostSelected(controller.hostname, controller.port);
-                                            } else if (controller.useInternalGPS || !isConnecting && !isConnected) {
-                                                mainStackView.push(devicesView);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            Rectangle {
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: sf(30)
-                                anchors.bottom: parent.bottom
-                                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-
-                                BusyIndicator {
-                                    id: discoveryIndicator
-
-                                    anchors.fill: parent
-
-                                    running: isConnecting || discoveryAgent.running && !isConnected
-                                }
-
-                                ColorOverlay {
-                                    anchors.fill: discoveryIndicator
-                                    source: discoveryIndicator
-                                    color: buttonTextColor
-                                }
-                            }
-
-                            Rectangle {
-                                id: discoveryIndicatorRect
-
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: sideMargin
-                                anchors.bottom: parent.bottom
-                                anchors.right: parent.right
-                                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                            }
-                        }
-
-                        //------------------------------------------------------
-
-                        RowLayout {
-                            visible: externalChecked.checked
-
-                            spacing: 0
-
-                            Rectangle {
-                                Layout.preferredHeight: sf(50)
-                                Layout.fillWidth: true
-                                color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-                                Accessible.role: Accessible.Pane
+                                spacing: 0
 
                                 Text {
-                                    anchors.fill: parent
-                                    color: isConnecting ? "green" : !isConnected && controller.storedDevice > "" && discoveryAgent.running ? "red" : buttonTextColor
-                                    text: isConnecting ? "Connecting to " + controller.currentName : isConnected ? "Connected to " + controller.currentName : controller.storedDevice > "" && discoveryAgent.running ? "Looking for " + controller.storedDevice : qsTr("Not connected")
-                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                    verticalAlignment: Text.AlignVCenter
-                                    leftPadding: /*radioButton.indicator.width + 2*externalChecked.radioButton.spacing +*/ sideMargin
-                                }
-                            }
-
-                            Button {
-                                id: externalDeviceButton
-
-                                visible: externalChecked.checked
-
-                                Layout.fillHeight: true
-
-                                contentItem: Text {
-                                    anchors.right: parent.right
-                                    anchors.rightMargin: sideMargin
+                                    anchors.left: parent.left
                                     Layout.fillHeight: true
                                     Layout.fillWidth: true
 
+                                    text: connectionStateText
+                                    color: connectionStateColor
+                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                    verticalAlignment: Text.AlignVCenter
+                                    horizontalAlignment: Text.AlignLeft
+                                }
+
+                                Text {
+                                    anchors.right: parent.right
+                                    Layout.fillHeight: true
+
                                     text: "Change"
-                                    color: isConnecting ? "green" : !isConnected && controller.storedDevice > "" && discoveryAgent.running ? "red" : buttonTextColor
+                                    color: connectionStateColor
                                     verticalAlignment: Text.AlignVCenter
                                     horizontalAlignment: Text.AlignRight
                                 }
+                            }
 
-                                background: Rectangle {
-                                    Layout.fillHeight: true
-                                    Layout.fillWidth: true
+                            background: Rectangle {
+                                Layout.fillHeight: true
+                                Layout.fillWidth: true
 
-                                    color: !nightMode ? (externalDeviceButton.down ? dayModeSettings.secondaryBackground : dayModeSettings.background) : (externalDeviceButton.down ? nightModeSettings.secondaryBackground : nightModeSettings.background)
-                                }
+                                color: !nightMode ? (externalDeviceButton.down ? dayModeSettings.secondaryBackground : dayModeSettings.background) : (externalDeviceButton.down ? nightModeSettings.secondaryBackground : nightModeSettings.background)
+                            }
 
-                                onClicked: {
-                                    mainStackView.push(devicesView);
-                                }
+                            onClicked: {
+                                mainStackView.push(devicesView);
                             }
                         }
 
