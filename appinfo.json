@@ -2,6 +2,7 @@
     "arcgisRuntime": 0,
     "capabilities": {
         "audio": false,
+        "backgroundBluetoothCentral": false,
         "backgroundLocation": true,
         "biometricAuthentication": false,
         "bluetooth": true,
@@ -9,6 +10,7 @@
         "fileSharing": false,
         "highAccuracyLocation": true,
         "ios": {
+            "backgroundExternalAccessory": false,
             "externalAccessoryProtocolStrings": [
                 "com.bad-elf.gps",
                 "com.eos-gnss.positioningsource"
@@ -63,6 +65,9 @@
             "landscape": true,
             "portrait": true,
             "showStatusBar": true
+        },
+        "windows": {
+            "renderingEngine": "default"
         }
     },
     "environment": {
@@ -94,7 +99,7 @@
     "urlScheme": "arcgis-trek2there",
     "version": {
         "major": 3,
-        "micro": 37,
-        "minor": 0
+        "micro": 2,
+        "minor": 1
     }
 }
