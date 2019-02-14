@@ -51,7 +51,7 @@ App {
     property alias sources: sources
     property alias controller: controller
 
-    property int lastConnectionType: app.settings.numberValue("connectionType", sources.eConnectionType.internal);
+    property int lastConnectionType: app.settings.numberValue("connectionType", controller.eConnectionType.internal);
 
     property bool safetyWarningAccepted: app.settings.boolValue("safetyWarningAccepted", false)
     property bool showSafetyWarning: app.settings.boolValue("showSafetyWarning", true)
@@ -131,20 +131,21 @@ App {
 
     // External position sources -----------------------------------------------
 
-    PositioningSourcesController {
-        id: controller
+    PositioningSources {
+        id: sources
 
-        sources: sources
+        connectionType: controller.connectionType
+        discoverBluetooth: controller.discoverBluetooth
+        discoverBluetoothLE: controller.discoverBluetoothLE
+        discoverSerialPort: controller.discoverSerialPort
     }
 
     // -------------------------------------------------------------------------
 
-    PositioningSources {
-        id: sources
+    PositioningSourcesController {
+        id: controller
 
-        storedDevice: controller.storedDevice
-        discoverBluetooth: controller.discoverBluetooth
-        discoverSerialPort: controller.discoverSerialPort
+        sources: sources
     }
 
     // Settings ----------------------------------------------------------------
@@ -211,7 +212,7 @@ App {
         onConnectionTypeChanged: {
             if (initialized) {
                 // we have to do a direct comparison here since useInternalGPS has not been updated yet
-                if (controller.connectionType !== controller.sources.eConnectionType.internal) {
+                if (controller.connectionType !== controller.eConnectionType.internal) {
                     lastConnectionType = controller.connectionType;
                 }
             }

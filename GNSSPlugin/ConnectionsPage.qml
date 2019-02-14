@@ -36,20 +36,20 @@ Item {
     property color secondaryBackgroundColor: "#F0F0F0"
     property color connectedColor: "green"
 
-    property int sideMargin: 15 * scaleFactor
+    property int sideMargin: 15 * AppFramework.displayScaleFactor
 
     // Internal properties -----------------------------------------------------
 
-    readonly property DeviceDiscoveryAgent discoveryAgent: sources.discoveryAgent
-    readonly property Device currentDevice: sources.currentDevice
+    readonly property DeviceDiscoveryAgent discoveryAgent: controller.discoveryAgent
+    readonly property Device currentDevice: controller.currentDevice
     readonly property bool isConnecting: controller.isConnecting
     readonly property bool isConnected: controller.isConnected
 
     readonly property string hostname: hostnameTF.text
     readonly property string port: portTF.text
 
-    readonly property double scaleFactor: AppFramework.displayScaleFactor
     readonly property bool bluetoothOnly: Qt.platform.os === "ios" || Qt.platform.os === "android"
+    readonly property bool selectionValid: bluetoothCheckBox.checked || usbCheckBox.checked
 
     property bool showInternal
     property bool showNetwork
@@ -58,6 +58,7 @@ Item {
 
     signal networkHostSelected(string hostname, int port)
     signal deviceSelected(Device device)
+    signal deviceDeselected()
     signal disconnect()
 
     // -------------------------------------------------------------------------
@@ -68,7 +69,7 @@ Item {
         showDevices = controller.useExternalGPS;
         initialized = true;
 
-        if (!isConnecting && !isConnected && showDevices  && (discoveryAgent.running || !discoveryAgent.devices || discoveryAgent.devices.count == 0)) {
+        if (!isConnecting && !isConnected && showDevices && selectionValid && (discoveryAgent.running || !discoveryAgent.devices || discoveryAgent.devices.count == 0)) {
             discoverySwitch.checked = true;
         } else {
             discoverySwitch.checked = false;
@@ -81,21 +82,31 @@ Item {
         app.settings.setValue("hostname", hostname);
         app.settings.setValue("port", port);
 
-        sources.networkHostSelected(hostname, port);
+        controller.networkHostSelected(hostname, port);
     }
 
     // -------------------------------------------------------------------------
 
     onDeviceSelected: {
-        app.settings.setValue("device", device.name);
+        app.settings.setValue("deviceName", device.name);
+        app.settings.setValue("deviceDescriptor", JSON.stringify(device.toJson()));
 
-        sources.deviceSelected(device);
+        controller.deviceSelected(device);
+    }
+
+    // -------------------------------------------------------------------------
+
+    onDeviceDeselected: {
+        app.settings.remove("deviceName");
+        app.settings.remove("deviceDescriptor");
+
+        controller.disconnect();
     }
 
     // -------------------------------------------------------------------------
 
     onDisconnect: {
-        sources.disconnect();
+        controller.disconnect();
     }
 
     // -------------------------------------------------------------------------
@@ -113,442 +124,425 @@ Item {
         color: showDevices ? backgroundColor : secondaryBackgroundColor
         Accessible.role: Accessible.Pane
 
-        ColumnLayout {
+        Flickable {
             anchors.fill: parent
-            spacing: 0
+
             Accessible.role: Accessible.Pane
 
-            Flickable {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                contentHeight: contentItem.children[0].childrenRect.height
-                contentWidth: parent.width
+            interactive: true
+            flickableDirection: Flickable.VerticalFlick
+            clip: true
+
+            ColumnLayout {
+                anchors.fill: parent
                 Accessible.role: Accessible.Pane
 
-                interactive: true
-                flickableDirection: Flickable.VerticalFlick
-                clip: true
+                spacing: 0
 
-                ColumnLayout {
-                    anchors.fill: parent
+                // -------------------------------------------------------------------------
+
+                Rectangle {
+                    id: connectionTitleRect
+
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
+
+                    color: secondaryBackgroundColor
                     Accessible.role: Accessible.Pane
 
-                    // -------------------------------------------------------------------------
+                    Text {
+                        id: connectionTitle
 
-                    Rectangle {
-                        id: connectionTitleRect
+                        anchors.fill: parent
+                        anchors.leftMargin: sideMargin
+                        anchors.bottomMargin: 5 * AppFramework.displayScaleFactor
 
-                        anchors.top: parent.top
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 50 * scaleFactor
+                        text: qsTr("POSITION SOURCE")
+                        verticalAlignment: Text.AlignBottom
+                        color: foregroundColor
 
-                        color: secondaryBackgroundColor
+                        Accessible.role: Accessible.Heading
+                        Accessible.name: text
+                        Accessible.description: qsTr("Choose the position source type")
+                    }
+                }
+
+                // -------------------------------------------------------------------------
+
+                Rectangle {
+                    id: connectionTypeGridRect
+
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: connectionTypeGrid.height
+
+                    color: backgroundColor
+                    Accessible.role: Accessible.Pane
+
+                    GridLayout {
+                        id: connectionTypeGrid
+
+                        columns: 3
+                        rows: 6
+
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        Accessible.role: Accessible.Pane
+
+                        // -------------------------------------------------------------------------
+
+                        GNSSRadioButton {
+                            id: internalRadioButton
+
+                            Layout.row: 0
+                            Layout.column: 0
+                            Layout.columnSpan: 3
+                            Layout.leftMargin: sideMargin
+                            Accessible.role: Accessible.RadioButton
+
+                            foregroundColor: devicePage.foregroundColor
+                            secondaryForegroundColor: devicePage.secondaryForegroundColor
+                            backgroundColor: devicePage.backgroundColor
+                            secondaryBackgroundColor: devicePage.secondaryBackgroundColor
+
+                            text: qsTr("Built-in location sensor")
+                            checked: showInternal ? true : false
+
+                            onCheckedChanged: {
+                                if (initialized) {
+                                    showInternal = checked ? true : false;
+                                    if (checked) {
+                                        controller.connectionType = controller.eConnectionType.internal;
+                                        discoverySwitch.checked = false;
+                                        disconnect();
+                                    }
+                                }
+                            }
+                        }
+
+                        // -------------------------------------------------------------------------
+
+                        GNSSRadioButton {
+                            id: tcpRadioButton
+
+                            Layout.row: 1
+                            Layout.column: 0
+                            Layout.columnSpan: 3
+                            Layout.leftMargin: sideMargin
+                            Accessible.role: Accessible.RadioButton
+
+                            foregroundColor: devicePage.foregroundColor
+                            secondaryForegroundColor: devicePage.secondaryForegroundColor
+                            backgroundColor: devicePage.backgroundColor
+                            secondaryBackgroundColor: devicePage.secondaryBackgroundColor
+
+                            text: qsTr("TCP/UDP connection")
+                            checked: showNetwork ? true : false
+
+                            onCheckedChanged: {
+                                if (initialized) {
+                                    showNetwork = checked ? true : false;
+                                    if (checked) {
+                                        controller.connectionType = controller.eConnectionType.network;
+                                        discoverySwitch.checked = false;
+                                        disconnect();
+                                    }
+                                }
+                            }
+                        }
+
+                        // -------------------------------------------------------------------------
+
+                        Label {
+                            enabled: showNetwork
+                            visible: showNetwork
+
+                            Layout.row: 2
+                            Layout.column: 0
+                            Layout.leftMargin: sideMargin
+
+                            text: qsTr("Hostname")
+                            color: foregroundColor
+                        }
+
+                        TextField {
+                            id: hostnameTF
+
+                            enabled: showNetwork
+                            visible: showNetwork
+
+                            Layout.row: 2
+                            Layout.column: 1
+                            Layout.fillWidth: true
+
+                            text: controller.hostname
+                            placeholderText: qsTr("Hostname")
+                        }
+
+                        // -------------------------------------------------------------------------
+
+                        Label {
+                            enabled: showNetwork
+                            visible: showNetwork
+
+                            Layout.row: 3
+                            Layout.column: 0
+                            Layout.leftMargin: sideMargin
+
+                            text: qsTr("Port")
+                            color: foregroundColor
+                        }
+
+                        TextField {
+                            id: portTF
+
+                            enabled: showNetwork
+                            visible: showNetwork
+
+                            Layout.row: 3
+                            Layout.column: 1
+                            Layout.fillWidth: true
+
+                            text: controller.port
+                            placeholderText: qsTr("Port")
+                        }
+
+                        Button {
+                            id: connectBtn
+
+                            enabled: showNetwork && hostname && port
+                            visible: showNetwork
+
+                            Layout.row: 3
+                            Layout.column: 2
+                            Layout.rightMargin: sideMargin
+                            Accessible.role: Accessible.Button
+
+                            text: qsTr("Connect")
+
+                            onClicked: networkHostSelected(hostname, port)
+                        }
+
+                        // -------------------------------------------------------------------------
+
+                        GNSSRadioButton {
+                            id: deviceRadioButton
+
+                            Layout.row: 4
+                            Layout.column: 0
+                            Layout.columnSpan: 3
+                            Layout.leftMargin: sideMargin
+                            Accessible.role: Accessible.RadioButton
+
+                            foregroundColor: devicePage.foregroundColor
+                            secondaryForegroundColor: devicePage.secondaryForegroundColor
+                            backgroundColor: devicePage.backgroundColor
+                            secondaryBackgroundColor: devicePage.secondaryBackgroundColor
+
+                            text: qsTr("External GNSS receiver")
+                            checked: showDevices ? true : false
+
+                            onCheckedChanged: {
+                                if (initialized) {
+                                    showDevices = checked ? true : false;
+                                    if (checked) {
+                                        controller.connectionType = controller.eConnectionType.external;
+                                        disconnect();
+                                        discoverySwitch.checked = discoveryAgent.devices.count == 0;
+                                    }
+                                }
+                            }
+                        }
+
+                        // -------------------------------------------------------------------------
+
+                        GNSSSwitch {
+                            id: discoverySwitch
+
+                            enabled: showDevices && selectionValid
+                            visible: showDevices
+
+                            Layout.row: 5
+                            Layout.column: 0
+                            Layout.fillWidth: true
+                            Layout.leftMargin: sideMargin
+                            Accessible.role: Accessible.CheckBox
+
+                            foregroundColor: devicePage.foregroundColor
+                            secondaryForegroundColor: devicePage.secondaryForegroundColor
+                            backgroundColor: devicePage.backgroundColor
+                            secondaryBackgroundColor: devicePage.secondaryBackgroundColor
+
+                            text: qsTr("Discover")
+
+                            onCheckedChanged: {
+                                if (initialized) {
+                                    if (checked) {
+                                        disconnect();
+                                        if (!discoveryAgent.running) {
+                                            discoveryAgent.start();
+                                        }
+                                    } else {
+                                        discoveryAgent.stop();
+                                    }
+                                }
+                            }
+
+                            Connections {
+                                target: discoveryAgent
+
+                                onRunningChanged: discoverySwitch.checked = discoveryAgent.running
+                            }
+                        }
+
+                        GNSSCheckBox {
+                            id: bluetoothCheckBox
+
+                            enabled: showDevices && !discoverySwitch.checked
+                            visible: showDevices && !bluetoothOnly
+
+                            Layout.row: 5
+                            Layout.column: 1
+                            Accessible.role: Accessible.CheckBox
+
+                            foregroundColor: devicePage.foregroundColor
+                            secondaryForegroundColor: devicePage.secondaryForegroundColor
+                            backgroundColor: devicePage.backgroundColor
+                            secondaryBackgroundColor: devicePage.secondaryBackgroundColor
+
+                            text: qsTr("Bluetooth")
+
+                            checked: controller.discoverBluetooth ? true : false
+                            onCheckedChanged: {
+                                if (initialized) {
+                                    controller.discoverBluetooth = checked ? true : false
+                                }
+                            }
+                        }
+
+                        GNSSCheckBox {
+                            id: usbCheckBox
+
+                            enabled: showDevices && !discoverySwitch.checked
+                            visible: showDevices && !bluetoothOnly
+
+                            Layout.row: 5
+                            Layout.column: 2
+                            Layout.rightMargin: sideMargin
+                            Accessible.role: Accessible.CheckBox
+
+                            foregroundColor: devicePage.foregroundColor
+                            secondaryForegroundColor: devicePage.secondaryForegroundColor
+                            backgroundColor: devicePage.backgroundColor
+                            secondaryBackgroundColor: devicePage.secondaryBackgroundColor
+
+                            text: qsTr("USB/COM")
+
+                            checked: controller.discoverSerialPort ? true : false
+                            onCheckedChanged: {
+                                if (initialized) {
+                                    controller.discoverSerialPort = checked ? true : false
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // -------------------------------------------------------------------------
+
+                Rectangle {
+                    id: deviceTitleRowRect
+
+                    enabled: showDevices
+                    visible: showDevices
+
+                    Layout.fillWidth: true;
+                    Layout.preferredHeight: 50 * AppFramework.displayScaleFactor
+
+                    color: secondaryBackgroundColor
+                    Accessible.role: Accessible.Pane
+
+                    RowLayout {
+                        id: deviceTitleRow
+
+                        anchors.fill: parent
+                        spacing: 0
                         Accessible.role: Accessible.Pane
 
                         Text {
-                            id: connectionTitle
+                            id: deviceTitle
 
-                            anchors.fill: parent
-                            anchors.leftMargin: sideMargin
-                            anchors.bottomMargin: 5 * scaleFactor
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                            Layout.leftMargin: sideMargin
+                            Layout.bottomMargin: 5 * AppFramework.displayScaleFactor
 
-                            text: qsTr("POSITION SOURCE")
+                            text: qsTr("SELECT A DEVICE")
                             verticalAlignment: Text.AlignBottom
                             color: foregroundColor
 
                             Accessible.role: Accessible.Heading
                             Accessible.name: text
-                            Accessible.description: qsTr("Choose the position source type")
+                            Accessible.description: qsTr("Choose an external GNSS receiver")
                         }
-                    }
 
-                    // -------------------------------------------------------------------------
-
-                    Rectangle {
-                        id: connectionTypeGridRect
-
-                        anchors.top: connectionTitleRect.bottom
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: connectionTypeGrid.height
-
-                        color: backgroundColor
-                        Accessible.role: Accessible.Pane
-
-                        GridLayout {
-                            id: connectionTypeGrid
-
-                            columns: 3
-                            rows: 6
-
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            Accessible.role: Accessible.Pane
-
-                            // -------------------------------------------------------------------------
-
-                            GNSSRadioButton {
-                                id: internalRadioButton
-
-                                Layout.row: 0
-                                Layout.column: 0
-                                Layout.columnSpan: 3
-                                Layout.leftMargin: sideMargin
-                                Accessible.role: Accessible.RadioButton
-
-                                foregroundColor: devicePage.foregroundColor
-                                secondaryForegroundColor: devicePage.secondaryForegroundColor
-                                backgroundColor: devicePage.backgroundColor
-                                secondaryBackgroundColor: devicePage.secondaryBackgroundColor
-
-                                text: "Built-in location sensor"
-                                checked: showInternal ? true : false
-
-                                onCheckedChanged: {
-                                    if (initialized) {
-                                        disconnect();
-                                        showInternal = checked ? true : false;
-                                        if (checked) {
-                                            controller.connectionType = sources.eConnectionType.internal;
-                                            discoverySwitch.checked = false;
-                                        }
-                                    }
-                                }
-                            }
-
-                            // -------------------------------------------------------------------------
-
-                            GNSSRadioButton {
-                                id: tcpRadioButton
-
-                                Layout.row: 1
-                                Layout.column: 0
-                                Layout.columnSpan: 3
-                                Layout.leftMargin: sideMargin
-                                Accessible.role: Accessible.RadioButton
-
-                                foregroundColor: devicePage.foregroundColor
-                                secondaryForegroundColor: devicePage.secondaryForegroundColor
-                                backgroundColor: devicePage.backgroundColor
-                                secondaryBackgroundColor: devicePage.secondaryBackgroundColor
-
-                                text: "TCP/UDP connection"
-                                checked: showNetwork ? true : false
-
-                                onCheckedChanged: {
-                                    if (initialized) {
-                                        disconnect();
-                                        showNetwork = checked ? true : false;
-                                        if (checked) {
-                                            controller.connectionType = sources.eConnectionType.network;
-                                            discoverySwitch.checked = false;
-                                        }
-                                    }
-                                }
-                            }
-
-                            // -------------------------------------------------------------------------
-
-                            Label {
-                                enabled: showNetwork
-                                visible: showNetwork
-
-                                Layout.row: 2
-                                Layout.column: 0
-                                Layout.leftMargin: sideMargin
-
-                                text: "Hostname"
-                                color: foregroundColor
-                            }
-
-                            TextField {
-                                id: hostnameTF
-
-                                enabled: showNetwork
-                                visible: showNetwork
-
-                                Layout.row: 2
-                                Layout.column: 1
-                                Layout.fillWidth: true
-
-                                text: controller.hostname
-                                placeholderText: "Hostname"
-                            }
-
-                            // -------------------------------------------------------------------------
-
-                            Label {
-                                enabled: showNetwork
-                                visible: showNetwork
-
-                                Layout.row: 3
-                                Layout.column: 0
-                                Layout.leftMargin: sideMargin
-
-                                text: "Port"
-                                color: foregroundColor
-                            }
-
-                            TextField {
-                                id: portTF
-
-                                enabled: showNetwork
-                                visible: showNetwork
-
-                                Layout.row: 3
-                                Layout.column: 1
-                                Layout.fillWidth: true
-
-                                text: controller.port;
-                                placeholderText: "Port"
-                            }
-
-                            Button {
-                                id: connectBtn
-
-                                enabled: showNetwork && hostname && port
-                                visible: showNetwork
-
-                                Layout.row: 3
-                                Layout.column: 2
-                                Layout.rightMargin: sideMargin
-                                Accessible.role: Accessible.Button
-
-                                text: qsTr("Connect")
-
-                                onClicked: networkHostSelected(hostname, port)
-                            }
-
-                            // -------------------------------------------------------------------------
-
-                            GNSSRadioButton {
-                                id: deviceRadioButton
-
-                                Layout.row: 4
-                                Layout.column: 0
-                                Layout.columnSpan: 3
-                                Layout.leftMargin: sideMargin
-                                Accessible.role: Accessible.RadioButton
-
-                                foregroundColor: devicePage.foregroundColor
-                                secondaryForegroundColor: devicePage.secondaryForegroundColor
-                                backgroundColor: devicePage.backgroundColor
-                                secondaryBackgroundColor: devicePage.secondaryBackgroundColor
-
-                                text: "External GNSS receiver"
-                                checked: showDevices ? true : false
-
-                                onCheckedChanged: {
-                                    if (initialized) {
-                                        disconnect();
-                                        showDevices = checked ? true : false;
-
-                                        if (checked) {
-                                            controller.connectionType = sources.eConnectionType.external;
-                                            if (currentDevice && currentDevice.name === controller.storedDevice) {
-                                                sources.deviceSelected(currentDevice);
-                                            } else {
-                                                discoverySwitch.checked = discoveryAgent.devices.count == 0;
-                                            }
-                                        } else {
-                                            discoverySwitch.checked = false;
-                                        }
-                                    }
-                                }
-                            }
-
-                            // -------------------------------------------------------------------------
-
-                            GNSSSwitch {
-                                id: discoverySwitch
-
-                                enabled: showDevices && (bluetoothCheckBox.checked || usbCheckBox.checked)
-                                visible: showDevices
-
-                                Layout.row: 5
-                                Layout.column: 0
-                                Layout.fillWidth: true
-                                Layout.leftMargin: sideMargin
-                                Accessible.role: Accessible.CheckBox
-
-                                foregroundColor: devicePage.foregroundColor
-                                secondaryForegroundColor: devicePage.secondaryForegroundColor
-                                backgroundColor: devicePage.backgroundColor
-                                secondaryBackgroundColor: devicePage.secondaryBackgroundColor
-
-                                text: "Discovery %1".arg(checked ? "on" : "off")
-
-                                onCheckedChanged: {
-                                    if (initialized) {
-                                        if (checked) {
-                                            disconnect();
-                                            if (!discoveryAgent.running) {
-                                                discoveryAgent.start();
-                                            }
-                                        } else {
-                                            discoveryAgent.stop();
-                                        }
-                                    }
-                                }
-
-                                Connections {
-                                    target: discoveryAgent
-
-                                    onRunningChanged: discoverySwitch.checked = discoveryAgent.running
-                                }
-                            }
-
-                            GNSSCheckBox {
-                                id: bluetoothCheckBox
-
-                                enabled: showDevices && !discoverySwitch.checked
-                                visible: showDevices && !bluetoothOnly
-
-                                Layout.row: 5
-                                Layout.column: 1
-                                Accessible.role: Accessible.CheckBox
-
-                                foregroundColor: devicePage.foregroundColor
-                                secondaryForegroundColor: devicePage.secondaryForegroundColor
-                                backgroundColor: devicePage.backgroundColor
-                                secondaryBackgroundColor: devicePage.secondaryBackgroundColor
-
-                                text: "Bluetooth"
-
-                                checked: controller.discoverBluetooth ? true : false
-                                onCheckedChanged: {
-                                    if (initialized) {
-                                        controller.discoverBluetooth = checked ? true : false
-                                    }
-                                }
-                            }
-
-                            GNSSCheckBox {
-                                id: usbCheckBox
-
-                                enabled: showDevices && !discoverySwitch.checked
-                                visible: showDevices && !bluetoothOnly
-
-                                Layout.row: 5
-                                Layout.column: 2
-                                Layout.rightMargin: sideMargin
-                                Accessible.role: Accessible.CheckBox
-
-                                foregroundColor: devicePage.foregroundColor
-                                secondaryForegroundColor: devicePage.secondaryForegroundColor
-                                backgroundColor: devicePage.backgroundColor
-                                secondaryBackgroundColor: devicePage.secondaryBackgroundColor
-
-                                text: "USB/COM"
-
-                                checked: controller.discoverSerialPort ? true : false
-                                onCheckedChanged: {
-                                    if (initialized) {
-                                        controller.discoverSerialPort = checked ? true : false
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // -------------------------------------------------------------------------
-
-                    Rectangle {
-                        id: deviceTitleRowRect
-
-                        enabled: showDevices
-                        visible: showDevices
-
-                        anchors.top: connectionTypeGridRect.bottom
-                        Layout.fillWidth: true;
-                        Layout.preferredHeight: 50 * scaleFactor
-
-                        color: secondaryBackgroundColor
-                        Accessible.role: Accessible.Pane
-
-                        RowLayout {
-                            id: deviceTitleRow
-
-                            anchors.fill: parent
-                            spacing: 0
-                            Accessible.role: Accessible.Pane
-
-                            Text {
-                                id: deviceTitle
-
-                                Layout.fillHeight: true
-                                Layout.fillWidth: true
-                                Layout.leftMargin: sideMargin
-                                Layout.bottomMargin: 5 * scaleFactor
-
-                                text: qsTr("SELECT A DEVICE")
-                                verticalAlignment: Text.AlignBottom
-                                color: foregroundColor
-
-                                Accessible.role: Accessible.Heading
-                                Accessible.name: text
-                                Accessible.description: qsTr("Choose an external GNSS receiver")
-                            }
-
-                            Rectangle {
-                                id: discoveryIndicatorRect
-
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: 30 * scaleFactor
-                                anchors.bottom: parent.bottom
-                                anchors.right: parent.right
-                                anchors.rightMargin: sideMargin
-                                color: secondaryBackgroundColor
-                                Accessible.role: Accessible.Pane
-
-                                BusyIndicator {
-                                    id: discoveryIndicator
-
-                                    anchors.fill: parent
-                                    Accessible.role: Accessible.Pane
-
-                                    running: discoveryAgent.running
-                                }
-
-                                ColorOverlay {
-                                    anchors.fill: discoveryIndicator
-                                    source: discoveryIndicator
-                                    color: connectedColor
-                                }
-                            }
-                        }
-                    }
-
-                    // -------------------------------------------------------------------------
-
-                    Rectangle {
-                        id: deviceListRect
-
-                        enabled: showDevices
-                        visible: showDevices
-
-                        anchors.top: deviceTitleRowRect.bottom
-                        Layout.fillWidth: true;
-                        Layout.preferredHeight: deviceListColumn.height
-
-                        color: backgroundColor
-                        Accessible.role: Accessible.Pane
-
-                        ColumnLayout {
-                            id: deviceListColumn
+                        Rectangle {
+                            id: discoveryIndicatorRect
 
                             Layout.fillHeight: true
-                            Layout.fillWidth: true
+                            Layout.preferredWidth: 30 * AppFramework.displayScaleFactor
+                            Layout.alignment: Qt.AlignRight
+                            Layout.rightMargin: sideMargin
+                            color: secondaryBackgroundColor
                             Accessible.role: Accessible.Pane
-                            spacing: 0
 
-                            Repeater {
-                                clip: true
+                            BusyIndicator {
+                                id: discoveryIndicator
 
-                                model: discoveryAgent.devices
-                                delegate: deviceDelegate
+                                anchors.fill: parent
+                                Accessible.role: Accessible.Pane
+
+                                running: discoveryAgent.running
+                            }
+
+                            ColorOverlay {
+                                anchors.fill: discoveryIndicator
+                                source: discoveryIndicator
+                                color: connectedColor
                             }
                         }
                     }
+                }
+
+                // -------------------------------------------------------------------------
+
+                ListView {
+                    id: deviceListRect
+
+                    enabled: showDevices
+                    visible: showDevices
+
+                    Layout.fillWidth: true;
+                    Layout.fillHeight: true;
+
+                    Accessible.role: Accessible.Pane
+
+                    clip: true
+
+                    model: discoveryAgent.devices
+                    delegate: deviceDelegate
+                }
+
+                Rectangle {
+                    id: fillerRect
+
+                    enabled: !deviceListRect.enabled
+                    visible: !deviceListRect.visible
+
+                    Layout.fillWidth: true;
+                    Layout.fillHeight: true;
+
+                    color: "transparent"
+                    Accessible.role: Accessible.Pane
                 }
             }
         }
@@ -562,8 +556,8 @@ Item {
         Rectangle {
             id: delegateRect
 
-            Layout.preferredHeight: deviceLayout.height
-            Layout.preferredWidth: deviceListRect.width
+            height: deviceLayout.height
+            width: deviceListRect.width
             Accessible.role: Accessible.Pane
 
             color: backgroundColor
@@ -580,31 +574,39 @@ Item {
                 RowLayout {
                     id: rowLayout
 
-                    height: 45 * scaleFactor
                     Layout.fillWidth: true
+                    height: 45 * AppFramework.displayScaleFactor
+
+                    spacing: 10 * AppFramework.displayScaleFactor
 
                     Accessible.role: Accessible.StaticText
                     Accessible.name: deviceName.text
 
-                    Image {
-                        id: leftImage
+                    Item {
+                        width: 25 * AppFramework.displayScaleFactor
+                        height: width
 
-                        width: 25 * scaleFactor
-                        height: rowLayout.height
                         Layout.preferredWidth: leftImage.width
                         Layout.preferredHeight: leftImage.height
-                        anchors.left: parent.left
-                        anchors.leftMargin: 10 * scaleFactor
+                        Layout.alignment: Qt.AlignLeft
+                        Layout.leftMargin: sideMargin
                         Accessible.ignored: true
 
-                        source: "./images/deviceType-%1.png".arg(deviceType)
-                        fillMode: Image.PreserveAspectFit
-                    }
+                        Image {
+                            id: leftImage
 
-                    ColorOverlay {
-                        anchors.fill: leftImage
-                        source: leftImage
-                        color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? connectedColor : foregroundColor
+                            anchors.fill: parent
+                            Accessible.ignored: true
+
+                            source: "./images/deviceType-%1.png".arg(deviceType)
+                            fillMode: Image.PreserveAspectFit
+                        }
+
+                        ColorOverlay {
+                            anchors.fill: leftImage
+                            source: leftImage
+                            color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? connectedColor : foregroundColor
+                        }
                     }
 
                     Text {
@@ -620,32 +622,37 @@ Item {
                         verticalAlignment: Text.AlignVCenter
                     }
 
-                    Image {
-                        id: rightImage
-
-                        width: 25 * scaleFactor
+                    Item {
+                        width: 25 * AppFramework.displayScaleFactor
                         height: rowLayout.height
                         Layout.preferredWidth: rightImage.width
                         Layout.preferredHeight: rightImage.height
-                        anchors.right: parent.right
-                        anchors.rightMargin: 10 * scaleFactor
+                        Layout.alignment: Qt.AlignRight
+                        Layout.rightMargin: 10 * AppFramework.displayScaleFactor
                         Accessible.ignored: true
 
-                        source: "./images/right.png"
-                        fillMode: Image.PreserveAspectFit
-                    }
+                        Image {
+                            id: rightImage
 
-                    ColorOverlay {
-                        anchors.fill: rightImage
-                        source: rightImage
-                        color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? connectedColor : foregroundColor
+                            anchors.fill: parent
+                            Accessible.ignored: true
+
+                            source: "./images/right.png"
+                            fillMode: Image.PreserveAspectFit
+                        }
+
+                        ColorOverlay {
+                            anchors.fill: rightImage
+                            source: rightImage
+                            color: currentDevice && (currentDevice.name === name) && (isConnecting || isConnected) ? connectedColor : foregroundColor
+                        }
                     }
                 }
 
                 Rectangle {
                     id: separator
 
-                    height: 1 * scaleFactor
+                    height: 1 * AppFramework.displayScaleFactor
                     Layout.fillWidth: true
                     Accessible.ignored: true
                     color: secondaryBackgroundColor
@@ -659,8 +666,7 @@ Item {
                     if (!isConnecting && !isConnected || currentDevice && currentDevice.name !== name) {
                         deviceSelected(discoveryAgent.devices.get(index));
                     } else {
-                        app.settings.remove("device");
-                        disconnect();
+                        deviceDeselected();
                     }
                 }
             }
@@ -672,12 +678,12 @@ Item {
     BusyIndicator {
         id: connectingIndicator
 
-        running: isConnecting
-        visible: running
-
-        height: 48 * scaleFactor
+        height: 48 * AppFramework.displayScaleFactor
         width: height
         anchors.centerIn: parent
+
+        running: isConnecting
+        visible: running
     }
 
     ColorOverlay {

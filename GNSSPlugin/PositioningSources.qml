@@ -21,50 +21,53 @@ import ArcGIS.AppFramework.Devices 1.0
 import ArcGIS.AppFramework.Networking 1.0
 
 Item {
-    readonly property var eConnectionType: {
-        "internal": 0,
-        "external": 1,
-        "network": 2
-    }
-
     property alias positionSource: positionSource
     property alias satelliteInfoSource: satelliteInfoSource
     property alias nmeaSource: nmeaSource
     property alias tcpSocket: tcpSocket
     property alias discoveryAgent: discoveryAgent
 
-    property string storedDevice
-    property bool discoverBluetooth: true
-    property bool discoverSerialPort: false
-
     property Device currentDevice
     property bool isConnecting
     property bool isConnected
-    property int connectionType: eConnectionType.internal
+
+    property int connectionType: 0
+    property bool discoverBluetooth: true
+    property bool discoverBluetoothLE: false
+    property bool discoverSerialPort: false
+
+    property string currentNetworkAddress
+    property string integratedProviderName: "Integrated Provider"
 
     signal networkHostSelected(string hostname, int port)
     signal deviceSelected(Device device)
     signal disconnect()
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     PositionSource {
         id: positionSource
 
         active: true
-        nmeaSource: nmeaSource.source ? nmeaSource : null
+        nmeaSource: connectionType > 0 ? nmeaSource : null
+
+        onNameChanged: {
+            if (connectionType == 0 && name > "") {
+                integratedProviderName = name;
+            }
+        }
     }
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     SatelliteInfoSource {
         id: satelliteInfoSource
 
-        active: true
-        nmeaSource: nmeaSource //nmeaSource.source ? nmeaSource : null
+        active: positionSource.active
+        nmeaSource: connectionType > 0 ? nmeaSource : null
     }
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     NmeaSource {
         id: nmeaSource
@@ -77,7 +80,7 @@ Item {
         }
     }
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     TcpSocket {
         id: tcpSocket
@@ -97,14 +100,10 @@ Item {
             }
         }
 
-        onErrorChanged:  {
-            if (currentDevice) {
-                disconnect();
-            }
-        }
+        onErrorChanged: disconnect()
     }
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     DeviceDiscoveryAgent {
         id: discoveryAgent
@@ -112,34 +111,19 @@ Item {
         deviceFilter: function(device) { return filter(device); }
         sortCompare: function(device1, device2) { return sort(device1, device2); }
 
-        onDeviceDiscovered: {
-            if (filter(device)) {
-                console.log("Device discovered - Name:", device.name, "Type:", device.deviceType);
+        onDiscoverDevicesCompleted: stop()
 
-                if (!isConnecting && !isConnected && storedDevice > "" && storedDevice === device.name) {
-                    deviceSelected(device);
-                }
-            }
-        }
-
-        onErrorChanged: {
-            console.log("DeviceDiscoveryAgent error", error)
-        }
-
-        onRunningChanged: {
-            console.log("DeviceDiscoveryAgent running", running)
-        }
-
-        onDiscoverDevicesCompleted: {
-            console.log("Device discovery completed");
-            stop();
-        }
+        onErrorChanged: stop()
 
         function filter(device) {
             var types = [];
 
             if (discoverBluetooth) {
                 types.push(Device.DeviceTypeBluetooth);
+            }
+
+            if (discoverBluetoothLE) {
+                types.push(Device.DeviceTypeBluetoothLE);
             }
 
             if (discoverSerialPort) {
@@ -152,6 +136,8 @@ Item {
                         if (device.pairingStatus === Device.PairingStatusPaired || device.pairingStatus === Device.PairingStatusAuthorizedPaired) {
                             return true;
                         }
+                    } else if (device.deviceType === Device.DeviceTypeBluetoothLE) {
+                        return true;
                     } else if (device.deviceType === Device.DeviceTypeSerialPort) {
                         return true;
                     }
@@ -196,7 +182,7 @@ Item {
         }
     }
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     onNetworkHostSelected: {
         console.log("Connecting to remote host:", hostname, "port:", port);
@@ -206,12 +192,12 @@ Item {
         isConnected = false;
         isConnecting = true;
 
+        currentNetworkAddress = hostname + ":" + port;
         nmeaSource.source = tcpSocket;
-        connectionType = eConnectionType.network;
         tcpSocket.connectToHost(hostname, port);
     }
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     onDeviceSelected: {
         console.log("Connecting to device:", device.name, "address:", device.address, "type:", device.deviceType, device);
@@ -223,11 +209,10 @@ Item {
 
         currentDevice = device;
         nmeaSource.source = currentDevice;
-        connectionType = eConnectionType.external;
         currentDevice.connected = true;
     }
 
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     onDisconnect: {
         if (tcpSocket.valid && tcpSocket.state !== AbstractSocket.StateUnConnected) {
@@ -242,26 +227,7 @@ Item {
         isConnecting = false;
 
         nmeaSource.source = null;
-        connectionType = eConnectionType.internal;
     }
 
-    //--------------------------------------------------------------------------
-
-    onIsConnectedChanged: {
-        if (isConnected) {
-            if (connectionType === eConnectionType.external) {
-                console.log("Connected to device:", currentDevice.name, "address:", currentDevice.address);
-            } else if (connectionType === eConnectionType.network) {
-                console.log("Connected to remote host:", tcpSocket.remoteName, "port:", tcpSocket.remotePort)
-            }
-        } else {
-            if (connectionType === eConnectionType.external) {
-                console.log("Disconnecting device:", currentDevice.name, "address", currentDevice.address);
-            } else if (connectionType === eConnectionType.network) {
-                console.log("Disconnecting from remote host:", tcpSocket.remoteName, "port:", tcpSocket.remotePort);
-            }
-        }
-    }
-
-    //--------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 }
