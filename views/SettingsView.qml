@@ -467,51 +467,54 @@ Item {
 
                         //------------------------------------------------------
 
-                        Button {
-                            id: externalDeviceButton
-
+                        Rectangle {
                             Layout.preferredHeight: sf(50)
                             Layout.fillWidth: true
+                            color: !nightMode ? dayModeSettings.background : nightModeSettings.background
 
-                            contentItem: RowLayout {
+                            Button {
+                                id: externalDeviceButton
+
                                 anchors.fill: parent
                                 anchors.leftMargin: sideMargin
                                 anchors.rightMargin: sideMargin
 
-                                spacing: 0
+                                contentItem: RowLayout {
+                                    anchors.fill: parent
+                                    spacing: sf(10)
 
-                                Text {
-                                    anchors.left: parent.left
+                                    Text {
+                                        Layout.fillHeight: true
+                                        Layout.fillWidth: true
+
+                                        text: connectionStateText
+                                        color: connectionStateColor
+                                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                        verticalAlignment: Text.AlignVCenter
+                                        horizontalAlignment: Text.AlignLeft
+                                    }
+
+                                    Text {
+                                        Layout.fillHeight: true
+                                        Layout.alignment: Qt.AlignRight
+
+                                        text: "Change"
+                                        color: connectionStateColor
+                                        verticalAlignment: Text.AlignVCenter
+                                        horizontalAlignment: Text.AlignRight
+                                    }
+                                }
+
+                                background: Rectangle {
                                     Layout.fillHeight: true
                                     Layout.fillWidth: true
 
-                                    text: connectionStateText
-                                    color: connectionStateColor
-                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                    verticalAlignment: Text.AlignVCenter
-                                    horizontalAlignment: Text.AlignLeft
+                                    color: !nightMode ? (externalDeviceButton.down ? dayModeSettings.secondaryBackground : dayModeSettings.background) : (externalDeviceButton.down ? nightModeSettings.secondaryBackground : nightModeSettings.background)
                                 }
 
-                                Text {
-                                    anchors.right: parent.right
-                                    Layout.fillHeight: true
-
-                                    text: "Change"
-                                    color: connectionStateColor
-                                    verticalAlignment: Text.AlignVCenter
-                                    horizontalAlignment: Text.AlignRight
+                                onClicked: {
+                                    mainStackView.push(devicesView);
                                 }
-                            }
-
-                            background: Rectangle {
-                                Layout.fillHeight: true
-                                Layout.fillWidth: true
-
-                                color: !nightMode ? (externalDeviceButton.down ? dayModeSettings.secondaryBackground : dayModeSettings.background) : (externalDeviceButton.down ? nightModeSettings.secondaryBackground : nightModeSettings.background)
-                            }
-
-                            onClicked: {
-                                mainStackView.push(devicesView);
                             }
                         }
 
@@ -562,7 +565,7 @@ Item {
                                             return "support+270310d21ec14a93acf5a41cf1bad33d@feedback.hockeyapp.net";
                                         }
                                         else {
-                                            return "jayson_ward@esri.com";
+                                            return "melbourneteam@esri.com";
                                         }
                                     })()
 
