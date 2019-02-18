@@ -65,6 +65,12 @@ Item {
 
         active: positionSource.active
         nmeaSource: connectionType > 0 ? nmeaSource : null
+
+        onValidChanged: {
+            if (valid) {
+                active = positionSource.active;
+            }
+        }
     }
 
     // -------------------------------------------------------------------------
