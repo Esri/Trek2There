@@ -63,14 +63,8 @@ Item {
     SatelliteInfoSource {
         id: satelliteInfoSource
 
-        active: positionSource.active
+        active: valid && positionSource.active
         nmeaSource: connectionType > 0 ? nmeaSource : null
-
-        onValidChanged: {
-            if (valid) {
-                active = positionSource.active;
-            }
-        }
     }
 
     // -------------------------------------------------------------------------
