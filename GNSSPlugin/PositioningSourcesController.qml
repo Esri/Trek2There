@@ -5,6 +5,8 @@ import ArcGIS.AppFramework.Devices 1.0
 import ArcGIS.AppFramework.Networking 1.0
 import ArcGIS.AppFramework.Positioning 1.0
 
+import "./controls"
+
 Item {
     readonly property var eConnectionType: {
         "internal": 0,
@@ -27,15 +29,15 @@ Item {
     readonly property bool isConnecting: positionSource.valid && !useInternalGPS && sources.isConnecting
     readonly property bool isConnected: positionSource.valid && (useInternalGPS || sources.isConnected)
 
-    property bool discoverBluetooth: app.settings.boolValue("discoverBluetooth", true)
-    property bool discoverBluetoothLE: app.settings.boolValue("discoverBluetoothLE", false)
-    property bool discoverSerialPort: app.settings.boolValue("discoverSerialPort", false)
+    property bool discoverBluetooth: true
+    property bool discoverBluetoothLE: false
+    property bool discoverSerialPort: false
 
-    property int connectionType: app.settings.numberValue("connectionType", eConnectionType.internal);
-    property string storedDeviceName: app.settings.value("deviceName", "");
-    property string storedDeviceJSON: app.settings.value("deviceDescriptor", "");
-    property string hostname: app.settings.value("hostname", "");
-    property int port: app.settings.numberValue("port", Number.NaN);
+    property int connectionType: eConnectionType.internal
+    property string storedDeviceName: ""
+    property string storedDeviceJSON: ""
+    property string hostname: ""
+    property int port: Number.NaN
 
     readonly property bool useInternalGPS: connectionType === eConnectionType.internal
     readonly property bool useExternalGPS: connectionType === eConnectionType.external
@@ -46,9 +48,17 @@ Item {
         useExternalGPS && currentDevice ? currentDevice.name :
         useTCPConnection && currentNetworkAddress > "" ? currentNetworkAddress : ""
 
+    readonly property string noExternalReceiverError: qsTr("No external GNSS receiver configured.")
+    readonly property string noNetworkProviderError: qsTr("No network location provider configured.")
+
+    property bool errorWhileConnecting
+    property bool onDetailedSettingsPage
+    property bool onSettingsPage
     property bool stayConnected
     property bool initialized
 
+    signal startDiscoveryAgent()
+    signal stopDiscoveryAgent()
     signal networkHostSelected(string hostname, int port)
     signal deviceSelected(Device device)
     signal deviceDeselected()
@@ -79,6 +89,8 @@ Item {
                 } else if (connectionType === eConnectionType.internal) {
                     console.log("Connected to system location source:", integratedProviderName);
                 }
+
+                errorWhileConnecting = false;
             } else {
                 if (connectionType === eConnectionType.external && currentDevice) {
                     console.log("Disconnecting device:", currentDevice.name, "address", currentDevice.address);
@@ -103,19 +115,17 @@ Item {
         if (useExternalGPS) {
             if (!discoveryAgent.running && !isConnecting && !isConnected) {
                 if (currentDevice) {
-                    var isBT = currentDevice.deviceType === Device.DeviceTypeBluetooth;
-                    var isBTLE = currentDevice.deviceType === Device.DeviceTypeBluetoothLE;
-                    var isSerial = currentDevice.deviceType === Device.DeviceTypeSerialPort;
-
-                    if (isBT && discoverBluetooth || isBTLE && discoverBluetoothLE || isSerial && discoverSerialPort) {
-                        deviceSelected(currentDevice)
-                    }
+                    deviceSelected(currentDevice)
+                } else if (!onSettingsPage) {
+                    connectionErrorDialog.showError(noExternalReceiverError);
                 }
             }
         } else if (useTCPConnection) {
             if (!isConnecting && !isConnected) {
                 if (hostname > "" && port > "") {
                     sources.networkHostSelected(hostname, port);
+                } else if (!onSettingsPage) {
+                    connectionErrorDialog.showError(noNetworkProviderError);
                 }
             }
         }
@@ -123,47 +133,14 @@ Item {
 
     // -------------------------------------------------------------------------
 
-    Connections {
-        target: app.settings
-
-        onValueChanged: {
-            storedDeviceName = app.settings.value("deviceName", "")
-            storedDeviceJSON = app.settings.value("deviceDescriptor", "")
-            hostname = app.settings.value("hostname", "")
-            port = app.settings.value("port", "")
-        }
+    onStartDiscoveryAgent: {
+        discoveryTimer.start();
     }
 
     // -------------------------------------------------------------------------
 
-    onDiscoverBluetoothChanged: {
-        if (initialized) {
-            app.settings.setValue("discoverBluetooth", discoverBluetooth);
-        }
-    }
-
-    // -------------------------------------------------------------------------
-
-    onDiscoverBluetoothLEChanged: {
-        if (initialized) {
-            app.settings.setValue("discoverBluetoothLE", discoverBluetoothLE);
-        }
-    }
-
-    // -------------------------------------------------------------------------
-
-    onDiscoverSerialPortChanged: {
-        if (initialized) {
-            app.settings.setValue("discoverSerialPort", discoverSerialPort);
-        }
-    }
-
-    // -------------------------------------------------------------------------
-
-    onConnectionTypeChanged: {
-        if (initialized) {
-            app.settings.setValue("connectionType", connectionType);
-        }
+    onStopDiscoveryAgent: {
+        discoveryAgent.stop();
     }
 
     // -------------------------------------------------------------------------
@@ -205,12 +182,15 @@ Item {
         target: tcpSocket
 
         onErrorChanged: {
-            console.log("TCP connection error:", tcpSocket.error, tcpSocket.errorString)
-            showError(tcpSocket.errorString);
+            if (useTCPConnection) {
+                console.log("TCP connection error:", tcpSocket.error, tcpSocket.errorString)
+                connectionErrorDialog.showError(tcpSocket.errorString);
 
-//            if (useTCPConnection && stayConnected && !isConnecting && !isConnected) {
-//                reconnect();
-//            }
+//                if (stayConnected && !onSettingsPage) {
+//                    errorWhileConnecting = true;
+//                    reconnect();
+//                }
+            }
         }
     }
 
@@ -221,7 +201,7 @@ Item {
 
         onConnectedChanged: {
             if (currentDevice && useExternalGPS) {
-                if (stayConnected) {
+                if (stayConnected && !onSettingsPage) {
                     reconnect();
                 }
             }
@@ -230,9 +210,14 @@ Item {
         onErrorChanged: {
             if (currentDevice && useExternalGPS) {
                 console.log("Device connection error:", currentDevice.error)
-                showError(currentDevice.error);
 
-                if (stayConnected) {
+                // showing this dialog if we're not on the settings page proves too distracting
+                if (onSettingsPage) {
+                    connectionErrorDialog.showError(currentDevice.error);
+                }
+
+                if (stayConnected && !onSettingsPage) {
+                    errorWhileConnecting = true;
                     reconnect();
                 }
             }
@@ -244,15 +229,13 @@ Item {
     Connections {
         target: discoveryAgent
 
-        property string lastError
-
         onDiscoverDevicesCompleted: {
             console.log("Device discovery completed");
         }
 
         onRunningChanged: {
             console.log("DeviceDiscoveryAgent running", discoveryAgent.running);
-            if (useExternalGPS && !discoveryAgent.running && !isConnecting && !isConnected && stayConnected) {
+            if (useExternalGPS && !discoveryAgent.running && !isConnecting && !isConnected && stayConnected && !onSettingsPage) {
                 if (!discoveryAgent.devices || discoveryAgent.devices.count == 0) {
                     discoveryTimer.start();
                 }
@@ -260,11 +243,9 @@ Item {
         }
 
         onErrorChanged: {
-            if (discoveryAgent.error !== lastError) {
-                console.log("Device discovery agent error:", discoveryAgent.error)
-                showError(discoveryAgent.error);
-
-                lastError = discoveryAgent.error;
+            console.log("Device discovery agent error:", discoveryAgent.error)
+            if (useExternalGPS) {
+                connectionErrorDialog.showError(discoveryAgent.error);
             }
         }
 
@@ -298,7 +279,7 @@ Item {
     Timer {
         id: discoveryTimer
 
-        interval: 1000
+        interval: 100
         running: false
         repeat: false
 
@@ -325,31 +306,21 @@ Item {
 
     // -------------------------------------------------------------------------
 
-    Dialog {
-        id: errorDialog
+    // needed for ConfirmPanel to appear in the correct location
+    anchors.fill: parent
 
-        property alias text: errorMessage.text
+    ConfirmPanel {
+        id: connectionErrorDialog
 
-        x: (app.width - width) / 2
-        y: (app.height - height) / 2
-        modal: true
-
-        standardButtons: Dialog.Ok
-        title: qsTr("Unable to connect");
-
-        Text {
-            id: errorMessage
-
-            width: errorDialog.width
-            wrapMode: Text.WordWrap
-
-            text: ""
+        function showError(message) {
+            connectionErrorDialog.clear();
+            connectionErrorDialog.icon = "images/warning.png";
+            connectionErrorDialog.title = qsTr("Unable to connect");
+            connectionErrorDialog.text = message;
+            connectionErrorDialog.button1Text = qsTr("Ok");
+            connectionErrorDialog.button2Text = "";
+            connectionErrorDialog.show();
         }
-    }
-
-    function showError(error) {
-        errorDialog.text = error;
-        errorDialog.open();
     }
 
     // -------------------------------------------------------------------------

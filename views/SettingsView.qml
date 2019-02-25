@@ -34,8 +34,7 @@ Item {
 
     // PROPERTIES //////////////////////////////////////////////////////////////
 
-    property PositioningSources sources
-    property PositioningSourcesController controller
+    property PositioningSourcesController controller: mainView.controller
 
     property var distanceFormats: ["Decimal degrees", "Degrees, minutes, seconds", "Degrees, decimal minutes", "UTM (WGS84)", "MGRS"]
 
@@ -47,12 +46,8 @@ Item {
     property var utmZone: requestedDestination && requestedDestination.isValid && coordinateInfo && coordinateInfo.zone && coordinateInfo.band ? coordinateInfo.zone + coordinateInfo.band : ""
     property var gridReference: requestedDestination && requestedDestination.isValid && coordinateInfo && coordinateInfo.text ? coordinateInfo.text : ""
 
-    readonly property TcpSocket tcpSocket: sources.tcpSocket
-    readonly property DeviceDiscoveryAgent discoveryAgent: sources.discoveryAgent
-    readonly property Device currentDevice: sources.currentDevice
-
-    readonly property var connectionStateColor: isConnecting ? "green" : !isConnected && controller.storedDevice > "" && discoveryAgent.running ? "red" : buttonTextColor
-    readonly property var connectionStateText: isConnecting ? "Connecting to " + controller.currentName : isConnected ? "Connected to " + controller.currentName : controller.storedDevice > "" && discoveryAgent.running ? "Looking for " + controller.storedDevice : controller.currentName
+    readonly property var connectionStateColor: isConnecting ? "green" : isConnected ? buttonTextColor : "red"
+    readonly property var connectionStateText:  isConnecting ? qsTr("(Connecting)") : isConnected ? qsTr("(Connected)") : qsTr("(Disconnected)")
 
     readonly property bool isConnecting: controller.isConnecting
     readonly property bool isConnected: controller.isConnected
@@ -71,23 +66,6 @@ Item {
     }
 
     //--------------------------------------------------------------------------
-
-    // Try to reconnect if connection to external GPS is lost
-    onIsConnectedChanged: {
-        if (initialized) {
-            controller.reconnect();
-        }
-    }
-
-    Connections {
-        target: discoveryAgent
-
-        onRunningChanged: {
-            if (initialized && !discoveryAgent.running && !isConnecting && !isConnected) {
-                controller.reconnect();
-            }
-        }
-    }
 
     Connections {
         target: app
@@ -456,12 +434,12 @@ Item {
                             Text {
                                 anchors.fill: parent
                                 anchors.leftMargin: sideMargin
-                                text: qsTr("POSITION SOURCE")
+                                text: qsTr("LOCATION PROVIDER")
                                 verticalAlignment: Text.AlignBottom
                                 color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                 Accessible.role: Accessible.Heading
                                 Accessible.name: text
-                                Accessible.description: qsTr("Choose between the device internal or an external position source")
+                                Accessible.description: qsTr("Choose between integrated or external location providers")
                             }
                         }
 
@@ -487,7 +465,7 @@ Item {
                                         Layout.fillHeight: true
                                         Layout.fillWidth: true
 
-                                        text: connectionStateText
+                                        text: controller.currentName + " " + connectionStateText
                                         color: connectionStateColor
                                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                         verticalAlignment: Text.AlignVCenter

@@ -18,9 +18,19 @@ import QtQuick 2.8
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
 
-Item {
+import ArcGIS.AppFramework 1.0
 
+import "../GNSSPlugin"
+import "../GNSSPlugin/controls"
+
+Item {
     id: mainView
+
+    property App app
+
+    property alias controller: controller
+    property alias gnssSettings: gnssSettings
+    property alias mainStackView: mainStackView
 
     //--------------------------------------------------------------------------
 
@@ -54,9 +64,6 @@ Item {
           NavigationView {
               Layout.fillHeight: true
               Layout.fillWidth: true
-
-              sources: app.sources
-              controller: app.controller
           }
       }
 
@@ -68,9 +75,6 @@ Item {
         SettingsView {
             Layout.fillHeight: true
             Layout.fillWidth: true
-
-            sources: app.sources
-            controller: app.controller
         }
     }
 
@@ -94,6 +98,46 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
         }
+    }
+
+    // External position sources -----------------------------------------------
+
+    PositioningSources {
+        id: sources
+
+        connectionType: controller.connectionType
+        discoverBluetooth: controller.discoverBluetooth
+        discoverBluetoothLE: controller.discoverBluetoothLE
+        discoverSerialPort: controller.discoverSerialPort
+    }
+
+    PositioningSourcesController {
+        id: controller
+
+        sources: sources
+        stayConnected: true
+
+        discoverBluetooth: gnssSettings.discoverBluetooth
+        discoverBluetoothLE: gnssSettings.discoverBluetoothLE
+        discoverSerialPort: gnssSettings.discoverSerialPort
+
+        connectionType: gnssSettings.locationSensorConnectionType
+        storedDeviceName: gnssSettings.lastUsedDeviceName
+        storedDeviceJSON: gnssSettings.lastUsedDeviceJSON
+        hostname: gnssSettings.hostname
+        port: Number(gnssSettings.port)
+    }
+
+    // -------------------------------------------------------------------------
+
+    GNSSSettings {
+        id: gnssSettings
+
+        app: mainView.app
+
+        defaultLocationAlertsVisualExternal: false
+        defaultLocationAlertsSpeechExternal: false
+        defaultLocationAlertsVibrateExternal: false
     }
 
     //--------------------------------------------------------------------------

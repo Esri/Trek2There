@@ -41,9 +41,6 @@ Item {
 
     // PROPERTIES //////////////////////////////////////////////////////////////
 
-    property PositioningSources sources
-    property PositioningSourcesController controller
-
     property bool hudOn
     property bool navigating
     property bool arrivedAtDestination
@@ -54,11 +51,12 @@ Item {
     property double currentAccuracyInUnits
     property int currentAccuracy
 
-    readonly property PositionSource positionSource: sources.positionSource
-    readonly property DeviceDiscoveryAgent discoveryAgent: sources.discoveryAgent
+    readonly property PositioningSourcesController controller: mainView.controller
+    readonly property PositionSource positionSource: controller.positionSource
 
     readonly property bool isConnecting: controller.isConnecting
     readonly property bool isConnected: controller.isConnected
+    readonly property bool errorWhileConnecting: controller.errorWhileConnecting
 
     readonly property string startMovingMessage: qsTr("Start moving to determine direction.")
     readonly property string noLocationMessage: qsTr("Waiting for location.")
@@ -112,25 +110,6 @@ Item {
 
         controller.reconnect();
         initialized = true;
-    }
-
-    //--------------------------------------------------------------------------
-
-    // Try to reconnect if connection to external GPS is lost
-    onIsConnectedChanged: {
-        if (initialized) {
-            controller.reconnect();
-        }
-    }
-
-    Connections {
-        target: discoveryAgent
-
-        onRunningChanged: {
-            if (initialized && !discoveryAgent.running && !isConnecting && !isConnected) {
-                controller.reconnect();
-            }
-        }
     }
 
     // UI //////////////////////////////////////////////////////////////////////
@@ -734,7 +713,7 @@ Item {
 
             anchors.fill: parent
 
-            running: !isConnected && discoveryAgent.running || isConnecting
+            running: isConnecting || errorWhileConnecting
         }
 
         ColorOverlay {

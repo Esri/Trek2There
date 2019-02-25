@@ -6,33 +6,38 @@ import "../GNSSPlugin"
 import "../controls"
 
 Item {
+    id: _item
+
+    property GNSSSettings gnssSettings
+    property PositioningSourcesController controller
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
         Accessible.role: Accessible.Pane
 
         SettingsHeader {
-            text: qsTr("Choose location service")
+            text: qsTr("Location Provider")
         }
 
-        ConnectionsPage {
+        SettingsTabLocation {
+            id: settingsTabLocation
+
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            sources: app.sources
-            controller: app.controller
+            stackView: mainView.mainStackView
+            gnssSettings: mainView.gnssSettings
+            controller: mainView.controller
 
             foregroundColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-            secondaryForegroundColor: !nightMode ? "#595959" : nightModeSettings.foreground
+            secondaryForegroundColor: buttonTextColor
             backgroundColor: !nightMode ? dayModeSettings.background : nightModeSettings.background
             secondaryBackgroundColor: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
-            connectedColor: buttonTextColor
+            selectedBackgroundColor: !nightMode ? Qt.lighter(secondaryBackgroundColor) : Qt.darker(secondaryBackgroundColor)
+            hoverBackgroundColor: buttonTextColor
 
-            onIsConnectedChanged: {
-                if (initialized && isConnected) {
-                    mainStackView.pop();
-                }
-            }
+            showDetailedSettingsCog: true // XXX only for testing, set to false for release
         }
     }
 }

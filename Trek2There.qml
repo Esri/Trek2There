@@ -24,9 +24,6 @@ import QtPositioning 5.2 // needed for the call to QtPositioning.coordinate()
 // -----------------------------------------------------------------------------
 
 import ArcGIS.AppFramework 1.0
-import ArcGIS.AppFramework.Devices 1.0
-import ArcGIS.AppFramework.Networking 1.0
-import ArcGIS.AppFramework.Positioning 1.0
 
 // -----------------------------------------------------------------------------
 
@@ -34,7 +31,6 @@ import "AppMetrics"
 import "IconFont"
 import "views"
 import "controls"
-import "GNSSPlugin"
 
 // -----------------------------------------------------------------------------
 
@@ -47,11 +43,6 @@ App {
     Accessible.role: Accessible.Window
 
     // Properties --------------------------------------------------------------
-
-    property alias sources: sources
-    property alias controller: controller
-
-    property int lastConnectionType: app.settings.numberValue("connectionType", controller.eConnectionType.internal);
 
     property bool safetyWarningAccepted: app.settings.boolValue("safetyWarningAccepted", false)
     property bool showSafetyWarning: app.settings.boolValue("showSafetyWarning", true)
@@ -84,9 +75,9 @@ App {
     property double smallFontSize: baseFontSize * .8
     property double xSmallFontSize: baseFontSize * .6
 
-    readonly property var nightModeSettings: { "background": "#000", "foreground": "#f8f8f8", "secondaryBackground": "#2c2c2c", "buttonBorder": "#2c2c2c" }
-    readonly property var dayModeSettings: { "background": "#f8f8f8", "foreground": "#000", "secondaryBackground": "#efefef", "buttonBorder": "#ddd" }
-    readonly property string buttonTextColor: "#007ac2"
+    readonly property var dayModeSettings: { "background": "#f8f8f8", "foreground": "#000000", "secondaryBackground": "#efefef", "buttonBorder": "#ddd" }
+    readonly property var nightModeSettings: { "background": "#000000", "foreground": "#f8f8f8", "secondaryBackground": "#2c2c2c", "buttonBorder": "#2c2c2c" }
+    readonly property color buttonTextColor: "#007ac2"
 
     readonly property bool isLandscape: isLandscapeOrientation() //(Screen.primaryOrientation === 2) ? true : false
     readonly property bool isAndroid: Qt.platform.os === "android"
@@ -121,31 +112,14 @@ App {
 
     MainView {
         anchors.fill: parent
+
+        app: app
     }
 
     // -------------------------------------------------------------------------
 
     IconFont {
         id: icons
-    }
-
-    // External position sources -----------------------------------------------
-
-    PositioningSources {
-        id: sources
-
-        connectionType: controller.connectionType
-        discoverBluetooth: controller.discoverBluetooth
-        discoverBluetoothLE: controller.discoverBluetoothLE
-        discoverSerialPort: controller.discoverSerialPort
-    }
-
-    // -------------------------------------------------------------------------
-
-    PositioningSourcesController {
-        id: controller
-
-        sources: sources
     }
 
     // Settings ----------------------------------------------------------------
@@ -201,29 +175,6 @@ App {
     onCoordinateFormatChanged: {
         if (initialized) {
             app.settings.setValue("coordinateFormat", coordinateFormat);
-        }
-    }
-
-    // -------------------------------------------------------------------------
-
-    Connections {
-        target: controller
-
-        onConnectionTypeChanged: {
-            if (initialized) {
-                // we have to do a direct comparison here since useInternalGPS has not been updated yet
-                if (controller.connectionType !== controller.eConnectionType.internal) {
-                    lastConnectionType = controller.connectionType;
-                }
-            }
-        }
-    }
-
-    // -------------------------------------------------------------------------
-
-    onLastConnectionTypeChanged: {
-        if (initialized) {
-            app.settings.setValue("lastConnectionType", lastConnectionType);
         }
     }
 
