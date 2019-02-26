@@ -2,14 +2,11 @@ import QtQuick 2.8
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
 
-import "../GNSSPlugin"
 import "../controls"
+import "../GNSSPlugin"
 
 Item {
     id: _item
-
-    property GNSSSettings gnssSettings
-    property PositioningSourcesController controller
 
     ColumnLayout {
         anchors.fill: parent

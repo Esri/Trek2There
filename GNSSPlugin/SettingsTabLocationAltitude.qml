@@ -138,7 +138,7 @@ SettingsTab {
                     fillMode: Image.PreserveAspectFit
                 }
 
-                NumberField {
+                AppNumberField {
                     id: geoidSeparationField
 
                     Layout.fillWidth: true

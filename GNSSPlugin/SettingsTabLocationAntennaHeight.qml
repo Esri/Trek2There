@@ -79,7 +79,7 @@ SettingsTab {
                     fillMode: Image.PreserveAspectFit
                 }
 
-                NumberField {
+                AppNumberField {
                     id: antennaHeightField
 
                     Layout.fillWidth: true

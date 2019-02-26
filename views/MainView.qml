@@ -21,7 +21,6 @@ import QtQuick.Layouts 1.1
 import ArcGIS.AppFramework 1.0
 
 import "../GNSSPlugin"
-import "../GNSSPlugin/controls"
 
 Item {
     id: mainView
