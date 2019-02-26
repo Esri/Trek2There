@@ -48,24 +48,24 @@ Item {
     //--------------------------------------------------------------------------
 
     Component {
-          id: disclaimerView
+        id: disclaimerView
 
-          DisclaimerView {
-              Layout.fillHeight: true
-              Layout.fillWidth: true
-          }
-      }
+        DisclaimerView {
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+        }
+    }
 
     //--------------------------------------------------------------------------
 
     Component {
-          id: navigationView
+        id: navigationView
 
-          NavigationView {
-              Layout.fillHeight: true
-              Layout.fillWidth: true
-          }
-      }
+        NavigationView {
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+        }
+    }
 
     //--------------------------------------------------------------------------
 

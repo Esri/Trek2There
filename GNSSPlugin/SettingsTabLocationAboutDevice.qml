@@ -80,7 +80,7 @@ SettingsTab {
 
                     onTextChanged: {
                         if (initialized && !gnssSettings.updating) {
-                            gnssSettings.knownDevices[deviceName].label = text;
+                            gnssSettings.lastUsedDeviceLabel = text;
                         }
                         dirty = true;
                     }

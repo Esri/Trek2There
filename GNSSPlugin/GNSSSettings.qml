@@ -62,6 +62,7 @@ QtObject {
     property real locationGeoidSeparation: defaultLocationGeoidSeparation
     property real locationAntennaHeight: defaultLocationAntennaHeight
 
+    property string lastUsedDeviceLabel: ""
     property string lastUsedDeviceName: ""
     property string lastUsedDeviceJSON: ""
     property string hostname: ""
@@ -112,16 +113,19 @@ QtObject {
             if (receiverSettings) {
                 switch (receiverSettings.connectionType) {
                 case kConnectionTypeInternal:
+                    lastUsedDeviceLabel = receiverSettings.label;
                     lastUsedDeviceJSON = "";
                     hostname = "";
                     port = "";
                     break;
                 case kConnectionTypeExternal:
+                    lastUsedDeviceLabel = receiverSettings.label;
                     lastUsedDeviceJSON = receiverSettings.receiver > "" ? JSON.stringify(receiverSettings.receiver) : "";
                     hostname = "";
                     port = "";
                     break;
                 case kConnectionTypeNetwork:
+                    lastUsedDeviceLabel = receiverSettings.label;
                     lastUsedDeviceJSON = ""
                     hostname = receiverSettings.hostname;
                     port = receiverSettings.port;
@@ -201,6 +205,12 @@ QtObject {
     onLocationAntennaHeightChanged: {
         if (!updating && knownDevices && lastUsedDeviceName > "") {
             knownDevices[lastUsedDeviceName].antennaHeight = locationAntennaHeight;
+        }
+    }
+
+    onLastUsedDeviceLabelChanged: {
+        if (!updating && knownDevices && lastUsedDeviceName > "") {
+            knownDevices[lastUsedDeviceName].label = lastUsedDeviceLabel;
         }
     }
 

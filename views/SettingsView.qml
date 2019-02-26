@@ -58,10 +58,11 @@ Item {
 
     StackView.onDeactivating: {
         initialized = false;
+        controller.stayConnected = true;
     }
 
     StackView.onActivating: {
-        controller.reconnect();
+        controller.stayConnected = false;
         initialized = true;
     }
 
@@ -454,32 +455,38 @@ Item {
                                 id: externalDeviceButton
 
                                 anchors.fill: parent
-                                anchors.leftMargin: sideMargin
-                                anchors.rightMargin: sideMargin
 
-                                contentItem: RowLayout {
+                                contentItem: Rectangle {
                                     anchors.fill: parent
-                                    spacing: sf(10)
+                                    anchors.leftMargin: sideMargin
+                                    anchors.rightMargin: sideMargin
 
-                                    Text {
-                                        Layout.fillHeight: true
-                                        Layout.fillWidth: true
+                                    color: !nightMode ? (externalDeviceButton.down ? dayModeSettings.secondaryBackground : dayModeSettings.background) : (externalDeviceButton.down ? nightModeSettings.secondaryBackground : nightModeSettings.background)
 
-                                        text: controller.currentName + " " + connectionStateText
-                                        color: connectionStateColor
-                                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                        verticalAlignment: Text.AlignVCenter
-                                        horizontalAlignment: Text.AlignLeft
-                                    }
+                                    RowLayout {
+                                        anchors.fill: parent
+                                        spacing: sf(10)
 
-                                    Text {
-                                        Layout.fillHeight: true
-                                        Layout.alignment: Qt.AlignRight
+                                        Text {
+                                            Layout.fillHeight: true
+                                            Layout.fillWidth: true
 
-                                        text: "Change"
-                                        color: connectionStateColor
-                                        verticalAlignment: Text.AlignVCenter
-                                        horizontalAlignment: Text.AlignRight
+                                            text: (gnssSettings.lastUsedDeviceLabel > "" ? gnssSettings.lastUsedDeviceLabel : gnssSettings.lastUsedDeviceName) + " " + connectionStateText
+                                            color: connectionStateColor
+                                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                            verticalAlignment: Text.AlignVCenter
+                                            horizontalAlignment: Text.AlignLeft
+                                        }
+
+                                        Text {
+                                            Layout.fillHeight: true
+                                            Layout.alignment: Qt.AlignRight
+
+                                            text: "Change"
+                                            color: connectionStateColor
+                                            verticalAlignment: Text.AlignVCenter
+                                            horizontalAlignment: Text.AlignRight
+                                        }
                                     }
                                 }
 
