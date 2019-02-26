@@ -26,16 +26,19 @@ Rectangle {
     default property alias content: content.data
     property int padding: 5 * AppFramework.displayScaleFactor
 
+    property color backgroundColor: locationSettingsTab.backgroundColor
+    property color borderColor: locationSettingsTab.foregroundColor
+
     //--------------------------------------------------------------------------
 
     implicitWidth: content.width + padding * 2
     implicitHeight: content.height + padding * 2
 
     radius: 5 * AppFramework.displayScaleFactor
-    color: "#18000000"
+    color: backgroundColor
     border {
         width: 1 * AppFramework.displayScaleFactor
-        color: "#60ffffff"
+        color: borderColor
     }
 
     //--------------------------------------------------------------------------

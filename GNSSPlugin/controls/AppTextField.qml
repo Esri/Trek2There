@@ -15,11 +15,19 @@
  */
 
 import QtQuick 2.9
+import QtQuick.Controls 1.4
+import QtQuick.Controls.Styles 1.4
 
 import ArcGIS.AppFramework 1.0
 
-StyledTextField {
+TextField {
     id: textField
+
+    property color color: locationSettingsTab.foregroundColor
+
+    property string fontFamily: Qt.application.font.family
+    property real pointSize: 15
+    property bool bold: false
 
     signal cleared(string oldValue);
 
@@ -30,6 +38,18 @@ StyledTextField {
 
         if (Qt.platform.os === "android") {
             inputMethodHints |= Qt.ImhNoPredictiveText;
+        }
+    }
+
+    //--------------------------------------------------------------------------
+
+    style: TextFieldStyle {
+        renderType: Text.QtRendering
+        textColor: textField.color
+        font {
+            family: textField.fontFamily
+            pointSize: textField.pointSize
+            bold: textField.bold
         }
     }
 

@@ -86,7 +86,7 @@ CheckBox {
 
         text: control.text
         font: control.font
-        color: control.down ? textColor : Qt.darker(textColor, 2)
+        color: textColor
 
         verticalAlignment: Text.AlignVCenter
         leftPadding: control.indicator.width + control.spacing

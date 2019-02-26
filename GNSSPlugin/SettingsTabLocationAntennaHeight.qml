@@ -67,6 +67,7 @@ SettingsTab {
                     Layout.fillWidth: true
 
                     text: qsTr("The distance from the antenna to the ground surface is subtracted from altitude values.")
+                    color: foregroundColor
                 }
 
                 Image {

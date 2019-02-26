@@ -18,7 +18,13 @@ import QtQuick 2.9
 
 import "./controls"
 
-ListTab {
+Item {
+    property string title
+    property string description
+    property url icon
+
+    default property Component contentComponent
+
     //--------------------------------------------------------------------------
 
     property GNSSSettings gnssSettings: locationSettingsTab.gnssSettings

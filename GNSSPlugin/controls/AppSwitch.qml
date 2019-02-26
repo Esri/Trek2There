@@ -72,7 +72,7 @@ Switch {
         id: textControl
 
         opacity: control.enabled ? 1.0 : 0.3
-        color: control.down ? textColor : Qt.darker(textColor, 2)
+        color: textColor
 
         text: control.text
         font: control.font

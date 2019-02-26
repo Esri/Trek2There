@@ -171,6 +171,7 @@ SettingsTab {
                         Layout.row: 0
                         Layout.column: 0
 
+                        color: foregroundColor
                         text: qsTr("Hostname")
                     }
 
@@ -183,6 +184,7 @@ SettingsTab {
 
                         text: gnssSettings.hostname
                         placeholderText: qsTr("Hostname")
+                        color: foregroundColor
                     }
 
                     AppText {
@@ -190,6 +192,7 @@ SettingsTab {
                         Layout.column: 0
 
                         text: qsTr("Port")
+                        color: foregroundColor
                     }
 
                     AppTextField {
@@ -201,6 +204,7 @@ SettingsTab {
 
                         text: gnssSettings.port
                         placeholderText: qsTr("Port")
+                        color: foregroundColor
                     }
                 }
 

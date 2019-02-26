@@ -72,6 +72,7 @@ SettingsTab {
                     Layout.fillWidth: true
 
                     text: qsTr("Alerts are triggered when the status of your connection changes. This includes receiver disconnection or data not being received. The alert style is how alerts are presented to you in the app.")
+                    color: foregroundColor
                 }
 
                 AppSwitch {

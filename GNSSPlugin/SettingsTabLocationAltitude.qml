@@ -126,6 +126,7 @@ SettingsTab {
                     Layout.fillWidth: true
 
                     text: qsTr('The distance <font color="#e04f1d"><b>N</b></font> from the surface on an ellipsoid <font color="#6db5e3"><b>E</b></font> to the surface of the geoid (or mean sea level) <font color="#68aa67"><b>G</b></font>, measured along a line perpendicular to the ellipsoid. <font color="#e04f1d"><b>N</b></font> is positive if the geoid lies above the ellipsoid, negative if it lies below.')
+                    color: foregroundColor
                 }
 
                 Image {

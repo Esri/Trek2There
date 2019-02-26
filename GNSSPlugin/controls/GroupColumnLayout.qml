@@ -26,10 +26,13 @@ GroupRectangle {
     default property alias layoutContent: layout.data
     property alias title: groupText.text
     property alias spacing: layout.spacing
+
+    property color backgroundColor: locationSettingsTab.backgroundColor
+    property color textColor: locationSettingsTab.foregroundColor
+
     property string fontFamily: Qt.application.font.family
     property real pointSize: 16
     property bool bold: true
-
 
     //--------------------------------------------------------------------------
 
@@ -38,9 +41,8 @@ GroupRectangle {
 
     //--------------------------------------------------------------------------
 
-    color: "#07000000"
+    color: backgroundColor
     implicitHeight: layout.height + layout.anchors.margins * 3
-
 
     content: ColumnLayout {
         id: layout
@@ -59,6 +61,8 @@ GroupRectangle {
 
             Layout.fillWidth: true
             Layout.bottomMargin: layout.spacing
+
+            color: textColor
 
             fontFamily: rect.fontFamily
             pointSize: rect.pointSize

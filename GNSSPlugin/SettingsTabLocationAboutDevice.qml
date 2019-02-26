@@ -77,6 +77,7 @@ SettingsTab {
 
                     text: gnssSettings.knownDevices[deviceName].label > "" ? gnssSettings.knownDevices[deviceName].label : deviceName
                     placeholderText: qsTr("Custom display name")
+                    color: foregroundColor
 
                     onTextChanged: {
                         if (initialized && !gnssSettings.updating) {
@@ -98,11 +99,13 @@ SettingsTab {
 
                     AppText {
                         text: qsTr("Provider Name:")
+                        color: foregroundColor
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     }
 
                     AppText {
                         Layout.fillWidth: parent
+                        color: foregroundColor
                         text: deviceType !== kDeviceTypeInternal ? deviceName : controller.integratedProviderName
                     }
                 }

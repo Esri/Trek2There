@@ -32,6 +32,7 @@ RowLayout {
         id: prefixText
 
         visible: text > ""
+        color: foregroundColor
     }
 
     AppTextField {
@@ -40,6 +41,7 @@ RowLayout {
         Layout.fillWidth: true
 
         text: isFinite(value) ? value : ""
+        color: foregroundColor
 
         Component.onCompleted: {
             if (Qt.platform.os === "ios") {
@@ -64,13 +66,13 @@ RowLayout {
                 value = Number.NaN;
             }
         }
-
     }
-    
+
     AppText {
         id: suffixText
 
         visible: text > ""
+        color: foregroundColor
     }
 
     //--------------------------------------------------------------------------
