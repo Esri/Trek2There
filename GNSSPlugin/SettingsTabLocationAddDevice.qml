@@ -184,7 +184,7 @@ SettingsTab {
 
                         text: gnssSettings.hostname
                         placeholderText: qsTr("Hostname")
-                        color: foregroundColor
+                        textColor: foregroundColor
                     }
 
                     AppText {
@@ -204,7 +204,7 @@ SettingsTab {
 
                         text: gnssSettings.port
                         placeholderText: qsTr("Port")
-                        color: foregroundColor
+                        textColor: foregroundColor
                     }
                 }
 
@@ -340,7 +340,7 @@ SettingsTab {
                     Layout.fillWidth: true
 
                     height: 2 * AppFramework.displayScaleFactor
-                    color: "#20000000"
+                    color: dividerColor
                 }
 
                 ListView {
@@ -423,7 +423,7 @@ SettingsTab {
                         Layout.fillWidth: true
 
                         height: 1 * AppFramework.displayScaleFactor
-                        color: "#20000000"
+                        color: dividerColor
                     }
                 }
 

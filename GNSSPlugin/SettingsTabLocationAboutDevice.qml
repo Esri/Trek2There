@@ -77,7 +77,7 @@ SettingsTab {
 
                     text: gnssSettings.knownDevices[deviceName].label > "" ? gnssSettings.knownDevices[deviceName].label : deviceName
                     placeholderText: qsTr("Custom display name")
-                    color: foregroundColor
+                    textColor: foregroundColor
 
                     onTextChanged: {
                         if (initialized && !gnssSettings.updating) {

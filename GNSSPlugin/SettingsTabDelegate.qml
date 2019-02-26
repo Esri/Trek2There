@@ -76,7 +76,7 @@ Rectangle {
             Layout.preferredWidth: 25 * AppFramework.displayScaleFactor
             Layout.preferredHeight: Layout.preferredWidth
 
-            source: "images/next.png"
+            source: "./images/next.png"
             color: foregroundColor
         }
     }

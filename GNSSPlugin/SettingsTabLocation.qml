@@ -38,9 +38,7 @@ Rectangle {
     property color secondaryBackgroundColor: "#e1f0fb"
     property color selectedBackgroundColor: "#FAFAFA"
     property color hoverBackgroundColor: "#e1f0fb"
-
-
-property color dividerColor: "#c0c0c0"
+    property color dividerColor: "#c0c0c0"
 
     property string fontFamily: Qt.application.font.family
 
@@ -319,7 +317,7 @@ property color dividerColor: "#c0c0c0"
 
                                     visible: tabType !== kDelegateTypeAddDevice
                                     source: visible && delegate.delegateDeviceType > ""
-                                            ? "images/deviceType-%1.png".arg(delegate.delegateDeviceType)
+                                            ? "./images/deviceType-%1.png".arg(delegate.delegateDeviceType)
                                             : ""
                                     color: delegate.isSelected && (isConnecting || isConnected)
                                            ? secondaryForegroundColor
@@ -334,7 +332,7 @@ property color dividerColor: "#c0c0c0"
                                     anchors.centerIn: parent
 
                                     visible: tabType === kDelegateTypeAddDevice
-                                    source: "images/plus.png"
+                                    source: "./images/plus.png"
                                     color: foregroundColor
                                 }
                             }
@@ -448,7 +446,7 @@ property color dividerColor: "#c0c0c0"
                             }
 
                             Rectangle {
-                                visible: showDetailedSettingsCog
+                                visible: showDetailedSettingsCog && tabType !== kDelegateTypeAddDevice
                                 enabled: visible
 
                                 Layout.fillHeight: true
@@ -474,7 +472,7 @@ property color dividerColor: "#c0c0c0"
                                     width: 28 * AppFramework.displayScaleFactor
                                     height: width
 
-                                    source: "images/gear.png"
+                                    source: "./images/gear.png"
 
                                     color: delegate.isSelected && (isConnecting || isConnected)
                                            ? secondaryForegroundColor

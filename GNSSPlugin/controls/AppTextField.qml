@@ -23,7 +23,10 @@ import ArcGIS.AppFramework 1.0
 TextField {
     id: textField
 
-    property color color: locationSettingsTab.foregroundColor
+    property color textColor: locationSettingsTab.foregroundColor
+    property color borderColor: locationSettingsTab.secondaryForegroundColor
+    property color dividerColor: locationSettingsTab.dividerColor
+    property color backgroundColor: locationSettingsTab.secondaryBackgroundColor
 
     property string fontFamily: Qt.application.font.family
     property real pointSize: 15
@@ -45,11 +48,19 @@ TextField {
 
     style: TextFieldStyle {
         renderType: Text.QtRendering
-        textColor: textField.color
+        textColor: textField.textColor
         font {
             family: textField.fontFamily
             pointSize: textField.pointSize
             bold: textField.bold
+        }
+
+        background: Rectangle {
+            anchors.fill: parent
+            radius: parent.height/2 - 10 * AppFramework.displayScaleFactor
+            color: textField.backgroundColor
+            border.width: 1 * AppFramework.displayScaleFactor
+            border.color: textField.activeFocus ? borderColor : dividerColor
         }
     }
 

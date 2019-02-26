@@ -41,7 +41,7 @@ RowLayout {
         Layout.fillWidth: true
 
         text: isFinite(value) ? value : ""
-        color: foregroundColor
+        textColor: foregroundColor
 
         Component.onCompleted: {
             if (Qt.platform.os === "ios") {

@@ -139,6 +139,7 @@ SettingsTab {
                     backgroundColor: locationSettingsTab.backgroundColor
                     textColor: locationSettingsTab.foregroundColor
                     hoveredBackgroundColor: locationSettingsTab.hoverBackgroundColor
+                    borderColor: locationSettingsTab.dividerColor
 
                     text: qsTr("Remove %1").arg(deviceLabel > "" ? deviceLabel : deviceName)
                     fontFamily: settingsTabLocation.fontFamily

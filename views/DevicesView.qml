@@ -36,6 +36,7 @@ Item {
             secondaryBackgroundColor: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
             selectedBackgroundColor: !nightMode ? Qt.lighter(secondaryBackgroundColor) : Qt.darker(secondaryBackgroundColor)
             hoverBackgroundColor: buttonTextColor
+            dividerColor: !nightMode ? "#c0c0c0" : Qt.darker("#c0c0c0")
 
             showDetailedSettingsCog: true // XXX only for testing, set to false for release
         }
