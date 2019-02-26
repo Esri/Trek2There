@@ -355,7 +355,7 @@ QtObject {
     }
 
     function createNetworkSettings(hostname, port) {
-        if (hostname > "" && port > "" && knownDevices) {
+        if (knownDevices && hostname > "" && port > "") {
             var networkAddress = hostname + ":" + port;
 
             if (!knownDevices[networkAddress]) {

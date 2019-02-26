@@ -127,8 +127,6 @@ Item {
         port: Number(gnssSettings.port)
     }
 
-    // -------------------------------------------------------------------------
-
     GNSSSettings {
         id: gnssSettings
 

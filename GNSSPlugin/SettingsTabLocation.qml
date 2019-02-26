@@ -368,6 +368,7 @@ Rectangle {
 
                                     AppText {
                                         Layout.fillWidth: true
+
                                         visible: text > ""
 
                                         text: modelData.description
