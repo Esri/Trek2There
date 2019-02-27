@@ -27,9 +27,9 @@ Item {
 
     property App app
 
-    property alias controller: controller
-    property alias gnssSettings: gnssSettings
     property alias mainStackView: mainStackView
+    property alias gnssSettings: gnssSettings
+    property alias positionSourceManager: positionSourceManager
 
     //--------------------------------------------------------------------------
 
@@ -63,6 +63,8 @@ Item {
         NavigationView {
             Layout.fillHeight: true
             Layout.fillWidth: true
+
+            positionSourceManager: mainView.positionSourceManager
         }
     }
 
@@ -74,6 +76,9 @@ Item {
         SettingsView {
             Layout.fillHeight: true
             Layout.fillWidth: true
+
+            gnssSettings: mainView.gnssSettings
+            positionSourceManager: mainView.positionSourceManager
         }
     }
 
@@ -85,6 +90,10 @@ Item {
         DevicesView {
             Layout.fillHeight: true
             Layout.fillWidth: true
+
+            stackView: mainView.mainStackView
+            gnssSettings: mainView.gnssSettings
+            positionSourceManager: mainView.positionSourceManager
         }
     }
 
@@ -101,20 +110,8 @@ Item {
 
     // External position sources -----------------------------------------------
 
-    PositioningSources {
-        id: sources
-
-        connectionType: controller.connectionType
-        discoverBluetooth: controller.discoverBluetooth
-        discoverBluetoothLE: controller.discoverBluetoothLE
-        discoverSerialPort: controller.discoverSerialPort
-    }
-
-    PositioningSourcesController {
-        id: controller
-
-        sources: sources
-        stayConnected: true
+    PositionSourceManager {
+        id: positionSourceManager
 
         discoverBluetooth: gnssSettings.discoverBluetooth
         discoverBluetoothLE: gnssSettings.discoverBluetoothLE
@@ -125,6 +122,21 @@ Item {
         storedDeviceJSON: gnssSettings.lastUsedDeviceJSON
         hostname: gnssSettings.hostname
         port: Number(gnssSettings.port)
+
+        altitudeType: gnssSettings.locationAltitudeType
+        customGeoidSeparation: gnssSettings.locationGeoidSeparation
+        antennaHeight: gnssSettings.locationAntennaHeight
+    }
+
+    PositionSourceMonitor {
+        positionSourceManager: positionSourceManager
+
+        maximumDataAge: gnssSettings.locationMaximumDataAge
+        maximumPositionAge: gnssSettings.locationMaximumPositionAge
+
+        onAlert: {
+            appAlert.positionSourceAlert(alertType);
+        }
     }
 
     GNSSSettings {
@@ -135,6 +147,10 @@ Item {
         defaultLocationAlertsVisualExternal: false
         defaultLocationAlertsSpeechExternal: false
         defaultLocationAlertsVibrateExternal: false
+    }
+
+    AppAlert {
+        id: appAlert
     }
 
     //--------------------------------------------------------------------------

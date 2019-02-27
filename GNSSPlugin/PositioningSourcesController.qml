@@ -5,8 +5,6 @@ import ArcGIS.AppFramework.Devices 1.0
 import ArcGIS.AppFramework.Networking 1.0
 import ArcGIS.AppFramework.Positioning 1.0
 
-import "./controls"
-
 Item {
     readonly property var eConnectionType: {
         "internal": 0,
@@ -57,6 +55,8 @@ Item {
     property bool stayConnected
     property bool initialized
 
+    signal startPositionSource()
+    signal stopPositionSource()
     signal startDiscoveryAgent()
     signal stopDiscoveryAgent()
     signal networkHostSelected(string hostname, int port)
@@ -129,6 +129,18 @@ Item {
                 }
             }
         }
+    }
+
+    // -------------------------------------------------------------------------
+
+    onStartPositionSource:  {
+        positionSource.start();
+    }
+
+    // -------------------------------------------------------------------------
+
+    onStopPositionSource:  {
+        positionSource.stop();
     }
 
     // -------------------------------------------------------------------------
@@ -301,25 +313,6 @@ Item {
             console.log("Connection attempt timed out");
             fullDisconnect();
             reconnect();
-        }
-    }
-
-    // -------------------------------------------------------------------------
-
-    // needed for ConfirmPanel to appear in the correct location
-    anchors.fill: parent
-
-    ConfirmPanel {
-        id: connectionErrorDialog
-
-        function showError(message) {
-            connectionErrorDialog.clear();
-            connectionErrorDialog.icon = "images/warning.png";
-            connectionErrorDialog.title = qsTr("Unable to connect");
-            connectionErrorDialog.text = message;
-            connectionErrorDialog.button1Text = qsTr("Ok");
-            connectionErrorDialog.button2Text = "";
-            connectionErrorDialog.show();
         }
     }
 

@@ -8,6 +8,11 @@ import "../GNSSPlugin"
 Item {
     id: _item
 
+    property StackView stackView
+    property GNSSSettings gnssSettings
+    property PositionSourceManager positionSourceManager
+    readonly property PositioningSourcesController controller: positionSourceManager.controller
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -23,9 +28,9 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            stackView: mainView.mainStackView
-            gnssSettings: mainView.gnssSettings
-            controller: mainView.controller
+            stackView: _item.stackView
+            gnssSettings: _item.gnssSettings
+            controller: _item.controller
 
             foregroundColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
             secondaryForegroundColor: buttonTextColor

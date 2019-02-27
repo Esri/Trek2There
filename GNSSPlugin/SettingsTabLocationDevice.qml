@@ -24,7 +24,6 @@ import "./controls"
 
 SettingsTab {
     id: sensorDeviceTab
-    icon: "images/satellite.png"
 
     property string deviceType: ""
     property string deviceName: ""

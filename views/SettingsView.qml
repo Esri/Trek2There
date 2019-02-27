@@ -34,7 +34,9 @@ Item {
 
     // PROPERTIES //////////////////////////////////////////////////////////////
 
-    property PositioningSourcesController controller: mainView.controller
+    property GNSSSettings gnssSettings
+    property PositionSourceManager positionSourceManager
+    readonly property PositioningSourcesController controller: positionSourceManager.controller
 
     property var distanceFormats: ["Decimal degrees", "Degrees, minutes, seconds", "Degrees, decimal minutes", "UTM (WGS84)", "MGRS"]
 

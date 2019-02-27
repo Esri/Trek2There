@@ -51,8 +51,8 @@ Item {
     property double currentAccuracyInUnits
     property int currentAccuracy
 
-    readonly property PositioningSourcesController controller: mainView.controller
-    readonly property PositionSource positionSource: controller.positionSource
+    property PositionSourceManager positionSourceManager
+    readonly property PositioningSourcesController controller: positionSourceManager.controller
 
     readonly property bool isConnecting: controller.isConnecting
     readonly property bool isConnected: controller.isConnected
@@ -63,6 +63,7 @@ Item {
     readonly property string soonToArriveMessage: qsTr("You will arrive in %1 s.").arg(currentPosition.etaSeconds.toFixed(0))
     readonly property string arrivedMessage: qsTr("You have arrived.")
 
+    property var position
     property bool initialized
 
     // 2.0 Experimental Properties ---------------------------------------------
@@ -108,8 +109,19 @@ Item {
             startNavigation();
         }
 
+        controller.startPositionSource();
         controller.reconnect();
         initialized = true;
+    }
+
+    //--------------------------------------------------------------------------
+
+    Connections {
+        target: positionSourceManager
+
+        onNewPosition: {
+            currentPosition.position = position;
+        }
     }
 
     // UI //////////////////////////////////////////////////////////////////////
@@ -949,7 +961,7 @@ Item {
     CurrentPosition {
         id: currentPosition
 
-        position: positionSource.position
+        position: navigationView.position
         destinationCoordinate: requestedDestination
         compassAzimuth: sensors.azimuthFromTrueNorth
         usingCompass: useCompassForNavigation
@@ -1045,7 +1057,7 @@ Item {
     HUDSensors {
         id: sensors
 
-        magneticDeclination: positionSource.position.magneticVariationValid ? positionSource.position.magneticVariation : 0.0
+        magneticDeclination: position && position.magneticVariationValid ? position.magneticVariation : 0.0
 
         azimuthFilterType: Qt.platform.os === "android" ? 1 : 0 // 0=rounding 1=smoothing
         azimuthRounding: 4 // Nearest degree >> 2=0.5, 3=0.33, 4=0.25 ... 10=0.1

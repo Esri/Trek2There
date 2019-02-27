@@ -48,7 +48,7 @@ Item {
     PositionSource {
         id: positionSource
 
-        active: true
+        active: false
         nmeaSource: connectionType > 0 ? nmeaSource : null
 
         onNameChanged: {
