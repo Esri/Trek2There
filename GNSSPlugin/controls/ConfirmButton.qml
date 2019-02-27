@@ -18,8 +18,6 @@ import QtQuick 2.9
 
 import ArcGIS.AppFramework 1.0
 
-import "../Controls"
-
 StyledButton {
     property color accentColor: "#88c448"
 

@@ -968,7 +968,7 @@ Item {
         navigating: navigationView.navigating
 
         onUpdateUI: {
-            if (!position.coordinate.isValid) {
+            if (!position || !position.coordinate.isValid) {
                 statusMessage.message = noLocationMessage;
                 statusMessage.show();
             } else {
@@ -1004,7 +1004,7 @@ Item {
                 }
             }
 
-            if (position.horizontalAccuracyValid) {
+            if (position && position.horizontalAccuracyValid) {
                 var accuracy = position.horizontalAccuracy;
                 if (accuracy > 1e-6 && accuracy <= 5) {
                     currentAccuracy = 4;
@@ -1024,7 +1024,7 @@ Item {
                 currentAccuracyInUnits = 0;
             }
 
-            if (position.speedValid) {
+            if (position && position.speedValid) {
                 currentSpeed = position.speed;
             }
         }
