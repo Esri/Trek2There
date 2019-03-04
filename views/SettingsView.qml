@@ -38,8 +38,6 @@ Item {
     property GNSSSettings gnssSettings
     property PositionSourceManager positionSourceManager
 
-    readonly property PositioningSourcesController controller: positionSourceManager.controller
-
     property var distanceFormats: ["Decimal degrees", "Degrees, minutes, seconds", "Degrees, decimal minutes", "UTM (WGS84)", "MGRS"]
 
     property var coordinateInfo: Coordinate.convert(requestedDestination, "dd" , { precision: 8 } ).dd
@@ -53,6 +51,7 @@ Item {
     readonly property var connectionStateColor: isConnecting ? "green" : isConnected ? buttonTextColor : "red"
     readonly property var connectionStateText:  isConnecting ? qsTr("(Connecting)") : isConnected ? qsTr("(Connected)") : qsTr("(Disconnected)")
 
+    readonly property PositioningSourcesController controller: positionSourceManager.controller
     readonly property bool isConnecting: controller.isConnecting
     readonly property bool isConnected: controller.isConnected
 
@@ -60,14 +59,14 @@ Item {
 
     //--------------------------------------------------------------------------
 
-    StackView.onDeactivating: {
-        initialized = false;
-        controller.stayConnected = true;
-    }
-
     StackView.onActivating: {
         controller.stayConnected = false;
         initialized = true;
+    }
+
+    StackView.onDeactivating: {
+        initialized = false;
+        controller.stayConnected = true;
     }
 
     //--------------------------------------------------------------------------

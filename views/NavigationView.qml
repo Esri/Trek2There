@@ -56,10 +56,6 @@ Item {
     property double currentAccuracyInUnits
     property int currentAccuracy
 
-    readonly property bool isConnecting: controller.isConnecting
-    readonly property bool isConnected: controller.isConnected
-    readonly property bool errorWhileConnecting: controller.errorWhileConnecting
-
     readonly property string startMovingMessage: qsTr("Start moving to determine direction.")
     readonly property string noLocationMessage: qsTr("Waiting for location.")
     readonly property string soonToArriveMessage: qsTr("You will arrive in %1 s.").arg(currentPosition.etaSeconds.toFixed(0))
@@ -753,7 +749,7 @@ Item {
                         source: "../images/settings.png"
                     }
 
-                    onClicked: mainStackView.push(settingsView)
+                    onClicked: stackView.push(settingsView)
 
                     Accessible.role: Accessible.Button
                     Accessible.name: qsTr("Settings")

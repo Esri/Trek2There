@@ -27,7 +27,7 @@ Item {
 
     property App app
 
-    property alias mainStackView: mainStackView
+    property alias stackView: mainStackView
     property alias gnssSettings: gnssSettings
     property alias positionSourceManager: positionSourceManager
     property alias settingsTabContainer: settingsTabContainer
@@ -66,7 +66,7 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            stackView: mainView.mainStackView
+            stackView: mainView.stackView
             positionSourceManager: mainView.positionSourceManager
         }
     }
@@ -80,7 +80,7 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            stackView: mainView.mainStackView
+            stackView: mainView.stackView
             gnssSettings: mainView.gnssSettings
             positionSourceManager: mainView.positionSourceManager
         }
@@ -142,9 +142,9 @@ Item {
         Layout.fillHeight: true
         Layout.fillWidth: true
 
-        stackView: mainStackView
-        gnssSettings: gnssSettings
-        controller: positionSourceManager.controller
+        stackView: mainView.stackView
+        gnssSettings: mainView.gnssSettings
+        positionSourceManager: mainView.positionSourceManager
 
         foregroundColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
         secondaryForegroundColor: buttonTextColor

@@ -30,7 +30,7 @@ SettingsTab {
 
     property StackView stackView
     property GNSSSettings gnssSettings
-    property PositioningSourcesController controller
+    property PositionSourceManager positionSourceManager
 
     property color foregroundColor: "#000000"
     property color secondaryForegroundColor: "#007ac2"
@@ -46,6 +46,7 @@ SettingsTab {
 
     // Internal properties -----------------------------------------------------
 
+    readonly property PositioningSourcesController controller: positionSourceManager.controller
     readonly property Device currentDevice: controller.currentDevice
 
     readonly property bool isConnecting: controller.isConnecting
