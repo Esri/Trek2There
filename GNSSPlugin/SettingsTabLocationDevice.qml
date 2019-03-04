@@ -57,13 +57,8 @@ SettingsTab {
         Accessible.role: Accessible.Pane
 
         Component.onCompleted: {
-            controller.onDetailedSettingsPage = controller.useInternalGPS ? gnssSettings.kInternalPositionSourceName !== deviceName : controller.currentName !== deviceName;
             objectName = deviceName;
             updateDescriptions();
-        }
-
-        Component.onDestruction: {
-            controller.onDetailedSettingsPage = false;
         }
 
         ColumnLayout {

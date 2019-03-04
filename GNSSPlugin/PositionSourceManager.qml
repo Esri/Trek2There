@@ -23,7 +23,7 @@ import ArcGIS.AppFramework.Positioning 1.0
 import "./controls"
 
 Item {
-    id: positionManager
+    id: positionSourceManager
 
     property alias controller: controller
     property alias positionSource: controller.positionSource
@@ -64,8 +64,8 @@ Item {
     readonly property bool isConnecting: controller.isConnecting || controller.errorWhileConnecting
     readonly property bool isConnected: controller.isConnected
     readonly property bool isWarmingUp: isConnected && positionCount <= warmupCount
-    readonly property bool onSettingsPage: controller.onSettingsPage
-    readonly property bool onDetailedSettingsPage: controller.onDetailedSettingsPage
+    property alias stayConnected: controller.stayConnected
+    property alias onSettingsPage: controller.onSettingsPage
 
     //--------------------------------------------------------------------------
 
@@ -101,6 +101,8 @@ Item {
 
     //--------------------------------------------------------------------------
 
+    signal startPositionSource()
+    signal stopPositionSource()
     signal newPosition(var position)
     signal error()
 
@@ -109,6 +111,19 @@ Item {
     Component.onCompleted: {
         AppFramework.environment.setValue("APPSTUDIO_POSITION_DESIRED_ACCURACY", "HIGHEST");
         AppFramework.environment.setValue("APPSTUDIO_POSITION_ACTIVITY_MODE", "OTHERNAVIGATION");
+    }
+
+    //-------------------------------------------------------------------------
+
+    onStartPositionSource: {
+        controller.startPositionSource();
+        controller.reconnect();
+    }
+
+    //-------------------------------------------------------------------------
+
+    onStopPositionSource: {
+        controller.stopPositionSource();
     }
 
     //-------------------------------------------------------------------------
@@ -134,15 +149,15 @@ Item {
         sources: sources
         stayConnected: true
 
-        discoverBluetooth: positionManager.discoverBluetooth
-        discoverBluetoothLE: positionManager.discoverBluetoothLE
-        discoverSerialPort: positionManager.discoverSerialPort
+        discoverBluetooth: positionSourceManager.discoverBluetooth
+        discoverBluetoothLE: positionSourceManager.discoverBluetoothLE
+        discoverSerialPort: positionSourceManager.discoverSerialPort
 
-        connectionType: positionManager.connectionType
-        storedDeviceName: positionManager.storedDeviceName
-        storedDeviceJSON: positionManager.storedDeviceJSON
-        hostname: positionManager.hostname
-        port: Number(positionManager.port)
+        connectionType: positionSourceManager.connectionType
+        storedDeviceName: positionSourceManager.storedDeviceName
+        storedDeviceJSON: positionSourceManager.storedDeviceJSON
+        hostname: positionSourceManager.hostname
+        port: Number(positionSourceManager.port)
 
         onIsConnectedChanged: {
             if (initialized && isGNSS) {

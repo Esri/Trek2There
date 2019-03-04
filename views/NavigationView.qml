@@ -44,8 +44,6 @@ Item {
     property StackView stackView
     property PositionSourceManager positionSourceManager
 
-    readonly property PositioningSourcesController controller: positionSourceManager.controller
-
     property bool hudOn
     property bool navigating
     property bool arrivedAtDestination
@@ -107,8 +105,7 @@ Item {
             startNavigation();
         }
 
-        controller.startPositionSource();
-        controller.reconnect();
+        positionSourceManager.startPositionSource();
         initialized = true;
     }
 

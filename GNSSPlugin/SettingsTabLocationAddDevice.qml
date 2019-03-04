@@ -63,8 +63,6 @@ SettingsTab {
         Component.onCompleted: {
             _item.initialized = true;
 
-            controller.onDetailedSettingsPage = true;
-
             // omit previously stored device from discovered devices list
             // cachedReceiversListModel is available via parent view
 
@@ -86,8 +84,6 @@ SettingsTab {
         // ---------------------------------------------------------------------
 
         Component.onDestruction: {
-            controller.onDetailedSettingsPage = false;
-
             // Clear the model so old devices are not visible if view is re-loaded.
             discoveryAgent.devices.clear();
 

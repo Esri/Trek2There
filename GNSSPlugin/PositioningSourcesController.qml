@@ -50,7 +50,6 @@ Item {
     readonly property string noNetworkProviderError: qsTr("No network location provider configured.")
 
     property bool errorWhileConnecting
-    property bool onDetailedSettingsPage
     property bool onSettingsPage
     property bool stayConnected
     property bool initialized

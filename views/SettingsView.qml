@@ -51,22 +51,21 @@ Item {
     readonly property var connectionStateColor: isConnecting ? "green" : isConnected ? buttonTextColor : "red"
     readonly property var connectionStateText:  isConnecting ? qsTr("(Connecting)") : isConnected ? qsTr("(Connected)") : qsTr("(Disconnected)")
 
-    readonly property PositioningSourcesController controller: positionSourceManager.controller
-    readonly property bool isConnecting: controller.isConnecting
-    readonly property bool isConnected: controller.isConnected
+    readonly property bool isConnecting: positionSourceManager.isConnecting
+    readonly property bool isConnected: positionSourceManager.isConnected
 
     property bool initialized
 
     //--------------------------------------------------------------------------
 
     StackView.onActivating: {
-        controller.stayConnected = false;
+        positionSourceManager.stayConnected = false;
         initialized = true;
     }
 
     StackView.onDeactivating: {
         initialized = false;
-        controller.stayConnected = true;
+        positionSourceManager.stayConnected = true;
     }
 
     //--------------------------------------------------------------------------

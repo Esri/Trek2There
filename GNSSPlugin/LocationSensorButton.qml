@@ -52,7 +52,7 @@ StyledImageButton {
                 ? (blinkState ? "./images/satellite-f.png" : "./images/satellite.png")
                 : ""
 
-    visible: positionSourceManager && !positionSourceManager.onDetailedSettingsPage && (positionSourceManager.active || isConnecting)
+    visible: positionSourceManager && (positionSourceManager.active || isConnecting)
     enabled: visible && source > ""
 
     //--------------------------------------------------------------------------
