@@ -4,6 +4,7 @@
         "audio": false,
         "backgroundBluetoothCentral": false,
         "backgroundLocation": true,
+        "beacon": false,
         "biometricAuthentication": false,
         "bluetooth": true,
         "camera": true,
@@ -21,7 +22,7 @@
         "microphone": false,
         "network": true,
         "storage": true,
-        "vibration": false
+        "vibration": true
     },
     "deployment": {
         "android": {
