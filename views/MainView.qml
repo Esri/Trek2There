@@ -30,6 +30,8 @@ Item {
     property alias mainStackView: mainStackView
     property alias gnssSettings: gnssSettings
     property alias positionSourceManager: positionSourceManager
+    property alias settingsTabContainer: settingsTabContainer
+    property alias locationSettingsTab: locationSettingsTab
 
     //--------------------------------------------------------------------------
 
@@ -64,6 +66,7 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
+            stackView: mainView.mainStackView
             positionSourceManager: mainView.positionSourceManager
         }
     }
@@ -74,20 +77,6 @@ Item {
         id: settingsView
 
         SettingsView {
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-
-            gnssSettings: mainView.gnssSettings
-            positionSourceManager: mainView.positionSourceManager
-        }
-    }
-
-    //--------------------------------------------------------------------------
-
-    Component {
-        id: devicesView
-
-        DevicesView {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
@@ -129,6 +118,8 @@ Item {
     }
 
     PositionSourceMonitor {
+        id: positionSourceMonitor
+
         positionSourceManager: positionSourceManager
 
         maximumDataAge: gnssSettings.locationMaximumDataAge
@@ -137,6 +128,33 @@ Item {
         onAlert: {
             appAlert.positionSourceAlert(alertType);
         }
+    }
+
+    SettingsTabContainer {
+        id: settingsTabContainer
+    }
+
+    SettingsTabLocation {
+        id: locationSettingsTab
+
+        title: qsTr("Location Provider")
+
+        Layout.fillHeight: true
+        Layout.fillWidth: true
+
+        stackView: mainStackView
+        gnssSettings: gnssSettings
+        controller: positionSourceManager.controller
+
+        foregroundColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+        secondaryForegroundColor: buttonTextColor
+        backgroundColor: !nightMode ? dayModeSettings.background : nightModeSettings.background
+        secondaryBackgroundColor: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
+        selectedBackgroundColor: !nightMode ? Qt.lighter(secondaryBackgroundColor) : Qt.darker(secondaryBackgroundColor)
+        hoverBackgroundColor: buttonTextColor
+        dividerColor: !nightMode ? "#c0c0c0" : Qt.darker("#c0c0c0")
+
+        showDetailedSettingsCog: true // XXX only for testing, set to false for release
     }
 
     GNSSSettings {

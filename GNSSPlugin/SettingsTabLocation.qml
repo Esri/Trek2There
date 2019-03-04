@@ -25,7 +25,7 @@ import ArcGIS.AppFramework.Positioning 1.0
 
 import "./controls"
 
-Rectangle {
+SettingsTab {
     id: locationSettingsTab
 
     property StackView stackView
@@ -43,8 +43,6 @@ Rectangle {
     property string fontFamily: Qt.application.font.family
 
     property bool showDetailedSettingsCog: true
-
-    color: secondaryBackgroundColor
 
     // Internal properties -----------------------------------------------------
 

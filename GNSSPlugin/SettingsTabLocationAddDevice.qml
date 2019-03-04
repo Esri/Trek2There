@@ -44,7 +44,7 @@ SettingsTab {
 
         // Internal properties -------------------------------------------------
 
-        readonly property PositioningSourcesController controller: settingsTabLocation.controller
+        readonly property PositioningSourcesController controller: locationSettingsTab.controller
         readonly property DeviceDiscoveryAgent discoveryAgent: controller.discoveryAgent
 
         readonly property alias hostname: hostnameTextField.text
@@ -212,7 +212,7 @@ SettingsTab {
                     enabled: _item.hostname > "" && _item.port > 0
 
                     Layout.fillWidth: true
-                    fontFamily: settingsTabLocation.fontFamily
+                    fontFamily: locationSettingsTab.fontFamily
 
                     text: qsTr("Add")
 
@@ -414,7 +414,7 @@ SettingsTab {
                             verticalAlignment: Text.AlignVCenter
 
                             pointSize: 14
-                            fontFamily: settingsTabLocation.fontFamily
+                            fontFamily: locationSettingsTab.fontFamily
                             bold: false
                         }
                     }

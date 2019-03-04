@@ -34,8 +34,10 @@ Item {
 
     // PROPERTIES //////////////////////////////////////////////////////////////
 
+    property StackView stackView
     property GNSSSettings gnssSettings
     property PositionSourceManager positionSourceManager
+
     readonly property PositioningSourcesController controller: positionSourceManager.controller
 
     property var distanceFormats: ["Decimal degrees", "Degrees, minutes, seconds", "Degrees, decimal minutes", "UTM (WGS84)", "MGRS"]
@@ -500,7 +502,11 @@ Item {
                                 }
 
                                 onClicked: {
-                                    mainStackView.push(devicesView);
+                                    stackView.push(mainView.settingsTabContainer, {
+                                                          settingsTab: mainView.locationSettingsTab,
+                                                          title: mainView.locationSettingsTab.title,
+                                                          settingsComponent: mainView.locationSettingsTab.contentComponent,
+                                                      });
                                 }
                             }
                         }

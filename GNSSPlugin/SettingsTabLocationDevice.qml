@@ -141,7 +141,7 @@ SettingsTab {
                     borderColor: locationSettingsTab.dividerColor
 
                     text: qsTr("Remove %1").arg(deviceLabel > "" ? deviceLabel : deviceName)
-                    fontFamily: settingsTabLocation.fontFamily
+                    fontFamily: locationSettingsTab.fontFamily
 
                     anchors{
                         fill: parent
@@ -165,9 +165,9 @@ SettingsTab {
 
             SettingsTabDelegate {
                 listTabView: devicesTabView
-                foregroundColor: settingsTabLocation.foregroundColor
-                hoverBackgroundColor: settingsTabLocation.hoverBackgroundColor
-                fontFamily: settingsTabLocation.fontFamily
+                foregroundColor: locationSettingsTab.foregroundColor
+                hoverBackgroundColor: locationSettingsTab.hoverBackgroundColor
+                fontFamily: locationSettingsTab.fontFamily
             }
         }
 

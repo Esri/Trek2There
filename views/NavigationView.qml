@@ -41,6 +41,11 @@ Item {
 
     // PROPERTIES //////////////////////////////////////////////////////////////
 
+    property StackView stackView
+    property PositionSourceManager positionSourceManager
+
+    readonly property PositioningSourcesController controller: positionSourceManager.controller
+
     property bool hudOn
     property bool navigating
     property bool arrivedAtDestination
@@ -51,9 +56,6 @@ Item {
     property double currentAccuracyInUnits
     property int currentAccuracy
 
-    property PositionSourceManager positionSourceManager
-    readonly property PositioningSourcesController controller: positionSourceManager.controller
-
     readonly property bool isConnecting: controller.isConnecting
     readonly property bool isConnected: controller.isConnected
     readonly property bool errorWhileConnecting: controller.errorWhileConnecting
@@ -63,7 +65,7 @@ Item {
     readonly property string soonToArriveMessage: qsTr("You will arrive in %1 s.").arg(currentPosition.etaSeconds.toFixed(0))
     readonly property string arrivedMessage: qsTr("You have arrived.")
 
-    property var position
+    property var newPosition
     property bool initialized
 
     // 2.0 Experimental Properties ---------------------------------------------
@@ -120,7 +122,7 @@ Item {
         target: positionSourceManager
 
         onNewPosition: {
-            currentPosition.position = position;
+            navigationView.newPosition = position;
         }
     }
 
@@ -663,24 +665,27 @@ Item {
 
     // External GPS indicator --------------------------------------------------
 
-    Image {
-        id: externalGPSIndicator
+    LocationSensorButton {
+        id: locationSensorButton
 
         width: sf(30)
         height: width
-
-        visible: isConnected
 
         anchors.top: statusMessage.visible ? statusMessageContainer.bottom : parent.top
         anchors.topMargin: sideMargin
         anchors.right: parent.right
         anchors.rightMargin: sideMargin
 
-        source: !nightMode ? "../images/satellite_day.png" : "../images/satellite_night.png"
-        fillMode: Image.PreserveAspectFit
+        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+
+        stackView: navigationView.stackView
+        positionSourceManager: navigationView.positionSourceManager
+
+        settingsTabContainer: mainView.settingsTabContainer
+        settingsTabLocation: mainView.locationSettingsTab
 
         Accessible.role: Accessible.Indicator
-        Accessible.name: qsTr("Connected to external GPS receiver")
+        Accessible.name: qsTr("Location provider status")
     }
 
     // Compass indicator -------------------------------------------------------
@@ -703,39 +708,6 @@ Item {
 
         Accessible.role: Accessible.Indicator
         Accessible.name: qsTr("Magnetic compass is in use.")
-    }
-
-    // Connecting indicator ----------------------------------------------
-
-    Rectangle {
-        width: sf(30)
-        height: width
-
-        visible: discoveryIndicator.running
-
-        anchors.top: statusMessage.visible ? statusMessageContainer.bottom : parent.top
-        anchors.topMargin: sideMargin
-        anchors.right: parent.right
-        anchors.rightMargin: sideMargin
-
-        color: !nightMode ? dayModeSettings.background : nightModeSettings.background
-
-        BusyIndicator {
-            id: discoveryIndicator
-
-            anchors.fill: parent
-
-            running: isConnecting || errorWhileConnecting
-        }
-
-        ColorOverlay {
-            anchors.fill: discoveryIndicator
-            source: discoveryIndicator
-            color: buttonTextColor
-        }
-
-        Accessible.role: Accessible.Indicator
-        Accessible.name: qsTr("Looking for external GPS receiver")
     }
 
     // Toolbar -----------------------------------------------------------------
@@ -961,7 +933,7 @@ Item {
     CurrentPosition {
         id: currentPosition
 
-        position: navigationView.position
+        position: navigationView.newPosition
         destinationCoordinate: requestedDestination
         compassAzimuth: sensors.azimuthFromTrueNorth
         usingCompass: useCompassForNavigation
@@ -1057,7 +1029,7 @@ Item {
     HUDSensors {
         id: sensors
 
-        magneticDeclination: position && position.magneticVariationValid ? position.magneticVariation : 0.0
+        magneticDeclination: newPosition && newPosition.magneticVariationValid ? newPosition.magneticVariation : 0.0
 
         azimuthFilterType: Qt.platform.os === "android" ? 1 : 0 // 0=rounding 1=smoothing
         azimuthRounding: 4 // Nearest degree >> 2=0.5, 3=0.33, 4=0.25 ... 10=0.1
