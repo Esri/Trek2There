@@ -21,7 +21,7 @@ import QtQuick.Controls 1.4
 import ArcGIS.AppFramework 1.0
 
 import "./controls"
-import "./XForm.js" as XFormJS
+import "./CoordinateConversions.js" as CC
 
 SettingsTab {
     id: sensorDeviceTab
@@ -259,8 +259,8 @@ SettingsTab {
             // antenna height
             if (props.antennaHeight !== undefined) {
                 sensorAntennaHeight.description = isFinite(props.antennaHeight)
-                        ? XFormJS.toLocaleLengthString(props.antennaHeight, locale)
-                        : XFormJS.toLocaleLengthString(0, locale);
+                        ? CC.toLocaleLengthString(props.antennaHeight, locale)
+                        : CC.toLocaleLengthString(0, locale);
             }
         }
     }

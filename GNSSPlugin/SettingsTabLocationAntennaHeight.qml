@@ -20,7 +20,7 @@ import QtQuick.Layouts 1.3
 import ArcGIS.AppFramework 1.0
 
 import "./controls"
-import "./XForm.js" as XFormJS
+import "./CoordinateConversions.js" as CC
 
 SettingsTab {
 
@@ -85,12 +85,12 @@ SettingsTab {
 
                     Layout.fillWidth: true
 
-                    suffixText: XFormJS.localeLengthSuffix(locale)
+                    suffixText: CC.localeLengthSuffix(locale)
 
-                    value: XFormJS.toLocaleLength(gnssSettings.knownDevices[deviceName].antennaHeight, locale)
+                    value: CC.toLocaleLength(gnssSettings.knownDevices[deviceName].antennaHeight, locale)
 
                     onValueChanged: {
-                        var val = XFormJS.fromLocaleLength(value, locale)
+                        var val = CC.fromLocaleLength(value, locale)
                         if (initialized && !gnssSettings.updating) {
                             gnssSettings.knownDevices[deviceName].antennaHeight = val;
                             if (isTheActiveSensor) {

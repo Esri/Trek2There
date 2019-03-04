@@ -19,7 +19,7 @@ import QtPositioning 5.8
 
 import ArcGIS.AppFramework 1.0
 
-import "./XForm.js" as XFormJS
+import "./CoordinateConversions.js" as CC
 
 InfoView {
     id: coordinateInfo
@@ -48,15 +48,15 @@ InfoView {
     readonly property var kPrjFormats: [
         {
             label: qsTr("USNG"),
-            format: XFormJS.formatUsngCoordinate,
+            format: CC.formatUsngCoordinate,
         },
         {
             label: qsTr("MGRS"),
-            format: XFormJS.formatMgrsCoordinate,
+            format: CC.formatMgrsCoordinate,
         },
         {
             label: qsTr("UTM/UPS"),
-            format: XFormJS.formatUniversalCoordinate,
+            format: CC.formatUniversalCoordinate,
         },
     ]
 
@@ -125,9 +125,9 @@ InfoView {
             return;
         }
 
-        latitude = XFormJS.formatLatitude(coordinate.latitude, llFormat);
-        longitude = XFormJS.formatLongitude(coordinate.longitude, llFormat);
-        altitude = XFormJS.toLocaleLengthString(coordinate.altitude, locale, 2);
+        latitude = CC.formatLatitude(coordinate.latitude, llFormat);
+        longitude = CC.formatLongitude(coordinate.longitude, llFormat);
+        altitude = CC.toLocaleLengthString(coordinate.altitude, locale, 2);
         prjText = kPrjFormats[prjFormatIndex].format(coordinate);
 
         // timeOffset corrects for system clock running fast (or late)

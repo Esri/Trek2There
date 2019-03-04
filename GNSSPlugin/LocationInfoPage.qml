@@ -20,7 +20,7 @@ import QtQuick.Controls 2.2
 import ArcGIS.AppFramework 1.0
 
 import "./controls"
-import "XForm.js" as XFormJS
+import "CoordinateConversions.js" as CC
 
 Page {
     id: page
@@ -164,13 +164,13 @@ Page {
     //--------------------------------------------------------------------------
 
     function linearValue(metres) {
-        return XFormJS.toLocaleLengthString(metres, locale);
+        return CC.toLocaleLengthString(metres, locale);
     }
 
     //--------------------------------------------------------------------------
 
     function speedValue(metresPerSecond) {
-        return XFormJS.toLocaleSpeedString(metresPerSecond, locale);
+        return CC.toLocaleSpeedString(metresPerSecond, locale);
     }
 
     //--------------------------------------------------------------------------

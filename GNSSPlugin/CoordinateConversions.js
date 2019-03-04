@@ -215,10 +215,6 @@ function formatUniversalCoordinate(coordinate) {
     .arg(Math.floor(universalGrid.northing).toString());
 }
 
-
-
-
-
 //--------------------------------------------------------------------------
 
 function localeLengthSuffix(locale) {

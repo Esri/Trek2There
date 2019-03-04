@@ -22,7 +22,7 @@ import QtQuick.Controls 2.2
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Positioning 1.0
 
-import "XForm.js" as XFormJS
+import "CoordinateConversions.js" as CC
 import "./controls"
 
 SwipeTab {
@@ -266,13 +266,13 @@ SwipeTab {
     //--------------------------------------------------------------------------
 
     function linearValue(metres) {
-        return XFormJS.toLocaleLengthString(metres, locale);
+        return CC.toLocaleLengthString(metres, locale);
     }
 
     //--------------------------------------------------------------------------
 
     function speedValue(metresPerSecond) {
-        return XFormJS.toLocaleSpeedString(metresPerSecond, locale);
+        return CC.toLocaleSpeedString(metresPerSecond, locale);
     }
 
     //--------------------------------------------------------------------------
