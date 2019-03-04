@@ -30,6 +30,11 @@ SettingsTab {
     property string deviceLabel: ""
     property var deviceProperties: null
 
+    property bool showAboutDevice: true
+    property bool showAlerts: true
+    property bool showAntennaHeight: true
+    property bool showAltitude: true
+
     signal selectInternal()
     signal updateViewAndDelegate()
 
@@ -82,6 +87,10 @@ SettingsTab {
 
                     SettingsTabLocationAboutDevice {
                         id: sensorAbout
+
+                        visible: showAboutDevice
+                        enabled: visible
+
                         onChanged: {
                             updateViewAndDelegate();
                             _item.updateDescriptions();
@@ -90,6 +99,10 @@ SettingsTab {
 
                     SettingsTabLocationAlerts {
                         id: sensorAlerts
+
+                        visible: showAlerts
+                        enabled: visible
+
                         onChanged: {
                             _item.updateDescriptions();
                         }
@@ -97,6 +110,10 @@ SettingsTab {
 
                     SettingsTabLocationAntennaHeight {
                         id: sensorAntennaHeight
+
+                        visible: showAntennaHeight
+                        enabled: visible
+
                         onChanged: {
                             _item.updateDescriptions();
                         }
@@ -104,6 +121,10 @@ SettingsTab {
 
                     SettingsTabLocationAltitude {
                         id: sensorAltitude
+
+                        visible: showAltitude
+                        enabled: visible
+
                         onChanged: {
                             _item.updateDescriptions();
                         }

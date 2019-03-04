@@ -154,7 +154,10 @@ Item {
         hoverBackgroundColor: buttonTextColor
         dividerColor: !nightMode ? "#c0c0c0" : Qt.darker("#c0c0c0")
 
-        showDetailedSettingsCog: true // XXX only for testing, set to false for release
+        showAboutDevice: true
+        showAlerts: true
+        showAntennaHeight: false
+        showAltitude: false
     }
 
     GNSSSettings {

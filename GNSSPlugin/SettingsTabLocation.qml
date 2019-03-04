@@ -42,7 +42,12 @@ SettingsTab {
 
     property string fontFamily: Qt.application.font.family
 
-    property bool showDetailedSettingsCog: true
+    property bool showAboutDevice: true
+    property bool showAlerts: true
+    property bool showAntennaHeight: true
+    property bool showAltitude: true
+
+    readonly property bool showDetailedSettingsCog: showAboutDevice || showAlerts || showAntennaHeight || showAltitude
 
     // Internal properties -----------------------------------------------------
 
@@ -221,6 +226,11 @@ SettingsTab {
 
             SettingsTabLocationDevice {
                 property string tabType: kDelegateTypeCachedDevice
+
+                showAboutDevice: locationSettingsTab.showAboutDevice
+                showAlerts: locationSettingsTab.showAlerts
+                showAntennaHeight: locationSettingsTab.showAntennaHeight
+                showAltitude: locationSettingsTab.showAltitude
             }
         }
 
