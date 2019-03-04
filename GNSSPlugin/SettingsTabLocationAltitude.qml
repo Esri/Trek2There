@@ -20,6 +20,7 @@ import QtQuick.Layouts 1.3
 import ArcGIS.AppFramework 1.0
 
 import "./controls"
+import "./XForm.js" as XFormJS
 
 SettingsTab {
 
@@ -143,12 +144,12 @@ SettingsTab {
 
                     Layout.fillWidth: true
 
-                    suffixText: localeLengthSuffix(locale)
+                    suffixText: XFormJS.localeLengthSuffix(locale)
 
-                    value: toLocaleLength(gnssSettings.knownDevices[deviceName].geoidSeparation, locale)
+                    value: XFormJS.toLocaleLength(gnssSettings.knownDevices[deviceName].geoidSeparation, locale)
 
                     onValueChanged: {
-                        var val = fromLocaleLength(value, locale)
+                        var val = XFormJS.fromLocaleLength(value, locale)
                         if (initialized && !gnssSettings.updating) {
                             gnssSettings.knownDevices[deviceName].geoidSeparation = val;
                             if (isTheActiveSensor) {

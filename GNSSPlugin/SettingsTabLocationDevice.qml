@@ -21,6 +21,7 @@ import QtQuick.Controls 1.4
 import ArcGIS.AppFramework 1.0
 
 import "./controls"
+import "./XForm.js" as XFormJS
 
 SettingsTab {
     id: sensorDeviceTab
@@ -258,8 +259,8 @@ SettingsTab {
             // antenna height
             if (props.antennaHeight !== undefined) {
                 sensorAntennaHeight.description = isFinite(props.antennaHeight)
-                        ? toLocaleLengthString(props.antennaHeight, locale)
-                        : toLocaleLengthString(0, locale);
+                        ? XFormJS.toLocaleLengthString(props.antennaHeight, locale)
+                        : XFormJS.toLocaleLengthString(0, locale);
             }
         }
     }
