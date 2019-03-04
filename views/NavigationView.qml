@@ -674,8 +674,9 @@ Item {
         stackView: navigationView.stackView
         positionSourceManager: navigationView.positionSourceManager
 
-        settingsTabContainer: mainView.settingsTabContainer
-        settingsTabLocation: mainView.locationSettingsTab
+        // set these to access location settings from the satellite info page
+        //settingsTabContainer: mainView.settingsTabContainer
+        //settingsTabLocation: mainView.locationSettingsTab
 
         Accessible.role: Accessible.Indicator
         Accessible.name: qsTr("Location provider status")
