@@ -126,7 +126,7 @@ InfoView {
         }
 
         latitude = XFormJS.formatLatitude(coordinate.latitude, llFormat);
-        longitude = XFormJS.formatLatitude(coordinate.longitude, llFormat);
+        longitude = XFormJS.formatLongitude(coordinate.longitude, llFormat);
         altitude = XFormJS.toLocaleLengthString(coordinate.altitude, locale, 2);
         prjText = kPrjFormats[prjFormatIndex].format(coordinate);
 
