@@ -164,10 +164,6 @@ Item {
         id: gnssSettings
 
         app: mainView.app
-
-        defaultLocationAlertsVisualExternal: false
-        defaultLocationAlertsSpeechExternal: false
-        defaultLocationAlertsVibrateExternal: false
     }
 
     AppAlert {
