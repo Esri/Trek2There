@@ -41,8 +41,7 @@ Item {
 
     // PROPERTIES //////////////////////////////////////////////////////////////
 
-    property StackView stackView
-    property PositionSourceManager positionSourceManager
+    property GNSSManager gnssManager
 
     property bool hudOn
     property bool navigating
@@ -105,14 +104,14 @@ Item {
             startNavigation();
         }
 
-        positionSourceManager.startPositionSource();
+        gnssManager.startPositionSource();
         initialized = true;
     }
 
     //--------------------------------------------------------------------------
 
     Connections {
-        target: positionSourceManager
+        target: gnssManager
 
         onNewPosition: {
             navigationView.newPosition = position;
@@ -671,12 +670,8 @@ Item {
 
         color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
 
-        stackView: navigationView.stackView
-        positionSourceManager: navigationView.positionSourceManager
-
-        // set these to access location settings from the satellite info page
-        //settingsTabContainer: mainView.settingsTabContainer
-        //settingsTabLocation: mainView.locationSettingsTab
+        gnssManager: navigationView.gnssManager
+        allowSettingsAccess: false
 
         Accessible.role: Accessible.Indicator
         Accessible.name: qsTr("Location provider status")
@@ -747,7 +742,7 @@ Item {
                         source: "../images/settings.png"
                     }
 
-                    onClicked: stackView.push(settingsView)
+                    onClicked: mainStackView.push(settingsView)
 
                     Accessible.role: Accessible.Button
                     Accessible.name: qsTr("Settings")

@@ -28,10 +28,7 @@ Item {
     property App app
 
     property alias stackView: mainStackView
-    property alias gnssSettings: gnssSettings
-    property alias positionSourceManager: positionSourceManager
-    property alias settingsTabContainer: settingsTabContainer
-    property alias locationSettingsTab: locationSettingsTab
+    property alias gnssManager: gnssManager
 
     //--------------------------------------------------------------------------
 
@@ -66,8 +63,7 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            stackView: mainView.stackView
-            positionSourceManager: mainView.positionSourceManager
+            gnssManager: mainView.gnssManager
         }
     }
 
@@ -80,9 +76,7 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            stackView: mainView.stackView
-            gnssSettings: mainView.gnssSettings
-            positionSourceManager: mainView.positionSourceManager
+            gnssManager: mainView.gnssManager
         }
     }
 
@@ -99,52 +93,13 @@ Item {
 
     // External position sources -----------------------------------------------
 
-    PositionSourceManager {
-        id: positionSourceManager
-
-        discoverBluetooth: gnssSettings.discoverBluetooth
-        discoverBluetoothLE: gnssSettings.discoverBluetoothLE
-        discoverSerialPort: gnssSettings.discoverSerialPort
-
-        connectionType: gnssSettings.locationSensorConnectionType
-        storedDeviceName: gnssSettings.lastUsedDeviceName
-        storedDeviceJSON: gnssSettings.lastUsedDeviceJSON
-        hostname: gnssSettings.hostname
-        port: Number(gnssSettings.port)
-
-        altitudeType: gnssSettings.locationAltitudeType
-        customGeoidSeparation: gnssSettings.locationGeoidSeparation
-        antennaHeight: gnssSettings.locationAntennaHeight
-    }
-
-    PositionSourceMonitor {
-        id: positionSourceMonitor
-
-        positionSourceManager: positionSourceManager
-
-        maximumDataAge: gnssSettings.locationMaximumDataAge
-        maximumPositionAge: gnssSettings.locationMaximumPositionAge
-
-        onAlert: {
-            appAlert.positionSourceAlert(alertType);
-        }
-    }
-
-    SettingsTabContainer {
-        id: settingsTabContainer
-    }
-
-    SettingsTabLocation {
-        id: locationSettingsTab
+    GNSSManager {
+        id: gnssManager
 
         title: qsTr("Location Provider")
 
-        Layout.fillHeight: true
-        Layout.fillWidth: true
-
+        app: mainView.app
         stackView: mainView.stackView
-        gnssSettings: mainView.gnssSettings
-        positionSourceManager: mainView.positionSourceManager
 
         foregroundColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
         secondaryForegroundColor: buttonTextColor
@@ -154,22 +109,12 @@ Item {
         hoverBackgroundColor: buttonTextColor
         dividerColor: !nightMode ? "#c0c0c0" : Qt.darker("#c0c0c0")
 
+        fontFamily: Qt.application.font.family
+
         showAboutDevice: true
         showAlerts: true
-        showAntennaHeight: false
-        showAltitude: false
-    }
-
-    GNSSSettings {
-        id: gnssSettings
-
-        app: mainView.app
-    }
-
-    AppAlert {
-        id: appAlert
-
-        gnssSettings: gnssSettings
+//        showAntennaHeight: false
+//        showAltitude: false
     }
 
     //--------------------------------------------------------------------------

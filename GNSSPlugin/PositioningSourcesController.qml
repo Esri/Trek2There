@@ -64,6 +64,7 @@ Item {
     signal disconnect()
     signal reconnect()
     signal fullDisconnect()
+    signal error(string errorString)
 
     // -------------------------------------------------------------------------
 
@@ -116,7 +117,7 @@ Item {
                 if (currentDevice) {
                     deviceSelected(currentDevice)
                 } else if (!onSettingsPage) {
-                    connectionErrorDialog.showError(noExternalReceiverError);
+                    error(noExternalReceiverError);
                 }
             }
         } else if (useTCPConnection) {
@@ -124,7 +125,7 @@ Item {
                 if (hostname > "" && port > "") {
                     sources.networkHostSelected(hostname, port);
                 } else if (!onSettingsPage) {
-                    connectionErrorDialog.showError(noNetworkProviderError);
+                    error(noNetworkProviderError);
                 }
             }
         }
@@ -195,7 +196,7 @@ Item {
         onErrorChanged: {
             if (useTCPConnection) {
                 console.log("TCP connection error:", tcpSocket.error, tcpSocket.errorString)
-                connectionErrorDialog.showError(tcpSocket.errorString);
+                error(tcpSocket.errorString);
 
 //                if (stayConnected && !onSettingsPage) {
 //                    errorWhileConnecting = true;
@@ -224,7 +225,7 @@ Item {
 
                 // showing this dialog if we're not on the settings page proves too distracting
                 if (onSettingsPage) {
-                    connectionErrorDialog.showError(currentDevice.error);
+                    error(currentDevice.error);
                 }
 
                 if (stayConnected && !onSettingsPage) {
@@ -256,7 +257,7 @@ Item {
         onErrorChanged: {
             console.log("Device discovery agent error:", discoveryAgent.error)
             if (useExternalGPS) {
-                connectionErrorDialog.showError(discoveryAgent.error);
+                error(discoveryAgent.error);
             }
         }
 

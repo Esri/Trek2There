@@ -27,20 +27,21 @@ StyledImageButton {
 
     //--------------------------------------------------------------------------
 
-    property StackView stackView
-    property PositionSourceManager positionSourceManager
+    property GNSSManager gnssManager
+    property bool allowSettingsAccess
+
+    readonly property StackView stackView: gnssManager.stackView
+    readonly property PositionSourceManager positionSourceManager: gnssManager.positionSourceManager
 
     readonly property bool isConnecting: positionSourceManager && positionSourceManager.isConnecting
     readonly property bool isConnected: positionSourceManager && positionSourceManager.isConnected
     readonly property bool isWarmingUp: positionSourceManager && positionSourceManager.isWarmingUp
 
+    readonly property var settingsTabContainer: gnssManager.settingsTabContainer
+    readonly property var settingsTabLocation: gnssManager.locationSettingsTab
+
     property bool blinkTrigger: false
     property bool blinkState: false
-
-    // set these to provide access to location settings
-    property var settingsTabContainer
-    property var settingsTabLocation
-    property bool allowSettingsAccess: true
 
     //--------------------------------------------------------------------------
 

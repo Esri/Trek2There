@@ -20,8 +20,6 @@ import QtPositioning 5.8
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Positioning 1.0
 
-import "./controls"
-
 Item {
     id: positionSourceManager
 
@@ -86,8 +84,6 @@ Item {
 
     //--------------------------------------------------------------------------
 
-    property string errorString
-
     property bool debug: false
 
     //--------------------------------------------------------------------------
@@ -104,7 +100,7 @@ Item {
     signal startPositionSource()
     signal stopPositionSource()
     signal newPosition(var position)
-    signal error()
+    signal error(string errorString)
 
     //--------------------------------------------------------------------------
 
@@ -167,24 +163,9 @@ Item {
                 }
             }
         }
-    }
 
-    // -------------------------------------------------------------------------
-
-    // needed for ConfirmPanel to appear in the correct location
-    anchors.fill: parent
-
-    ConfirmPanel {
-        id: connectionErrorDialog
-
-        function showError(message) {
-            connectionErrorDialog.clear();
-            connectionErrorDialog.icon = "images/warning.png";
-            connectionErrorDialog.title = qsTr("Unable to connect");
-            connectionErrorDialog.text = message;
-            connectionErrorDialog.button1Text = qsTr("Ok");
-            connectionErrorDialog.button2Text = "";
-            connectionErrorDialog.show();
+        onError: {
+            positionSourceManager.error(errorString);
         }
     }
 
@@ -215,8 +196,6 @@ Item {
 
                 updateAltitude(position);
 
-                errorString = "";
-
                 if (isWarmingUp) {
                     console.log("Cold position source - count:", positionCount, "of", warmupCount, "coordinate:", position.coordinate, "timestamp:", position.timestamp, "connectionType:", controller.connectionType);
                 } else if (isConnected) {
@@ -231,6 +210,8 @@ Item {
 
         onSourceErrorChanged: {
             console.error("Positioning Source Error:", positionSource.sourceError);
+
+            var errorString = "";
 
             switch (positionSource.sourceError) {
             case PositionSource.AccessError :
@@ -254,7 +235,7 @@ Item {
                 break;
             }
 
-            error();
+            error(errorString);
         }
     }
 
