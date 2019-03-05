@@ -35,10 +35,7 @@ Item {
     // PROPERTIES //////////////////////////////////////////////////////////////
 
     property GNSSManager gnssManager
-
-    readonly property PositionSourceManager positionSourceManager: gnssManager.positionSourceManager
     readonly property GNSSSettings gnssSettings: gnssManager.gnssSettings
-    readonly property StackView stackView: gnssManager.stackView
 
     property var distanceFormats: ["Decimal degrees", "Degrees, minutes, seconds", "Degrees, decimal minutes", "UTM (WGS84)", "MGRS"]
 
@@ -50,24 +47,24 @@ Item {
     property var utmZone: requestedDestination && requestedDestination.isValid && coordinateInfo && coordinateInfo.zone && coordinateInfo.band ? coordinateInfo.zone + coordinateInfo.band : ""
     property var gridReference: requestedDestination && requestedDestination.isValid && coordinateInfo && coordinateInfo.text ? coordinateInfo.text : ""
 
+    readonly property bool isConnecting: gnssManager.isConnecting
+    readonly property bool isConnected: gnssManager.isConnected
+
     readonly property var connectionStateColor: isConnecting ? "green" : isConnected ? buttonTextColor : "red"
     readonly property var connectionStateText:  isConnecting ? qsTr("(Connecting)") : isConnected ? qsTr("(Connected)") : qsTr("(Disconnected)")
-
-    readonly property bool isConnecting: positionSourceManager.isConnecting
-    readonly property bool isConnected: positionSourceManager.isConnected
 
     property bool initialized
 
     //--------------------------------------------------------------------------
 
     StackView.onActivating: {
-        positionSourceManager.stayConnected = false;
+        gnssManager.stayConnected = false;
         initialized = true;
     }
 
     StackView.onDeactivating: {
         initialized = false;
-        positionSourceManager.stayConnected = true;
+        gnssManager.stayConnected = true;
     }
 
     //--------------------------------------------------------------------------
@@ -502,11 +499,7 @@ Item {
                                 }
 
                                 onClicked: {
-                                    stackView.push(gnssManager.settingsTabContainer, {
-                                                          settingsTab: gnssManager.locationSettingsTab,
-                                                          title: gnssManager.locationSettingsTab.title,
-                                                          settingsComponent: gnssManager.locationSettingsTab.contentComponent,
-                                                      });
+                                    gnssManager.showLocationSettings();
                                 }
                             }
                         }

@@ -34,9 +34,11 @@ Item {
     property bool showAntennaHeight: true
     property bool showAltitude: true
 
-    // add isConnecting, isConnected, stayConnected
-    // add pushSettingsComponent, c.f. SettingsView 505
+    property alias isConnecting: positionSourceManager.isConnecting
+    property alias isConnected: positionSourceManager.isConnected
+    property alias stayConnected: positionSourceManager.stayConnected
 
+    signal showLocationSettings()
     signal startPositionSource()
     signal stopPositionSource()
     signal newPosition(var position)
@@ -45,6 +47,17 @@ Item {
 
     // needed for ConfirmPanel to appear in the correct location
     anchors.fill: parent
+
+    //-------------------------------------------------------------------------
+
+    onShowLocationSettings: {
+        stackView.push(settingsTabContainer, {
+                           settingsTab: locationSettingsTab,
+                           title: locationSettingsTab.title,
+                           settingsComponent: locationSettingsTab.contentComponent,
+                       });
+
+    }
 
     //-------------------------------------------------------------------------
 
