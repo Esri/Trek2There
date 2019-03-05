@@ -113,8 +113,8 @@ Item {
 
         showAboutDevice: true
         showAlerts: true
-//        showAntennaHeight: false
-//        showAltitude: false
+        showAntennaHeight: false
+        showAltitude: false
     }
 
     //--------------------------------------------------------------------------
