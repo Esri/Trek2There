@@ -23,6 +23,7 @@ import ArcGIS.AppFramework.Notifications 1.0
 import "./controls"
 
 Item {
+    property GNSSSettings gnssSettings
 
     property bool dimDisplay: false
 

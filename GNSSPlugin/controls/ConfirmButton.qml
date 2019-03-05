@@ -25,7 +25,7 @@ StyledButton {
     hoveredBackgroundColor: Qt.darker(backgroundColor, 1.10)
     pressedBackgroundColor: Qt.darker(backgroundColor, 1.25)
 
-    fontFamily: app.fontFamily
+    //fontFamily: app.fontFamily // XXX this may be wrong
 
     textPointSize: 16
 }

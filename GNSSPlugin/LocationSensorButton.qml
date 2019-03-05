@@ -40,6 +40,7 @@ StyledImageButton {
     // set these to provide access to location settings
     property var settingsTabContainer
     property var settingsTabLocation
+    property bool allowSettingsAccess: true
 
     //--------------------------------------------------------------------------
 
@@ -104,6 +105,7 @@ StyledImageButton {
             stackView: button.stackView
             settingsTabContainer: button.settingsTabContainer
             settingsTabLocation: button.settingsTabLocation
+            allowSettingsAccess: button.allowSettingsAccess
         }
     }
 
@@ -118,6 +120,7 @@ StyledImageButton {
             stackView: button.stackView
             settingsTabContainer: button.settingsTabContainer
             settingsTabLocation: button.settingsTabLocation
+            allowSettingsAccess: button.allowSettingsAccess
         }
     }
 

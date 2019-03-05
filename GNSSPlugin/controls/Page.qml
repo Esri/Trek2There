@@ -43,6 +43,7 @@ Rectangle {
     // set these to provide access to location settings
     property var settingsTabContainer
     property var settingsTabLocation
+    property bool allowSettingsAccess
 
     //--------------------------------------------------------------------------
 
@@ -143,7 +144,7 @@ Rectangle {
             StyledImageButton {
                 id: configButton
 
-                visible: !(!settingsTabContainer || !settingsTabLocation) // this looks weird, but is correct
+                visible: allowSettingsAccess && !(!settingsTabContainer || !settingsTabLocation) // this looks weird, but is correct
 
                 Layout.fillHeight: true
                 Layout.preferredHeight: buttonSize

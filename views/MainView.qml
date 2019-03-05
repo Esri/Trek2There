@@ -168,6 +168,8 @@ Item {
 
     AppAlert {
         id: appAlert
+
+        gnssSettings: gnssSettings
     }
 
     //--------------------------------------------------------------------------

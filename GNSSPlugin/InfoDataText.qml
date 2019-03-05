@@ -94,7 +94,7 @@ Item {
 
             text: isValid ? value : invalidValue
 
-            fontFamily: locationSettingsTab.fontFamily
+            //fontFamily: app.fontFamily // XXX this may be wrong
             pointSize: 14
             bold: isValid
             font.italic: !isValid
