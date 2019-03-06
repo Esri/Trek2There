@@ -33,7 +33,7 @@ Component {
 
         signal loaderComplete();
 
-        stackView: locationSettingsTab.stackView
+        stackView: settingsTab.stackView
 
         textColor: locationSettingsTab.foregroundColor
         headerBarColor: locationSettingsTab.backgroundColor
@@ -45,20 +45,8 @@ Component {
             id: loader
         }
 
-        Component.onDestruction: {
-            saveSettings();
-        }
-
         onTitlePressAndHold: {
             settingsTab.titlePressAndHold();
         }
-
-        //--------------------------------------------------------------------------
-
-        function saveSettings() {
-            locationSettingsTab.gnssSettings.write();
-        }
-
-        //--------------------------------------------------------------------------
     }
 }

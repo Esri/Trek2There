@@ -52,7 +52,6 @@ SettingsTab {
     //--------------------------------------------------------------------------
 
     Item {
-
         id: _item
 
         Accessible.role: Accessible.Pane
@@ -87,6 +86,10 @@ SettingsTab {
                         visible: showAboutDevice
                         enabled: visible
 
+                        stackView: sensorDeviceTab.stackView
+                        gnssSettings: sensorDeviceTab.gnssSettings
+                        positionSourceManager: sensorDeviceTab.positionSourceManager
+
                         onChanged: {
                             updateViewAndDelegate();
                             _item.updateDescriptions();
@@ -99,6 +102,10 @@ SettingsTab {
                         visible: showAlerts
                         enabled: visible
 
+                        stackView: sensorDeviceTab.stackView
+                        gnssSettings: sensorDeviceTab.gnssSettings
+                        positionSourceManager: sensorDeviceTab.positionSourceManager
+
                         onChanged: {
                             _item.updateDescriptions();
                         }
@@ -109,6 +116,10 @@ SettingsTab {
 
                         visible: showAntennaHeight
                         enabled: visible
+
+                        stackView: sensorDeviceTab.stackView
+                        gnssSettings: sensorDeviceTab.gnssSettings
+                        positionSourceManager: sensorDeviceTab.positionSourceManager
 
                         onChanged: {
                             _item.updateDescriptions();
@@ -121,6 +132,10 @@ SettingsTab {
                         visible: showAltitude
                         enabled: visible
 
+                        stackView: sensorDeviceTab.stackView
+                        gnssSettings: sensorDeviceTab.gnssSettings
+                        positionSourceManager: sensorDeviceTab.positionSourceManager
+
                         onChanged: {
                             _item.updateDescriptions();
                         }
@@ -131,12 +146,11 @@ SettingsTab {
                     }
 
                     onSelected: {
-                        stackView.push(settingsTabContainer,
-                                             {
-                                                 settingsTab: item,
-                                                 title: item.title,
-                                                 settingsComponent: item.contentComponent,
-                                             });
+                        stackView.push(settingsTabContainer, {
+                                           settingsTab: item,
+                                           title: item.title,
+                                           settingsComponent: item.contentComponent,
+                                       });
                     }
                 }
             }

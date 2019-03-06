@@ -29,6 +29,8 @@ SettingsTab {
 
     title: qsTr("Add Provider")
 
+    property var currentListTabView
+
     //--------------------------------------------------------------------------
 
     SettingsTabContainer {
@@ -44,7 +46,8 @@ SettingsTab {
 
         // Internal properties -------------------------------------------------
 
-        readonly property PositioningSourcesController controller: locationSettingsTab.controller
+        readonly property PositionSourceManager positionSourceManager: sensorAddDeviceTab.positionSourceManager
+        readonly property PositioningSourcesController controller: positionSourceManager.controller
         readonly property DeviceDiscoveryAgent discoveryAgent: controller.discoveryAgent
 
         readonly property alias hostname: hostnameTextField.text
@@ -440,9 +443,9 @@ SettingsTab {
 
         function showReceiverSettingsPage(name) {
             // gnssSettings.createExternalReceiverSettings() creates a new tab in
-            // the locationSettingsTab page. Go and get it.
+            // currentListTabView. Go and get it.
             var item = null;
-            var model = locationSettingsTab.currentListTabView.contentData;
+            var model = currentListTabView.contentData;
             for (var i=0; i<model.length; i++) {
                 if (model[i].title === name) {
                     item = model[i];

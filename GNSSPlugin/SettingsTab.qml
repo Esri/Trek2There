@@ -15,23 +15,32 @@
  */
 
 import QtQuick 2.9
+import QtQuick.Controls 2.2
 
 import "./controls"
 
 Item {
+    property StackView stackView
+    property GNSSSettings gnssSettings
+    property PositionSourceManager positionSourceManager
+
+    default property Component contentComponent
+
     property string title
     property string description
     property url icon
 
-    default property Component contentComponent
-
-    //--------------------------------------------------------------------------
-
-    property GNSSSettings gnssSettings: locationSettingsTab.gnssSettings
-
     //--------------------------------------------------------------------------
 
     signal titlePressAndHold()
+
+    //--------------------------------------------------------------------------
+
+    Component.onDestruction: {
+        if (gnssSettings) {
+            gnssSettings.write();
+        }
+    }
 
     //--------------------------------------------------------------------------
 }

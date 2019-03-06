@@ -28,10 +28,6 @@ import "./controls"
 SettingsTab {
     id: locationSettingsTab
 
-    property StackView stackView
-    property GNSSSettings gnssSettings
-    property PositionSourceManager positionSourceManager
-
     property color foregroundColor: "#000000"
     property color secondaryForegroundColor: "#007ac2"
     property color backgroundColor: "#e1f0fb"
@@ -129,12 +125,11 @@ SettingsTab {
                 }
 
                 onSelected: {
-                    stackView.push(settingsTabContainer,
-                                         {
-                                             settingsTab: item,
-                                             title: item.title,
-                                             settingsComponent: item.contentComponent
-                                         });
+                    stackView.push(settingsTabContainer, {
+                                       settingsTab: item,
+                                       title: item.title,
+                                       settingsComponent: item.contentComponent
+                                   });
                 }
 
                 lessThan: function(left, right) {
@@ -227,6 +222,10 @@ SettingsTab {
             SettingsTabLocationDevice {
                 property string tabType: kDelegateTypeCachedDevice
 
+                stackView: locationSettingsTab.stackView
+                gnssSettings: locationSettingsTab.gnssSettings
+                positionSourceManager: locationSettingsTab.positionSourceManager
+
                 showAboutDevice: locationSettingsTab.showAboutDevice
                 showAlerts: locationSettingsTab.showAlerts
                 showAntennaHeight: locationSettingsTab.showAntennaHeight
@@ -247,6 +246,12 @@ SettingsTab {
                 property string deviceName: ""
                 property string deviceLabel: ""
                 property var deviceProperties: null
+
+                stackView: locationSettingsTab.stackView
+                gnssSettings: locationSettingsTab.gnssSettings
+                positionSourceManager: locationSettingsTab.positionSourceManager
+
+                currentListTabView: locationSettingsTab.currentListTabView
             }
         }
 
