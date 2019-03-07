@@ -20,7 +20,7 @@ import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Speech 1.0
 import ArcGIS.AppFramework.Notifications 1.0
 
-import "./controls"
+import "../controls"
 
 Item {
     property GNSSSettings gnssSettings
@@ -36,7 +36,7 @@ Item {
     property color errorTextColor: "white"
     property color errorBackgroundColor: "#a80000"
 
-    readonly property url kIconSatellite: "./images/satellite.png"
+    readonly property url kIconSatellite: "../images/satellite.png"
 
     //--------------------------------------------------------------------------
 

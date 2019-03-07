@@ -28,6 +28,7 @@ import ArcGIS.AppFramework.Networking 1.0
 
 import "../controls"
 import "../GNSSPlugin"
+import "../GNSSPlugin/GNSS"
 
 Item {
     id: settingsView

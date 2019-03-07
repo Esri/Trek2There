@@ -20,6 +20,7 @@ import QtQuick.Layouts 1.1
 
 import ArcGIS.AppFramework 1.0
 
+import "./GNSS"
 import "./controls"
 import "./GNSSInfoUI"
 

@@ -22,6 +22,7 @@ import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
 import ArcGIS.AppFramework.Positioning 1.0
 
+import "./GNSS"
 import "./controls"
 
 SettingsTab {

@@ -22,7 +22,7 @@ import QtQuick.Controls 2.2
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
 
-import "../"
+import "../GNSS"
 import "../controls"
 
 SwipeTab {
