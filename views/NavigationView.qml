@@ -42,8 +42,8 @@ Item {
     // PROPERTIES //////////////////////////////////////////////////////////////
 
     property StackView stackView
-    property SettingsUI settingsUI
     property GNSSManager gnssManager
+    property GNSSSettingsUI settingsUI
 
     property bool hudOn
     property bool navigating

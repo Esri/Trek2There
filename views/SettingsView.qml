@@ -35,8 +35,8 @@ Item {
 
     // PROPERTIES //////////////////////////////////////////////////////////////
 
-    property SettingsUI settingsUI
     property GNSSManager gnssManager
+    property GNSSSettingsUI settingsUI
 
     property var distanceFormats: ["Decimal degrees", "Degrees, minutes, seconds", "Degrees, decimal minutes", "UTM (WGS84)", "MGRS"]
 

@@ -105,7 +105,7 @@ Item {
 
     // Location Provider Settings UI -------------------------------------------
 
-    SettingsUI {
+    GNSSSettingsUI {
         id: settingsUI
 
         title: qsTr("Location Provider")
