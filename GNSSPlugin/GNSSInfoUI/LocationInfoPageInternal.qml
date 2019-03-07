@@ -19,8 +19,9 @@ import QtQuick.Controls 2.2
 
 import ArcGIS.AppFramework 1.0
 
-import "./controls"
-import "CoordinateConversions.js" as CC
+import "../"
+import "../controls"
+import "../CoordinateConversions.js" as CC
 
 Page {
     id: page
@@ -108,7 +109,7 @@ Page {
 
             spacing: 10 * AppFramework.displayScaleFactor
 
-            LocationCoordinateInfo {
+            InfoCoordinatesText {
                 width: parent.width
 
                 timeOffset: page.timeOffset

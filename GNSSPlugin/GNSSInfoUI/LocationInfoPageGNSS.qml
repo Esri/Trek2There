@@ -18,7 +18,8 @@ import QtQuick 2.9
 
 import ArcGIS.AppFramework 1.0
 
-import "./controls"
+import "../"
+import "../controls"
 
 Page {
     id: gnssInfo

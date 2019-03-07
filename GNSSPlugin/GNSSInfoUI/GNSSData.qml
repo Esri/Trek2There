@@ -22,14 +22,15 @@ import QtQuick.Controls 2.2
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Positioning 1.0
 
-import "CoordinateConversions.js" as CC
-import "./controls"
+import "../"
+import "../controls"
+import "../CoordinateConversions.js" as CC
 
 SwipeTab {
     id: tab
 
     title: qsTr("Data")
-    icon: "images/quality.png"
+    icon: "../images/quality.png"
 
     //--------------------------------------------------------------------------
 
@@ -199,7 +200,7 @@ SwipeTab {
                 dataDelegate: receiverText
             }
 
-            LocationCoordinateInfo {
+            InfoCoordinatesText {
                 width: parent.width
 
                 timeOffset: tab.timeOffset

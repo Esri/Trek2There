@@ -22,7 +22,8 @@ import QtCharts 2.2
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Positioning 1.0
 
-import "./controls"
+import "../"
+import "../controls"
 
 SwipeTab {
     id: tab
@@ -65,7 +66,7 @@ SwipeTab {
     //--------------------------------------------------------------------------
 
     title: qsTr("Sky Plot")
-    icon: "images/skyplot.png"
+    icon: "../images/skyplot.png"
 
     //--------------------------------------------------------------------------
 

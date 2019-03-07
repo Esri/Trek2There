@@ -22,13 +22,14 @@ import QtQuick.Controls 2.2
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
 
-import "./controls"
+import "../"
+import "../controls"
 
 SwipeTab {
     id: tab
 
     title: qsTr("Debug")
-    icon: "images/debug.png"
+    icon: "../images/debug.png"
 
     color: "black"
 
@@ -158,7 +159,7 @@ SwipeTab {
             Layout.preferredWidth: 40 * AppFramework.displayScaleFactor
             Layout.preferredHeight: Layout.preferredWidth
 
-            source: isPaused ? "images/action_play.png" : "images/action_pause.png"
+            source: isPaused ? "../images/play.png" : "../images/pause.png"
             color: buttonColor
 
             onClicked: {
@@ -170,7 +171,7 @@ SwipeTab {
             Layout.preferredWidth: 40 * AppFramework.displayScaleFactor
             Layout.preferredHeight: Layout.preferredWidth
 
-            source: "images/clear.png"
+            source: "../images/clear.png"
             color: buttonColor
             visible: dataModel.count > 0
 

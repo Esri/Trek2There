@@ -21,6 +21,7 @@ import QtQuick.Layouts 1.1
 import ArcGIS.AppFramework 1.0
 
 import "./controls"
+import "./GNSSInfoUI"
 
 StyledImageButton {
     id: button
@@ -100,7 +101,7 @@ StyledImageButton {
     Component {
         id: locationInfoPage
 
-        LocationInfoPage {
+        LocationInfoPageInternal {
             positionSourceManager: button.positionSourceManager
 
             stackView: button.stackView
@@ -115,7 +116,7 @@ StyledImageButton {
     Component {
         id: gnssInfoPage
 
-        GNSSInfoPage {
+        LocationInfoPageGNSS {
             positionSourceManager: button.positionSourceManager
 
             stackView: button.stackView

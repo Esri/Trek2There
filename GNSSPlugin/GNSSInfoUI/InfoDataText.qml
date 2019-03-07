@@ -19,7 +19,7 @@ import QtQuick.Layouts 1.3
 
 import ArcGIS.AppFramework 1.0
 
-import "./controls"
+import "../controls"
 
 Item {
     id: infoText

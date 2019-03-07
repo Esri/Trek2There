@@ -19,7 +19,7 @@ import QtPositioning 5.8
 
 import ArcGIS.AppFramework 1.0
 
-import "./CoordinateConversions.js" as CC
+import "../CoordinateConversions.js" as CC
 
 InfoView {
     id: coordinateInfo
