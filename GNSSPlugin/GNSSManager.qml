@@ -10,35 +10,14 @@ Item {
     id: gnssManager
 
     property App app
-    property StackView stackView
-
-    property alias title: locationSettingsTab.title
 
     property alias gnssSettings: gnssSettings
     property alias positionSourceManager: positionSourceManager
-    property alias settingsTabContainer: settingsTabContainer
-    property alias locationSettingsTab: locationSettingsTab // XXX remove direct references to this
-
-    property color foregroundColor: "#000000"
-    property color secondaryForegroundColor: "#007ac2"
-    property color backgroundColor: "#e1f0fb"
-    property color secondaryBackgroundColor: "#e1f0fb"
-    property color selectedBackgroundColor: "#FAFAFA"
-    property color hoverBackgroundColor: "#e1f0fb"
-    property color dividerColor: "#c0c0c0"
-
-    property string fontFamily: Qt.application.font.family
-
-    property bool showAboutDevice: true
-    property bool showAlerts: true
-    property bool showAntennaHeight: true
-    property bool showAltitude: true
 
     property alias isConnecting: positionSourceManager.isConnecting
     property alias isConnected: positionSourceManager.isConnected
     property alias stayConnected: positionSourceManager.stayConnected
 
-    signal showLocationSettings()
     signal startPositionSource()
     signal stopPositionSource()
     signal newPosition(var position)
@@ -47,17 +26,6 @@ Item {
 
     // needed for ConfirmPanel to appear in the correct location
     anchors.fill: parent
-
-    //-------------------------------------------------------------------------
-
-    onShowLocationSettings: {
-        stackView.push(settingsTabContainer, {
-                           settingsTab: locationSettingsTab,
-                           title: locationSettingsTab.title,
-                           settingsComponent: locationSettingsTab.contentComponent,
-                       });
-
-    }
 
     //-------------------------------------------------------------------------
 
@@ -71,7 +39,7 @@ Item {
         positionSourceManager.stopPositionSource();
     }
 
-    // Position source management ---------------------------------------------
+    //-------------------------------------------------------------------------
 
     PositionSourceManager {
         id: positionSourceManager
@@ -114,39 +82,20 @@ Item {
         }
     }
 
-    // UI Components -----------------------------------------------------------
+    //--------------------------------------------------------------------------
 
-    SettingsTabContainer {
-        id: settingsTabContainer
+    GNSSAlerts {
+        id: gnssAlerts
+
+        gnssSettings: gnssSettings
     }
 
     //--------------------------------------------------------------------------
 
-    SettingsTabLocation {
-        id: locationSettingsTab
+    GNSSSettings {
+        id: gnssSettings
 
-        Layout.fillHeight: true
-        Layout.fillWidth: true
-
-        title: qsTr("Location Provider")
-
-        stackView: gnssManager.stackView
-        gnssSettings: gnssManager.gnssSettings
-        positionSourceManager: gnssManager.positionSourceManager
-
-        foregroundColor: gnssManager.foregroundColor
-        secondaryForegroundColor: gnssManager.secondaryForegroundColor
-        backgroundColor: gnssManager.backgroundColor
-        secondaryBackgroundColor: gnssManager.secondaryBackgroundColor
-        hoverBackgroundColor: gnssManager.hoverBackgroundColor
-        selectedBackgroundColor: gnssManager.selectedBackgroundColor
-        dividerColor: gnssManager.dividerColor
-        fontFamily: gnssManager.fontFamily
-
-        showAboutDevice: gnssManager.showAboutDevice
-        showAlerts: gnssManager.showAlerts
-        showAntennaHeight: gnssManager.showAntennaHeight
-        showAltitude: gnssManager.showAltitude
+        app: gnssManager.app
     }
 
     //--------------------------------------------------------------------------
@@ -163,22 +112,6 @@ Item {
             connectionErrorDialog.button2Text = "";
             connectionErrorDialog.show();
         }
-    }
-
-    //--------------------------------------------------------------------------
-
-    GNSSAlerts {
-        id: gnssAlerts
-
-        gnssSettings: gnssSettings
-    }
-
-    // GNSS settings------------------------------------------------------------
-
-    GNSSSettings {
-        id: gnssSettings
-
-        app: gnssManager.app
     }
 
     //--------------------------------------------------------------------------

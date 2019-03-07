@@ -29,6 +29,7 @@ Item {
 
     property alias stackView: mainStackView
     property alias gnssManager: gnssManager
+    property alias settingsUI: settingsUI
 
     //--------------------------------------------------------------------------
 
@@ -63,6 +64,8 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
+            stackView: mainView.stackView
+            settingsUI: mainView.settingsUI
             gnssManager: mainView.gnssManager
         }
     }
@@ -76,6 +79,7 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
+            settingsUI: mainView.settingsUI
             gnssManager: mainView.gnssManager
         }
     }
@@ -91,15 +95,24 @@ Item {
         }
     }
 
-    // External position sources -----------------------------------------------
+    // Location Provider Management --------------------------------------------
 
     GNSSManager {
         id: gnssManager
 
+        app: mainView.app
+    }
+
+    // Location Provider Settings UI -------------------------------------------
+
+    SettingsUI {
+        id: settingsUI
+
         title: qsTr("Location Provider")
 
-        app: mainView.app
         stackView: mainView.stackView
+        gnssSettings: gnssManager.gnssSettings
+        positionSourceManager: gnssManager.positionSourceManager
 
         foregroundColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
         secondaryForegroundColor: buttonTextColor

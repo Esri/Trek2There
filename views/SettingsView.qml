@@ -34,8 +34,8 @@ Item {
 
     // PROPERTIES //////////////////////////////////////////////////////////////
 
+    property SettingsUI settingsUI
     property GNSSManager gnssManager
-    readonly property GNSSSettings gnssSettings: gnssManager.gnssSettings
 
     property var distanceFormats: ["Decimal degrees", "Degrees, minutes, seconds", "Degrees, decimal minutes", "UTM (WGS84)", "MGRS"]
 
@@ -47,6 +47,7 @@ Item {
     property var utmZone: requestedDestination && requestedDestination.isValid && coordinateInfo && coordinateInfo.zone && coordinateInfo.band ? coordinateInfo.zone + coordinateInfo.band : ""
     property var gridReference: requestedDestination && requestedDestination.isValid && coordinateInfo && coordinateInfo.text ? coordinateInfo.text : ""
 
+    readonly property GNSSSettings gnssSettings: gnssManager.gnssSettings
     readonly property bool isConnecting: gnssManager.isConnecting
     readonly property bool isConnected: gnssManager.isConnected
 
@@ -499,7 +500,7 @@ Item {
                                 }
 
                                 onClicked: {
-                                    gnssManager.showLocationSettings();
+                                    settingsUI.showLocationSettings();
                                 }
                             }
                         }

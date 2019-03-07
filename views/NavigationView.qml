@@ -41,6 +41,8 @@ Item {
 
     // PROPERTIES //////////////////////////////////////////////////////////////
 
+    property StackView stackView
+    property SettingsUI settingsUI
     property GNSSManager gnssManager
 
     property bool hudOn
@@ -670,8 +672,10 @@ Item {
 
         color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
 
-        gnssManager: navigationView.gnssManager
-        allowSettingsAccess: false
+        stackView: navigationView.stackView
+        settingsUI: navigationView.settingsUI
+        positionSourceManager: gnssManager.positionSourceManager
+        settingsUIAccessible: false
 
         Accessible.role: Accessible.Indicator
         Accessible.name: qsTr("Location provider status")
@@ -742,7 +746,7 @@ Item {
                         source: "../images/settings.png"
                     }
 
-                    onClicked: mainStackView.push(settingsView)
+                    onClicked: stackView.push(settingsView)
 
                     Accessible.role: Accessible.Button
                     Accessible.name: qsTr("Settings")
@@ -1142,7 +1146,7 @@ Item {
 
     //--------------------------------------------------------------------------
 
-    PropertyAnimation{
+    PropertyAnimation {
         id: fadeToolbar
 
         from: 1

@@ -27,18 +27,18 @@ StyledImageButton {
 
     //--------------------------------------------------------------------------
 
-    property GNSSManager gnssManager
-    property bool allowSettingsAccess
+    property StackView stackView
+    property SettingsUI settingsUI
+    property PositionSourceManager positionSourceManager
 
-    readonly property StackView stackView: gnssManager.stackView
-    readonly property PositionSourceManager positionSourceManager: gnssManager.positionSourceManager
+    property bool settingsUIAccessible: false
 
     readonly property bool isConnecting: positionSourceManager && positionSourceManager.isConnecting
     readonly property bool isConnected: positionSourceManager && positionSourceManager.isConnected
     readonly property bool isWarmingUp: positionSourceManager && positionSourceManager.isWarmingUp
 
-    readonly property var settingsTabContainer: gnssManager.settingsTabContainer
-    readonly property var settingsTabLocation: gnssManager.locationSettingsTab
+    readonly property var settingsTabContainer: settingsUI ? settingsUI.settingsTabContainer : null
+    readonly property var settingsTabLocation: settingsUI ? settingsUI.locationSettingsTab : null
 
     property bool blinkTrigger: false
     property bool blinkState: false
@@ -106,7 +106,7 @@ StyledImageButton {
             stackView: button.stackView
             settingsTabContainer: button.settingsTabContainer
             settingsTabLocation: button.settingsTabLocation
-            allowSettingsAccess: button.allowSettingsAccess
+            allowSettingsAccess: button.settingsUIAccessible
         }
     }
 
@@ -121,7 +121,7 @@ StyledImageButton {
             stackView: button.stackView
             settingsTabContainer: button.settingsTabContainer
             settingsTabLocation: button.settingsTabLocation
-            allowSettingsAccess: button.allowSettingsAccess
+            allowSettingsAccess: button.settingsUIAccessible
         }
     }
 
