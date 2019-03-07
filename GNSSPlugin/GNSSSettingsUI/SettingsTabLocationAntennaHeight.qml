@@ -18,20 +18,19 @@ import QtQuick 2.9
 import QtQuick.Layouts 1.3
 
 import ArcGIS.AppFramework 1.0
-import ArcGIS.AppFramework.Notifications 1.0
 
-import "./controls"
+import "../controls"
+import "../CoordinateConversions.js" as CC
 
 SettingsTab {
 
-    title: qsTr("Information")
-    icon: "images/info.png"
+    title: qsTr("Antenna Height")
+    icon: "../images/antenna_height.png"
     description: ""
 
     //--------------------------------------------------------------------------
 
     property bool initialized
-    property bool dirty: false
 
     readonly property bool isTheActiveSensor: deviceName === gnssSettings.kInternalPositionSourceName || controller.currentName === deviceName
 
@@ -49,10 +48,6 @@ SettingsTab {
         }
 
         Component.onDestruction: {
-            if (dirty) {
-                changed();
-                dirty = false;
-            }
         }
 
         ColumnLayout {
@@ -65,52 +60,50 @@ SettingsTab {
 
             GroupColumnLayout {
                 Layout.fillWidth: true
-                visible: deviceType !== kDeviceTypeInternal
 
-                title: qsTr("Name")
+                title: qsTr("Antenna height of receiver")
 
-                AppTextField {
-                    id: deviceLabel
+                AppText {
+                    Layout.fillWidth: true
+
+                    text: qsTr("The distance from the antenna to the ground surface is subtracted from altitude values.")
+                    color: foregroundColor
+                }
+
+                Image {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 200 * AppFramework.displayScaleFactor
+                    Layout.maximumHeight: Layout.preferredHeight
+
+                    source: "../images/Antenna_Height.svg"
+                    fillMode: Image.PreserveAspectFit
+                }
+
+                AppNumberField {
+                    id: antennaHeightField
 
                     Layout.fillWidth: true
 
-                    text: gnssSettings.knownDevices[deviceName].label > "" ? gnssSettings.knownDevices[deviceName].label : deviceName
-                    placeholderText: qsTr("Custom display name")
-                    textColor: foregroundColor
+                    suffixText: CC.localeLengthSuffix(locale)
 
-                    onTextChanged: {
+                    value: CC.toLocaleLength(gnssSettings.knownDevices[deviceName].antennaHeight, locale)
+
+                    onValueChanged: {
+                        var val = CC.fromLocaleLength(value, locale)
                         if (initialized && !gnssSettings.updating) {
-                            gnssSettings.knownDevices[deviceName].label = text;
+                            gnssSettings.knownDevices[deviceName].antennaHeight = val;
                             if (isTheActiveSensor) {
-                                gnssSettings.lastUsedDeviceLabel = text;
+                                gnssSettings.locationAntennaHeight = val;
                             }
                         }
-                        dirty = true;
+                        changed();
                     }
                 }
             }
 
-            GroupColumnLayout {
+            Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-
-                title: qsTr("Details")
-
-                RowLayout {
-                    Layout.fillWidth: true
-
-                    AppText {
-                        text: qsTr("Provider Name:")
-                        color: foregroundColor
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    }
-
-                    AppText {
-                        Layout.fillWidth: parent
-                        color: foregroundColor
-                        text: deviceType !== kDeviceTypeInternal ? deviceName : controller.integratedProviderName
-                    }
-                }
             }
         }
     }

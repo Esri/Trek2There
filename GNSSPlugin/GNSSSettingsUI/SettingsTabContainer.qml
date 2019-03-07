@@ -20,7 +20,7 @@ import QtQuick.Controls 2.2
 
 import ArcGIS.AppFramework 1.0
 
-import "./controls"
+import "../controls"
 
 Component {
     id: settingsTabContainer

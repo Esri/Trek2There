@@ -106,7 +106,7 @@ Item {
 
         function showError(message) {
             connectionErrorDialog.clear();
-            connectionErrorDialog.icon = "images/warning.png";
+            connectionErrorDialog.icon = "./images/warning.png";
             connectionErrorDialog.title = qsTr("Unable to connect");
             connectionErrorDialog.text = message;
             connectionErrorDialog.button1Text = qsTr("Ok");

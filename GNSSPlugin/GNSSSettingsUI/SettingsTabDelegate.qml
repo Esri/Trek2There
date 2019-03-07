@@ -4,7 +4,7 @@ import QtQuick.Layouts 1.3
 
 import ArcGIS.AppFramework 1.0
 
-import "./controls"
+import "../controls"
 
 Rectangle {
     id: delegate
@@ -76,7 +76,7 @@ Rectangle {
             Layout.preferredWidth: 25 * AppFramework.displayScaleFactor
             Layout.preferredHeight: Layout.preferredWidth
 
-            source: "./images/next.png"
+            source: "../images/next.png"
             color: foregroundColor
         }
     }

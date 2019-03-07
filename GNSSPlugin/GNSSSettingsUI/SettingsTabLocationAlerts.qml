@@ -20,12 +20,12 @@ import QtQuick.Layouts 1.3
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Notifications 1.0
 
-import "./controls"
+import "../controls"
 
 SettingsTab {
 
     title: qsTr("Alerts")
-    icon: "images/exclamation-mark-triangle.png"
+    icon: "../images/exclamation-mark-triangle.png"
     description: ""
 
     //--------------------------------------------------------------------------

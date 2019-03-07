@@ -22,8 +22,8 @@ import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
 import ArcGIS.AppFramework.Positioning 1.0
 
-import "./GNSS"
-import "./controls"
+import "../GNSS"
+import "../controls"
 
 SettingsTab {
     id: sensorAddDeviceTab
@@ -400,7 +400,7 @@ SettingsTab {
                             Layout.preferredHeight: height
                             Layout.alignment: Qt.AlignLeft
 
-                            source: "./images/deviceType-%1.png".arg(deviceType)
+                            source: "../images/deviceType-%1.png".arg(deviceType)
                             color: foregroundColor
                         }
 

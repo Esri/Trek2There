@@ -23,8 +23,8 @@ import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
 import ArcGIS.AppFramework.Positioning 1.0
 
-import "./GNSS"
-import "./controls"
+import "../GNSS"
+import "../controls"
 
 SettingsTab {
     id: locationSettingsTab
@@ -332,7 +332,7 @@ SettingsTab {
 
                                     visible: tabType !== kDelegateTypeAddDevice
                                     source: visible && delegate.delegateDeviceType > ""
-                                            ? "./images/deviceType-%1.png".arg(delegate.delegateDeviceType)
+                                            ? "../images/deviceType-%1.png".arg(delegate.delegateDeviceType)
                                             : ""
                                     color: delegate.isSelected && (isConnecting || isConnected)
                                            ? secondaryForegroundColor
@@ -347,7 +347,7 @@ SettingsTab {
                                     anchors.centerIn: parent
 
                                     visible: tabType === kDelegateTypeAddDevice
-                                    source: "./images/plus.png"
+                                    source: "../images/plus.png"
                                     color: foregroundColor
                                 }
                             }
@@ -488,7 +488,7 @@ SettingsTab {
                                     width: 28 * AppFramework.displayScaleFactor
                                     height: width
 
-                                    source: "./images/gear.png"
+                                    source: "../images/gear.png"
 
                                     color: delegate.isSelected && (isConnecting || isConnected)
                                            ? secondaryForegroundColor

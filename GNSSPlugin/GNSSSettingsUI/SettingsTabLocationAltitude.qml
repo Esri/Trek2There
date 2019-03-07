@@ -19,13 +19,13 @@ import QtQuick.Layouts 1.3
 
 import ArcGIS.AppFramework 1.0
 
-import "./controls"
-import "./CoordinateConversions.js" as CC
+import "../controls"
+import "../CoordinateConversions.js" as CC
 
 SettingsTab {
 
     title: qsTr("Altitude")
-    icon: "images/mountain.png"
+    icon: "../images/mountain.png"
     description: ""
 
     //--------------------------------------------------------------------------
@@ -134,7 +134,7 @@ SettingsTab {
                     Layout.preferredHeight: 200 * AppFramework.displayScaleFactor
                     Layout.maximumHeight: Layout.preferredHeight
 
-                    source: "images/Geoid_Separation.svg"
+                    source: "../images/Geoid_Separation.svg"
                     fillMode: Image.PreserveAspectFit
                 }
 

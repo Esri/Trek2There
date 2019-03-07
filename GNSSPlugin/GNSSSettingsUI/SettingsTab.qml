@@ -17,8 +17,8 @@
 import QtQuick 2.9
 import QtQuick.Controls 2.2
 
-import "./GNSS"
-import "./controls"
+import "../GNSS"
+import "../controls"
 
 Item {
     property StackView stackView

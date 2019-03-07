@@ -20,8 +20,8 @@ import QtQuick.Controls 1.4
 
 import ArcGIS.AppFramework 1.0
 
-import "./controls"
-import "./CoordinateConversions.js" as CC
+import "../controls"
+import "../CoordinateConversions.js" as CC
 
 SettingsTab {
     id: sensorDeviceTab
@@ -209,7 +209,7 @@ SettingsTab {
 
             function confirmDeletion() {
                 confirmDeletionDialog.clear();
-                confirmDeletionDialog.icon = "images/warning.png";
+                confirmDeletionDialog.icon = "../images/warning.png";
                 confirmDeletionDialog.title = qsTr("Remove");
                 confirmDeletionDialog.text = qsTr("This action will remove the selected location provider");
                 confirmDeletionDialog.question = qsTr("Are you sure you want to remove this provider?")
