@@ -110,7 +110,7 @@ Item {
         maximumPositionAge: gnssSettings.locationMaximumPositionAge
 
         onAlert: {
-            appAlert.positionSourceAlert(alertType);
+            gnssAlerts.positionSourceAlert(alertType);
         }
     }
 
@@ -167,8 +167,8 @@ Item {
 
     //--------------------------------------------------------------------------
 
-    AppAlert {
-        id: appAlert
+    GNSSAlerts {
+        id: gnssAlerts
 
         gnssSettings: gnssSettings
     }

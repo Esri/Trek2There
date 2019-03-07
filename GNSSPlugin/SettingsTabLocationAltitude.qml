@@ -41,7 +41,6 @@ SettingsTab {
     //--------------------------------------------------------------------------
 
     Item {
-
         id: _item
 
         Accessible.role: Accessible.Pane

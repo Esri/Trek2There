@@ -145,7 +145,6 @@ Item {
             }
         }
 
-
         if (positionSourceManagerConnections.enabled && !positionSourceManager.onSettingsPage && !positionSourceManager.isConnecting && !discoveryAgent.running) {
             var positionAge = now - positionTime.valueOf();
 
