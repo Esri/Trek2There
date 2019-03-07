@@ -153,69 +153,6 @@ QtObject {
 
     //--------------------------------------------------------------------------
 
-    // update the receiver specific settings
-    onLocationAlertsVisualChanged: {
-        if (!updating && knownDevices && lastUsedDeviceName > "") {
-            knownDevices[lastUsedDeviceName].locationAlertsVisual = locationAlertsVisual;
-        }
-    }
-
-    onLocationAlertsSpeechChanged: {
-        if (!updating && knownDevices && lastUsedDeviceName > "") {
-            knownDevices[lastUsedDeviceName].locationAlertsSpeech = locationAlertsSpeech;
-        }
-    }
-
-    onLocationAlertsVibrateChanged: {
-        if (!updating && knownDevices && lastUsedDeviceName > "") {
-            knownDevices[lastUsedDeviceName].locationAlertsVibrate = locationAlertsVibrate;
-        }
-    }
-
-    onLocationMaximumDataAgeChanged: {
-        if (!updating && knownDevices && lastUsedDeviceName > "") {
-            knownDevices[lastUsedDeviceName].locationMaximumDataAge = locationMaximumDataAge;
-        }
-    }
-
-    onLocationMaximumPositionAgeChanged: {
-        if (!updating && knownDevices && lastUsedDeviceName > "") {
-            knownDevices[lastUsedDeviceName].locationMaximumPositionAge = locationMaximumPositionAge;
-        }
-    }
-
-    onLocationSensorConnectionTypeChanged: {
-        if (!updating && knownDevices && lastUsedDeviceName > "") {
-            knownDevices[lastUsedDeviceName].connectionType = locationSensorConnectionType;
-        }
-    }
-
-    onLocationAltitudeTypeChanged: {
-        if (!updating && knownDevices && lastUsedDeviceName > "") {
-            knownDevices[lastUsedDeviceName].altitudeType = locationAltitudeType;
-        }
-    }
-
-    onLocationGeoidSeparationChanged: {
-        if (!updating && knownDevices && lastUsedDeviceName > "") {
-            knownDevices[lastUsedDeviceName].geoidSeparation = locationGeoidSeparation;
-        }
-    }
-
-    onLocationAntennaHeightChanged: {
-        if (!updating && knownDevices && lastUsedDeviceName > "") {
-            knownDevices[lastUsedDeviceName].antennaHeight = locationAntennaHeight;
-        }
-    }
-
-    onLastUsedDeviceLabelChanged: {
-        if (!updating && knownDevices && lastUsedDeviceName > "") {
-            knownDevices[lastUsedDeviceName].label = lastUsedDeviceLabel;
-        }
-    }
-
-    //--------------------------------------------------------------------------
-
     function read() {
         console.log("Reading GNSS settings");
 
@@ -292,6 +229,7 @@ QtObject {
         console.log("* locationAntennaHeight:", locationAntennaHeight);
 
         console.log("* lastUsedDeviceName:", lastUsedDeviceName);
+        console.log("* lastUsedDeviceLabel:", lastUsedDeviceLabel);
 
         console.log("* knownDevices:", JSON.stringify(knownDevices));
     }
