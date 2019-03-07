@@ -21,7 +21,7 @@ import QtQuick.Controls 1.4
 import ArcGIS.AppFramework 1.0
 
 import "../controls"
-import "../CoordinateConversions.js" as CC
+import "../lib/CoordinateConversions.js" as CC
 
 SettingsTab {
     id: sensorDeviceTab
