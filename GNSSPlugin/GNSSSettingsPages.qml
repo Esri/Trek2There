@@ -5,7 +5,7 @@ import QtQuick.Layouts 1.1
 import ArcGIS.AppFramework 1.0
 
 import "./GNSSManager"
-import "./GNSSSettingsUI"
+import "./GNSSSettingsPages"
 import "./controls"
 
 Item {

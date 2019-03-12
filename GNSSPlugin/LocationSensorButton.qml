@@ -30,7 +30,7 @@ StyledImageButton {
     //--------------------------------------------------------------------------
 
     property StackView stackView
-    property GNSSSettingsUI settingsUI
+    property GNSSSettingsPages settingsUI
     property PositionSourceManager positionSourceManager
 
     property bool settingsUIAccessible: false

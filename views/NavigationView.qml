@@ -43,7 +43,7 @@ Item {
 
     property StackView stackView
     property GNSSManager gnssManager
-    property GNSSSettingsUI settingsUI
+    property GNSSSettingsPages settingsUI
 
     property bool hudOn
     property bool navigating
