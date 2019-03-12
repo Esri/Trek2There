@@ -22,7 +22,7 @@ import QtCharts 2.2
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Positioning 1.0
 
-import "../GNSS"
+import "../GNSSManager"
 import "../controls"
 
 SwipeTab {
