@@ -659,8 +659,8 @@ Item {
 
     // External GPS indicator --------------------------------------------------
 
-    LocationSensorButton {
-        id: locationSensorButton
+    GNSSInfoButton {
+        id: gnssInfoButton
 
         width: sf(30)
         height: width

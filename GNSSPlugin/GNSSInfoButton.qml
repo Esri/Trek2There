@@ -21,7 +21,7 @@ import QtQuick.Layouts 1.1
 import ArcGIS.AppFramework 1.0
 
 import "./GNSSManager"
-import "./GNSSInfoUI"
+import "./GNSSInfoButton"
 import "./controls"
 
 StyledImageButton {
