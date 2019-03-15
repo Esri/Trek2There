@@ -123,6 +123,7 @@ Item {
         dividerColor: !nightMode ? "#c0c0c0" : Qt.darker("#c0c0c0")
 
         fontFamily: Qt.application.font.family
+        locale: Qt.locale()
 
         showAboutDevice: true
         showAlerts: true

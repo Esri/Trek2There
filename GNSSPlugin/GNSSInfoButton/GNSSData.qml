@@ -40,7 +40,7 @@ SwipeTab {
     readonly property var controller: positionSourceManager.controller
 
     property real timeOffset: positionSourceManager.timeOffset
-    property var locale: app.locale // XXX this may be wrong
+    property var locale: Qt.locale() // XXX this may be wrong
 
     //--------------------------------------------------------------------------
 

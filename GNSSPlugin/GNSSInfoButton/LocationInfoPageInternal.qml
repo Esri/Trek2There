@@ -30,7 +30,7 @@ Page {
     property var position: ({})
 
     property real timeOffset: positionSourceManager.timeOffset
-    property var locale: app.locale // XXX this may be wrong
+    property var locale: Qt.locale() // XXX this may be wrong
 
     property bool debug: false
 

@@ -30,11 +30,13 @@ SettingsTab {
 
     //--------------------------------------------------------------------------
 
-    property bool initialized
+    property var locale: locationSettingsTab.locale
 
     readonly property bool isTheActiveSensor: deviceName === gnssSettings.kInternalPositionSourceName || controller.currentName === deviceName
     readonly property string altitudeTypeMSLLabel: qsTr("Altitude above mean sea level")
     readonly property string altitudeTypeHAELabel: qsTr("Height above ellipsoid")
+
+    property bool initialized
 
     signal changed()
 

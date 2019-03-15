@@ -29,6 +29,7 @@ Item {
     property color dividerColor: "#c0c0c0"
 
     property string fontFamily: Qt.application.font.family
+    property var locale: Qt.locale()
 
     property bool showAboutDevice: true
     property bool showAlerts: true
@@ -75,6 +76,7 @@ Item {
         selectedBackgroundColor: settingsUI.selectedBackgroundColor
         dividerColor: settingsUI.dividerColor
         fontFamily: settingsUI.fontFamily
+        locale: settingsUI.locale
 
         showAboutDevice: settingsUI.showAboutDevice
         showAlerts: settingsUI.showAlerts

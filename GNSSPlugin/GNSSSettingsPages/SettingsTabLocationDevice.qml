@@ -36,6 +36,8 @@ SettingsTab {
     property bool showAntennaHeight: true
     property bool showAltitude: true
 
+    property var locale: locationSettingsTab.locale
+
     signal selectInternal()
     signal updateViewAndDelegate()
 

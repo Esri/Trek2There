@@ -30,9 +30,11 @@ SettingsTab {
 
     //--------------------------------------------------------------------------
 
-    property bool initialized
+    property var locale: locationSettingsTab.locale
 
     readonly property bool isTheActiveSensor: deviceName === gnssSettings.kInternalPositionSourceName || controller.currentName === deviceName
+
+    property bool initialized
 
     signal changed()
 

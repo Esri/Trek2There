@@ -70,7 +70,7 @@ TextField {
         id: clearButtonLoader
 
         property real clearButtonMargin: clearButtonLoader.width + clearButtonLoader.anchors.margins * 1.5
-        property int textDirection: Qt.locale().textDirection
+        property int textDirection: Qt.locale().textDirection // XXX this may be wrong
         property real endMargin: textField.__contentHeight / 3
 
         anchors {

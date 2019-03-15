@@ -38,6 +38,7 @@ SettingsTab {
     property color dividerColor: "#c0c0c0"
 
     property string fontFamily: Qt.application.font.family
+    property var locale: Qt.locale()
 
     property bool showAboutDevice: true
     property bool showAlerts: true

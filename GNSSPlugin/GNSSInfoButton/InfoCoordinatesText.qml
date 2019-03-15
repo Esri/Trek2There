@@ -27,7 +27,7 @@ InfoView {
     property var position: ({})
     property bool showAgeTimer: true
 
-    property var locale: app.locale // XXX this may be wrong
+    property var locale: Qt.locale() // XXX this may be wrong
     property int llFormatIndex: 0
     property string llFormat: kLatLonFormats[llFormatIndex]
     property string latitude
