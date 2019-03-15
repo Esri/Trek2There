@@ -18,6 +18,7 @@ Item {
     property alias isConnecting: positionSourceManager.isConnecting
     property alias isConnected: positionSourceManager.isConnected
     property alias stayConnected: positionSourceManager.stayConnected
+    readonly property bool isReady: positionSourceManager.status == positionSourceManager.kStatusInUse
 
     signal startPositionSource()
     signal stopPositionSource()
@@ -27,6 +28,9 @@ Item {
 
     // needed for ConfirmPanel to appear in the correct location
     anchors.fill: parent
+
+    // make sure alerts are on top
+    z: 9999
 
     //-------------------------------------------------------------------------
 
