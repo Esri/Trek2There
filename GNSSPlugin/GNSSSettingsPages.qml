@@ -11,7 +11,6 @@ import "./controls"
 Item {
     id: settingsUI
 
-    property StackView stackView
     property GNSSSettings gnssSettings
     property PositionSourceManager positionSourceManager
 
@@ -36,11 +35,12 @@ Item {
     property bool showAntennaHeight: true
     property bool showAltitude: true
 
-    signal showLocationSettings()
+    signal showLocationSettings(var stackView)
 
     //-------------------------------------------------------------------------
 
     onShowLocationSettings: {
+        locationSettingsTab.stackView = stackView;
         stackView.push(settingsTabContainer, {
                            settingsTab: locationSettingsTab,
                            title: locationSettingsTab.title,
@@ -64,7 +64,6 @@ Item {
 
         title: qsTr("Location Provider")
 
-        stackView: settingsUI.stackView
         gnssSettings: settingsUI.gnssSettings
         positionSourceManager: settingsUI.positionSourceManager
 

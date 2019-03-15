@@ -110,7 +110,6 @@ Item {
 
         title: qsTr("Location Provider")
 
-        stackView: mainView.stackView
         gnssSettings: gnssManager.gnssSettings
         positionSourceManager: gnssManager.positionSourceManager
 

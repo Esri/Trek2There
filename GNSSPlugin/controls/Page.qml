@@ -159,6 +159,7 @@ Rectangle {
                     forceActiveFocus();
                     Qt.inputMethod.hide();
                     if (stackView) {
+                        settingsTabLocation.stackView = stackView;
                         stackView.replace(settingsTabContainer, {
                                               settingsTab: settingsTabLocation,
                                               title: settingsTabLocation.title,

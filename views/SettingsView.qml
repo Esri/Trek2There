@@ -501,7 +501,7 @@ Item {
                                 }
 
                                 onClicked: {
-                                    settingsUI.showLocationSettings();
+                                    settingsUI.showLocationSettings(stackView);
                                 }
                             }
                         }
