@@ -59,55 +59,6 @@ SwitchDelegate {
 
     //--------------------------------------------------------------------------
 
-//    indicator: Item {
-//        id: indicator
-//        implicitWidth: 38 * AppFramework.displayScaleFactor
-//        implicitHeight: 32 * AppFramework.displayScaleFactor
-
-//        anchors.right: parent.right
-//        anchors.rightMargin: control.rightPadding
-//        anchors.verticalCenter: parent.verticalCenter
-
-//        property Item control
-//        property alias handle: handle
-
-//        Material.elevation: 1
-
-//        Rectangle {
-//            width: parent.width
-//            height: 14 * AppFramework.displayScaleFactor
-//            radius: height / 2
-//            y: parent.height / 2 - height / 2
-//            color: control.enabled ? (control.checked ? control.Material.switchCheckedTrackColor : control.Material.switchUncheckedTrackColor)
-//                                   : control.Material.switchDisabledTrackColor
-//        }
-
-//        Rectangle {
-//            id: handle
-//            x: Math.max(0, Math.min(parent.width - width, control.visualPosition * parent.width - (width / 2)))
-//            y: (parent.height - height) / 2
-//            width: 20 * AppFramework.displayScaleFactor
-//            height: 20 * AppFramework.displayScaleFactor
-//            radius: width / 2
-//            color: control.enabled ? (control.checked ? control.Material.switchCheckedHandleColor : control.Material.switchUncheckedHandleColor)
-//                                   : control.Material.switchDisabledHandleColor
-
-//            Behavior on x {
-//                enabled: !control.pressed
-//                SmoothedAnimation {
-//                    duration: 300
-//                }
-//            }
-
-//            layer.enabled: indicator.Material.elevation > 0
-//            layer.effect: DropShadow {
-//                radius: 8 * AppFramework.displayScaleFactor
-//                samples: 17
-//                color: control.checked ? handle.color : Qt.darker(handle.color)
-//            }
-//        }
-//    }
-
     indicator: Switch {
         enabled: control.enabled
 

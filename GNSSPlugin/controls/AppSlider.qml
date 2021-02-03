@@ -117,47 +117,6 @@ Rectangle {
             }
 
             //--------------------------------------------------------------------------
-
-//            handle: Rectangle {
-//                id: handle
-
-//                x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
-//                y: slider.topPadding + slider.availableHeight / 2 - height / 2
-//                implicitWidth: 20 * AppFramework.displayScaleFactor
-//                implicitHeight: 20 * AppFramework.displayScaleFactor
-//                radius: 10 * AppFramework.displayScaleFactor
-//                color: slider.enabled ? slider.Material.switchUncheckedHandleColor : slider.Material.switchDisabledHandleColor
-
-//                layer.enabled: slider.Material.elevation > 0
-//                layer.effect: DropShadow {
-//                    radius: 8 * AppFramework.displayScaleFactor
-//                    samples: 17
-//                    color: Qt.darker(handle.color)
-//                }
-//            }
-
-//            //--------------------------------------------------------------------------
-
-//            background: Rectangle {
-//                x: slider.leftPadding
-//                y: slider.topPadding + slider.availableHeight / 2 - height / 2
-//                implicitWidth: 200 * AppFramework.displayScaleFactor
-//                implicitHeight: 4 * AppFramework.displayScaleFactor
-//                width: slider.availableWidth
-//                height: implicitHeight
-//                radius: 2 * AppFramework.displayScaleFactor
-//                color: slider.enabled ? slider.Material.switchUncheckedTrackColor : slider.Material.switchDisabledTrackColor
-
-//                Rectangle {
-//                    x: control.isRightToLeft ? slider.visualPosition * parent.width : 0
-//                    width: control.isRightToLeft ? (1 - slider.visualPosition) * parent.width : slider.visualPosition * parent.width
-//                    height: parent.height
-//                    color: slider.enabled ? slider.Material.switchCheckedHandleColor : slider.Material.switchDisabledHandleColor
-//                    radius: 2 * AppFramework.displayScaleFactor
-//                }
-//            }
-
-            //--------------------------------------------------------------------------
         }
     }
 }
