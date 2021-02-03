@@ -1,4 +1,4 @@
-/* Copyright 2018 Esri
+/* Copyright 2021 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,18 @@
  *
  */
 
-import QtQuick 2.9
-import QtPositioning 5.8
+import QtQml 2.15
+import QtQuick 2.15
+import QtPositioning 5.15
 
 import ArcGIS.AppFramework 1.0
+import ArcGIS.AppFramework.Devices 1.0
 import ArcGIS.AppFramework.Positioning 1.0
 
 Item {
     id: positionSourceManager
+
+    //--------------------------------------------------------------------------
 
     property alias controller: controller
     property alias positionSource: controller.positionSource
@@ -29,43 +33,55 @@ Item {
     property alias discoveryAgent: controller.discoveryAgent
     property alias nmeaSource: controller.nmeaSource
 
+    property alias discoverBluetooth: sources.discoverBluetooth
+    property alias discoverBluetoothLE: sources.discoverBluetoothLE
+    property alias discoverSerialPort: sources.discoverSerialPort
+
+    property alias stayConnected: controller.stayConnected
+    property alias onSettingsPage: controller.onSettingsPage
+    property alias onDetailedSettingsPage: controller.onDetailedSettingsPage
+
+    property alias connectionType: controller.connectionType
+    property alias storedDeviceName: controller.storedDeviceName
+    property alias storedDeviceJSON: controller.storedDeviceJSON
+    property alias hostname: controller.hostname
+    property alias port: controller.port
+
+    property alias nmeaLogFile: controller.nmeaLogFile
+    property alias updateInterval: controller.updateInterval
+    property alias repeat: controller.repeat
+
+    property alias name: controller.currentLabel
+
     //--------------------------------------------------------------------------
-    // Configuration properties
 
-    property bool discoverBluetooth: true
-    property bool discoverBluetoothLE: false
-    property bool discoverSerialPort: false
-
-    property int connectionType: controller.eConnectionType.internal
-    property string storedDeviceName: ""
-    property string storedDeviceJSON: ""
-    property string hostname: ""
-    property int port: Number.NaN
+    property bool useGooglePlayLocationAPI: true
 
     property int altitudeType: 0 // 0=MSL, 1=HAE
+    property int confidenceLevelType: 0 // 0=68% CL, 1=95% CL
     property real customGeoidSeparation: Number.NaN
     property real antennaHeight: Number.NaN
 
-    //--------------------------------------------------------------------------
-
-    property date activatedTimestamp    // Time when activated
-    property real timeOffset: 0         // correction for system clock running fast/late
-
     property int warmupCount: controller.connectionType > controller.eConnectionType.internal ? 3 : 1
-    property int positionCount: 0
 
     //--------------------------------------------------------------------------
+    // Status flags
 
     readonly property bool valid: positionSource.valid
     readonly property bool active: positionSource.active
-    readonly property bool isGNSS: controller.connectionType > controller.eConnectionType.internal
+
+    readonly property bool isFile: controller.useFile
+    readonly property bool isGNSS: !controller.useInternalGPS
+    readonly property bool isInternal: controller.useInternalGPS
+    readonly property bool isBluetooth: controller.useExternalGPS && controller.currentDevice && controller.currentDevice.deviceType === Device.DeviceTypeBluetooth
+    readonly property bool isBluetoothLE: controller.useExternalGPS && controller.currentDevice && controller.currentDevice.deviceType === Device.DeviceTypeBluetoothLE
+    readonly property bool isSerialPort: controller.useExternalGPS && controller.currentDevice && controller.currentDevice.deviceType === Device.DeviceTypeSerialPort
+    readonly property bool isNetwork: controller.useTCPConnection
+
     readonly property bool isConnecting: controller.isConnecting || controller.errorWhileConnecting
     readonly property bool isConnected: controller.isConnected
     readonly property bool isWarmingUp: isConnected && positionCount <= warmupCount
-    property alias stayConnected: controller.stayConnected
-    property alias onSettingsPage: controller.onSettingsPage
-
-    //--------------------------------------------------------------------------
+    readonly property bool isReady: status === kStatusInUse
 
     readonly property int status: !active
                                   ? kStatusNull
@@ -80,7 +96,59 @@ Item {
     readonly property int kStatusNull: 0            // Not active
     readonly property int kStatusConnecting: 1      // Connecting to position source
     readonly property int kStatusWarmingUp: 2       // Connected, warming up
-    readonly property int kStatusInUse: 3           // Connected, warmed and in use
+    readonly property int kStatusInUse: 3           // Connected, warmed up, and in use
+
+    //--------------------------------------------------------------------------
+    // Internal
+
+    property date activatedTimestamp    // Time when activated
+    property double positionTimestamp   // Time when current position was received
+
+    property int positionCount: 0
+
+    //--------------------------------------------------------------------------
+
+    readonly property var systemInfo: {
+        "pluginName": controller.integratedProviderName,
+
+        "antennaHeight": antennaHeight,
+        "altitudeType": altitudeType,
+        "confidenceLevelType": confidenceLevelType,
+        "geoidSeparationCustom": altitudeType == 0 ? customGeoidSeparation : Number.NaN,
+    }
+
+    readonly property var deviceInfo: {
+        "deviceType": controller.currentDevice ? controller.currentDevice.deviceType : Device.DeviceTypeUnknown,
+        "deviceName": controller.currentDevice ? controller.currentDevice.name : "",
+        "deviceAddress": controller.currentDevice ? controller.currentDevice.address : "",
+
+        "antennaHeight": antennaHeight,
+        "altitudeType": altitudeType,
+        "confidenceLevelType": confidenceLevelType,
+        "geoidSeparationCustom": altitudeType == 0 ? customGeoidSeparation : Number.NaN,
+    }
+
+    readonly property var networkInfo: {
+        "networkAddress": controller.tcpSocket ? controller.tcpSocket.remoteAddress.address : "",
+        "networkPort": controller.tcpSocket ? controller.tcpSocket.remotePort : "",
+        "networkName": controller.tcpSocket ? controller.tcpSocket.remoteName : "",
+
+        "antennaHeight": antennaHeight,
+        "altitudeType": altitudeType,
+        "confidenceLevelType": confidenceLevelType,
+        "geoidSeparationCustom": altitudeType == 0 ? customGeoidSeparation : Number.NaN,
+    }
+
+    readonly property var fileInfo: {
+        "fileName": controller.nmeaLogFile ? controller.nmeaLogFile : "",
+        "updateInterval": controller.updateInterval,
+        "repeat": controller.repeat,
+
+        "antennaHeight": antennaHeight,
+        "altitudeType": altitudeType,
+        "confidenceLevelType": confidenceLevelType,
+        "geoidSeparationCustom": altitudeType == 0 ? customGeoidSeparation : Number.NaN,
+    }
 
     //--------------------------------------------------------------------------
 
@@ -88,11 +156,16 @@ Item {
 
     //--------------------------------------------------------------------------
 
+    // As of Qt 5.12.3, enums take a long time to resolve. This can have an impact
+    // on app performance. See https://bugreports.qt.io/browse/QTBUG-77237
+
     //    enum PositionSourceType {
     //        Unknown = 0,
-    //        System = 1,
-    //        External = 2,
-    //        Network = 3,
+    //        User = 1,
+    //        System = 2,
+    //        External = 3,
+    //        Network = 4,
+    //        File = 5
     //    }
 
     //--------------------------------------------------------------------------
@@ -100,20 +173,48 @@ Item {
     signal startPositionSource()
     signal stopPositionSource()
     signal newPosition(var position)
-    signal error(string errorString)
+
+    signal tcpError(string errorString)
+    signal deviceError(string errorString)
+    signal nmeaLogFileError(string errorString)
+    signal discoveryAgentError(string errorString)
+    signal positionSourceError(string errorString)
 
     //--------------------------------------------------------------------------
 
     Component.onCompleted: {
         AppFramework.environment.setValue("APPSTUDIO_POSITION_DESIRED_ACCURACY", "HIGHEST");
         AppFramework.environment.setValue("APPSTUDIO_POSITION_ACTIVITY_MODE", "OTHERNAVIGATION");
+        AppFramework.environment.setValue("APPSTUDIO_POSITION_UPDATE_MODE", "ALL")
+        AppFramework.environment.setValue("APPSTUDIO_POSITION_POWER_MODE", "HIGHEST")
+        AppFramework.environment.setValue("APPSTUDIO_POSITION_GPS_WAIT_TIME", 5000)
+        AppFramework.environment.setValue("APPSTUDIO_POSITION_PRIORITY_MODE", "HIGH_ACCURACY")
+        AppFramework.environment.setValue("APPSTUDIO_POSITION_FUSED_PROVIDER", useGooglePlayLocationAPI ? "ON" : "OFF")
+        AppFramework.environment.setValue("APPSTUDIO_POSITION_FUSED_PROVIDER_FILTER", "MOCKONLY")
+
+        if (isInternal && active) {
+            stopPositionSource();
+            startPositionSource();
+        }
+    }
+
+    //-------------------------------------------------------------------------
+
+    onUseGooglePlayLocationAPIChanged: {
+        if (Qt.platform.os === "android") {
+            AppFramework.environment.setValue("APPSTUDIO_POSITION_FUSED_PROVIDER", useGooglePlayLocationAPI ? "ON" : "OFF");
+
+            if (isInternal && active) {
+                stopPositionSource();
+                startPositionSource();
+            }
+        }
     }
 
     //-------------------------------------------------------------------------
 
     onStartPositionSource: {
         controller.startPositionSource();
-        controller.reconnect();
     }
 
     //-------------------------------------------------------------------------
@@ -134,26 +235,16 @@ Item {
         id: sources
 
         connectionType: controller.connectionType
-        discoverBluetooth: controller.discoverBluetooth
-        discoverBluetoothLE: controller.discoverBluetoothLE
-        discoverSerialPort: controller.discoverSerialPort
+        updateInterval: controller.updateInterval
+        repeat: controller.repeat
     }
+
+    //--------------------------------------------------------------------------
 
     PositioningSourcesController {
         id: controller
 
         sources: sources
-        stayConnected: true
-
-        discoverBluetooth: positionSourceManager.discoverBluetooth
-        discoverBluetoothLE: positionSourceManager.discoverBluetoothLE
-        discoverSerialPort: positionSourceManager.discoverSerialPort
-
-        connectionType: positionSourceManager.connectionType
-        storedDeviceName: positionSourceManager.storedDeviceName
-        storedDeviceJSON: positionSourceManager.storedDeviceJSON
-        hostname: positionSourceManager.hostname
-        port: Number(positionSourceManager.port)
 
         onIsConnectedChanged: {
             if (initialized && isGNSS) {
@@ -164,8 +255,20 @@ Item {
             }
         }
 
-        onError: {
-            positionSourceManager.error(errorString);
+        onTcpError: {
+            positionSourceManager.tcpError(errorString);
+        }
+
+        onDeviceError: {
+            positionSourceManager.deviceError(errorString);
+        }
+
+        onNmeaLogFileError: {
+            positionSourceManager.nmeaLogFileError(errorString);
+        }
+
+        onDiscoveryAgentError: {
+            positionSourceManager.discoveryAgentError(errorString);
         }
     }
 
@@ -174,7 +277,7 @@ Item {
     Connections {
         target: positionSource
 
-        onActiveChanged: {
+        function onActiveChanged() {
             console.log("positionSource.active:", positionSource.active);
 
             // require warm-up after activation
@@ -184,31 +287,39 @@ Item {
             }
         }
 
-        onPositionChanged: {
-            var position = positionSource.position;
-            timeOffset = ((new Date()).valueOf() - position.timestamp.valueOf()) / 1000;
+        function onPositionChanged() {
+            var newposition = positionSource.position;
+
+            // replace position time-stamp with current time if we're parsing a log file
+            if (isFile) {
+                newposition.timestamp = new Date();
+            }
+
+            positionTimestamp = (new Date()).valueOf();
 
             // TODO - comparison with activatedTimestamp will delay position updates if the system clock is running fast
-            if (position.latitudeValid && position.longitudeValid /*&& position.timestamp >= activatedTimestamp*/) {
+            if (newposition.latitudeValid && newposition.longitudeValid /*&& newposition.timestamp >= activatedTimestamp*/) {
                 positionCount++;
 
-                addPositionSource(position);
+                addPositionSource(newposition);
 
-                updateAltitude(position);
+                updateAltitude(newposition);
+
+                updateAccuracy(newposition);
 
                 if (isWarmingUp) {
-                    console.log("Cold position source - count:", positionCount, "of", warmupCount, "coordinate:", position.coordinate, "timestamp:", position.timestamp, "connectionType:", controller.connectionType);
+                    console.log("Cold position source - count:", positionCount, "of", warmupCount, "coordinate:", newposition.coordinate, "timestamp:", newposition.timestamp, "connectionType:", controller.connectionType);
                 } else if (isConnected) {
                     if (debug) {
-                        console.log("New position - count:", positionCount, "coordinate:", position.coordinate, "timestamp:", position.timestamp, "connectionType:", controller.connectionType);
+                        console.log("New position - count:", positionCount, "coordinate:", newposition.coordinate, "timestamp:", newposition.timestamp, "connectionType:", controller.connectionType);
                     }
 
-                    newPosition(position);
+                    newPosition(newposition);
                 }
             }
         }
 
-        onSourceErrorChanged: {
+        function onSourceErrorChanged() {
             console.error("Positioning Source Error:", positionSource.sourceError);
 
             var errorString = "";
@@ -223,7 +334,7 @@ Item {
                 break;
 
             case PositionSource.SocketError :
-                errorString = qsTr("Position source error");
+                errorString = qsTr("Position source socket error");
                 break;
 
             case PositionSource.NoError :
@@ -235,7 +346,7 @@ Item {
                 break;
             }
 
-            error(errorString);
+            positionSourceError(errorString);
         }
     }
 
@@ -245,80 +356,35 @@ Item {
 
         switch (controller.connectionType) {
         case controller.eConnectionType.internal:
-            info.positionSourceType = 1;
-            info.positionSourceInfo = systemSourceInfo();
+            info.positionSourceType = 2 //PositionSourceManager.PositionSourceType.System;
+            info.positionSourceInfo = systemInfo;
             break;
 
         case controller.eConnectionType.external:
-            info.positionSourceType = 2;
-            info.positionSourceInfo = deviceSourceInfo(controller.currentDevice);
+            info.positionSourceType = 3 //PositionSourceManager.PositionSourceType.External;
+            info.positionSourceInfo = deviceInfo;
             break;
 
         case controller.eConnectionType.network:
-            info.positionSourceType = 3;
-            info.positionSourceInfo = networkSourceInfo(controller.tcpSocket);
+            info.positionSourceType = 4 //PositionSourceManager.PositionSourceType.Network;
+            info.positionSourceInfo = networkInfo;
+            break;
+
+        case controller.eConnectionType.file:
+            info.positionSourceType = 5 //PositionSourceManager.PositionSourceType.File;
+            info.positionSourceInfo = fileInfo;
             break;
 
         default:
             console.error("Unknown connectionType:", controller.connectionType);
 
-            info.positionSourceType = 0;
+            info.positionSourceType = 0 //PositionSourceManager.PositionSourceType.Unknown;
             info.positionSourceInfo = undefined;
             break;
         }
 
         info.positionSourceTypeValid = true;
         info.positionSourceInfoValid = typeof info.positionSourceInfo === "object";
-    }
-
-    function systemSourceInfo() {
-        var info = {
-            "pluginName": controller.integratedProviderName,
-
-            "antennaHeight": antennaHeight,
-            "altitudeType": altitudeType,
-            "geoidSeparationCustom": altitudeType == 0 ? customGeoidSeparation : Number.NaN,
-        }
-
-        return info;
-    }
-
-    function deviceSourceInfo(device) {
-        if (!device) {
-            console.error("Null device");
-            return;
-        }
-
-        var info = {
-            "deviceType": device.deviceType,
-            "deviceName": device.name,
-            "deviceAddress": device.address,
-
-            "antennaHeight": antennaHeight,
-            "altitudeType": altitudeType,
-            "geoidSeparationCustom": altitudeType == 0 ? customGeoidSeparation : Number.NaN,
-        }
-
-        return info;
-    }
-
-    function networkSourceInfo(socket) {
-        if (!socket) {
-            console.error("Null network socket");
-            return;
-        }
-
-        var info = {
-            "networkAddress": socket.remoteAddress.address,
-            "networkPort": socket.remotePort,
-            "networkName": socket.remoteName,
-
-            "antennaHeight": antennaHeight,
-            "altitudeType": altitudeType,
-            "geoidSeparationCustom": altitudeType == 0 ? customGeoidSeparation : Number.NaN,
-        }
-
-        return info;
     }
 
     //--------------------------------------------------------------------------
@@ -385,6 +451,35 @@ Item {
         }
 
         position.coordinate.altitude = altitude;
+    }
+
+    //--------------------------------------------------------------------------
+
+    // Report horizontal, vertical, and position accuracy with 68% or 95% confidence level,
+    // assuming that the errors in all directions are approximately equal, see
+    // https://www.fgdc.gov/standards/projects/accuracy/part3/chapter3 (p3-10 and p3-11) and
+    // http://earth-info.nga.mil/GandG/publications/tr96.pdf (pA-4)
+    function updateAccuracy(position) {
+        switch (confidenceLevelType) {
+        case 0: // 68% CL
+        default:
+            break;
+
+        case 1: // 95% CL
+            if (position.positionAccuracyValid) {
+                // this is 2.7955/sqrt(3)
+                position.positionAccuracy *= 1.6140;
+            }
+
+            if (position.horizontalAccuracyValid) {
+                // this is 2.4477/sqrt(2)
+                position.horizontalAccuracy *= 1.7308;
+            }
+
+            if (position.verticalAccuracyValid) {
+                position.verticalAccuracy *= 1.96;
+            }
+        }
     }
 
     //--------------------------------------------------------------------------

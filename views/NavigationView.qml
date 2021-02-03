@@ -43,7 +43,7 @@ Item {
 
     property StackView stackView
     property GNSSManager gnssManager
-    property GNSSSettingsPages settingsUI
+    property GNSSStatusPages gnssStatusPages
 
     property bool hudOn
     property bool navigating
@@ -106,7 +106,7 @@ Item {
             startNavigation();
         }
 
-        gnssManager.startPositionSource();
+        gnssManager.start();
         initialized = true;
     }
 
@@ -115,7 +115,7 @@ Item {
     Connections {
         target: gnssManager
 
-        onNewPosition: {
+        function onNewPosition(position) {
             navigationView.newPosition = position;
         }
     }
@@ -659,9 +659,7 @@ Item {
 
     // External GPS indicator --------------------------------------------------
 
-    GNSSInfoButton {
-        id: gnssInfoButton
-
+    GNSSStatusButton {
         width: sf(30)
         height: width
 
@@ -670,12 +668,9 @@ Item {
         anchors.right: parent.right
         anchors.rightMargin: sideMargin
 
-        color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+        color: buttonTextColor
 
-        stackView: navigationView.stackView
-        settingsUI: navigationView.settingsUI
-        positionSourceManager: gnssManager.positionSourceManager
-        settingsUIAccessible: false
+        gnssStatusPages: navigationView.gnssStatusPages
 
         Accessible.role: Accessible.Indicator
         Accessible.name: qsTr("Location provider status")
@@ -701,6 +696,14 @@ Item {
 
         Accessible.role: Accessible.Indicator
         Accessible.name: qsTr("Magnetic compass is in use.")
+    }
+
+    ColorOverlay {
+        anchors.fill: compassIndicator
+
+        source: compassIndicator
+        color: buttonTextColor
+        visible: color !== "transparent"
     }
 
     // Toolbar -----------------------------------------------------------------
@@ -1078,9 +1081,9 @@ Item {
     Connections {
         target: app
 
-        onRequestedDestinationChanged: {
-            console.log("requested Destination: ", requestedDestination);
-            if (requestedDestination !== null) {
+        function onRequestedDestinationChanged() {
+            console.log("requested Destination: ", app.requestedDestination);
+            if (app.requestedDestination !== null) {
                 startNavigation();
             }
         }

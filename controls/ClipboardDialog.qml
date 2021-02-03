@@ -14,9 +14,9 @@
  *
  */
 
-import QtQuick 2.8
-import QtQuick.Controls 2.3
-import QtQuick.Layouts 1.3
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 
 import ArcGIS.AppFramework 1.0
 
@@ -27,9 +27,8 @@ Dialog {
     standardButtons: Dialog.Yes | Dialog.No
     modal: true
 
-    Accessible.role: Accessible.Dialog
-    Accessible.name: title
-    Accessible.description: qsTr("This dialog appears when coordinates have been copied to the clipboard. It allows the user to use the coordinates in the application.")
+    width: parent.width
+    contentHeight: sf(200)
 
     property string clipLat: ""
     property string clipLon: ""
@@ -54,11 +53,12 @@ Dialog {
         clipLon = "";
     }
 
-    contentWidth: parent.width
-    contentHeight: sf(200)
-
     contentItem:  Rectangle {
         color: "#fff"
+
+        Accessible.role: Accessible.Dialog
+        Accessible.name: title
+        Accessible.description: qsTr("This dialog appears when coordinates have been copied to the clipboard. It allows the user to use the coordinates in the application.")
 
         ColumnLayout {
             anchors.fill: parent

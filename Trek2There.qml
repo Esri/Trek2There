@@ -212,6 +212,8 @@ App {
     ClipboardDialog {
         id: clipboardDialog
 
+        anchors.centerIn: parent
+
         onUseCoordinates: {
             if (clipLat !== "" && clipLon !== "") {
                 console.log("lat: %1, lon:%2".arg(clipLat).arg(clipLon))
@@ -228,7 +230,7 @@ App {
 
         target: AppFramework.clipboard
 
-        onDataChanged: {
+        function onDataChanged() {
             checkClip();
         }
     }
@@ -238,7 +240,7 @@ App {
     Connections {
         target: Qt.application
 
-        onStateChanged: {
+        function onStateChanged() {
             // Needed for UWP
             if(safetyWarningAccepted && Qt.application.state === Qt.ApplicationActive) {
                 checkClip();

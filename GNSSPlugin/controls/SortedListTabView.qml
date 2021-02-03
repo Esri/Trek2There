@@ -1,4 +1,4 @@
-/* Copyright 2018 Esri
+/* Copyright 2021 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,29 +14,35 @@
  *
  */
 
-import QtQuick 2.9
-import QtQuick.Controls 2.2
-import QtQuick.Layouts 1.3
-import QtGraphicalEffects 1.0
-import QtQml.Models 2.3
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
+import QtGraphicalEffects 1.15
+import QtQml.Models 2.15
 
 import ArcGIS.AppFramework 1.0
 
 Item {
-    default property alias contentData: container.data
-    property alias listTabView: listTabViewListView
-
     property alias tabViewContainer: container
+
+    default property alias contentData: container.data
+
+    property alias listTabView: listTabViewListView
+    property alias listSpacing: listTabViewListView.spacing
+
     property alias delegate: delegateModel.delegate
+    property alias model: delegateModel.items
 
     // Set this to sort the list view. Must be a function of the form
     // 'function(left, right) { return left < right; }'
     property alias lessThan: delegateModel.lessThan
 
+    property color backgroundColor: "#e1f0fb"
+
     //--------------------------------------------------------------------------
 
     signal selected(Item item)
-    signal reorder()
+    signal sort()
 
     //--------------------------------------------------------------------------
 
@@ -46,20 +52,27 @@ Item {
 
     //--------------------------------------------------------------------------
 
-    onReorder: {
-        delegateModel.items.setGroups(0, delegateModel.items.count, "unsorted")
+    onSort: {
+        if (delegateModel.items.count > 0) {
+            delegateModel.items.setGroups(0, delegateModel.items.count, "unsorted")
+        }
     }
 
     //--------------------------------------------------------------------------
 
-    ScrollView {
+    Rectangle {
         anchors.fill: parent
+
+        color: backgroundColor
 
         ListView {
             id: listTabViewListView
 
+            anchors.fill: parent
             clip: true
+
             boundsBehavior: Flickable.StopAtBounds
+            spacing: 2 * AppFramework.displayScaleFactor
 
             model: delegateModel
         }
@@ -72,6 +85,10 @@ Item {
 
         property var lessThan
 
+        // We can't use container.visibleChildren here since they and their delegates
+        // will be destroyed when we navigate away from the current page (they're not
+        // visible anymore). Any signals connected to the delegates that are supposed
+        // to be run (e.g. when the model changes) won't be called in this case.
         model: container.children
 
         items.includeByDefault: false
@@ -81,6 +98,7 @@ Item {
             name: "unsorted"
 
             includeByDefault: true
+
             onChanged: {
                 if (lessThan && lessThan instanceof Function) {
                     // sort list view according to function 'lessThan(left, right)'

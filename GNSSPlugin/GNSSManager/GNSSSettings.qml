@@ -1,4 +1,4 @@
-/* Copyright 2018 Esri
+/* Copyright 2021 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,21 @@
  *
  */
 
-import QtQuick 2.9
+import QtQml 2.15
+import QtQuick 2.15
 
 import ArcGIS.AppFramework 1.0
 
 QtObject {
-    property App app
-    property Settings settings: app.settings
+    id: object
 
     //--------------------------------------------------------------------------
 
-    // default settings
-    property bool defaultDiscoverBluetooth: true
-    property bool defaultDiscoverBluetoothLE: false
-    property bool defaultDiscoverSerialPort: false
+    property Settings settings
 
+    //--------------------------------------------------------------------------
+
+    // default settings - allow the user to set the GNSS defaults needed in the app
     property bool defaultLocationAlertsVisualInternal: false
     property bool defaultLocationAlertsSpeechInternal: false
     property bool defaultLocationAlertsVibrateInternal: false
@@ -37,27 +37,29 @@ QtObject {
     property bool defaultLocationAlertsSpeechExternal: true
     property bool defaultLocationAlertsVibrateExternal: true
 
+    property bool defaultLocationAlertsMonitorNmeaData: false
+
     property int defaultLocationMaximumDataAge: 5000
     property int defaultLocationMaximumPositionAge: 5000
     property int defaultLocationSensorConnectionType: kConnectionTypeInternal
     property int defaultLocationAltitudeType: kAltitudeTypeMSL
+    property int defaultLocationConfidenceLevelType: kConfidenceLevelType68
 
     property real defaultLocationGeoidSeparation: Number.NaN
     property real defaultLocationAntennaHeight: Number.NaN
 
     // current settings state
-    property bool discoverBluetooth: defaultDiscoverBluetooth
-    property bool discoverBluetoothLE: defaultDiscoverBluetoothLE
-    property bool discoverSerialPort: defaultDiscoverSerialPort
-
     property bool locationAlertsVisual: defaultLocationAlertsVisualInternal
     property bool locationAlertsSpeech: defaultLocationAlertsSpeechInternal
     property bool locationAlertsVibrate: defaultLocationAlertsVibrateInternal
+
+    property bool locationAlertsMonitorNmeaData: defaultLocationAlertsMonitorNmeaData
 
     property int locationMaximumDataAge: defaultLocationMaximumDataAge
     property int locationMaximumPositionAge: defaultLocationMaximumPositionAge
     property int locationSensorConnectionType: defaultLocationSensorConnectionType
     property int locationAltitudeType: defaultLocationAltitudeType
+    property int locationConfidenceLevelType: defaultLocationConfidenceLevelType
 
     property real locationGeoidSeparation: defaultLocationGeoidSeparation
     property real locationAntennaHeight: defaultLocationAntennaHeight
@@ -68,32 +70,41 @@ QtObject {
     property string hostname: ""
     property string port: ""
 
+    property string nmeaLogFile: ""
+    property int updateInterval: 0
+    property bool repeat: false
+
     property var knownDevices: ({})
 
     //--------------------------------------------------------------------------
 
+    // this is used to access the integrated provider settings, DO NOT CHANGE
     readonly property string kInternalPositionSourceName: "IntegratedProvider"
+
+    // this is the (translated) name of the integrated provider as it appears on the settings page
     readonly property string kInternalPositionSourceNameTranslated: qsTr("Integrated Provider")
 
     readonly property string kKeyLocationPrefix: "Location/"
     readonly property string kKeyLocationKnownDevices: kKeyLocationPrefix + "knownDevices"
     readonly property string kKeyLocationLastUsedDevice: kKeyLocationPrefix + "lastUsedDevice"
-    readonly property string kKeyLocationDiscoverBluetooth: kKeyLocationPrefix + "discoverBluetooth"
-    readonly property string kKeyLocationDiscoverBluetoothLE: kKeyLocationPrefix + "discoverBluetoothLE"
-    readonly property string kKeyLocationDiscoverSerialPort: kKeyLocationPrefix + "discoverSerialPort"
 
     readonly property int kConnectionTypeInternal: 0
     readonly property int kConnectionTypeExternal: 1
     readonly property int kConnectionTypeNetwork: 2
+    readonly property int kConnectionTypeFile: 3
 
     readonly property int kAltitudeTypeMSL: 0
     readonly property int kAltitudeTypeHAE: 1
+
+    readonly property int kConfidenceLevelType68: 0
+    readonly property int kConfidenceLevelType95: 1
 
     //--------------------------------------------------------------------------
 
     property bool updating
 
-    signal receiverListUpdated()
+    signal receiverAdded(string name)
+    signal receiverRemoved(string name)
 
     //--------------------------------------------------------------------------
 
@@ -108,43 +119,80 @@ QtObject {
         updating = true;
 
         if (knownDevices && lastUsedDeviceName > "") {
-            var receiverSettings = knownDevices[lastUsedDeviceName];
+            var receiver = knownDevices[lastUsedDeviceName];
 
-            if (receiverSettings) {
-                switch (receiverSettings.connectionType) {
+            if (receiver) {
+                switch (receiver.connectionType) {
                 case kConnectionTypeInternal:
-                    lastUsedDeviceLabel = receiverSettings.label;
+                    lastUsedDeviceLabel = receiver.label;
                     lastUsedDeviceJSON = "";
                     hostname = "";
                     port = "";
+                    nmeaLogFile = "";
+                    updateInterval = 0;
+                    repeat = false;
                     break;
+
                 case kConnectionTypeExternal:
-                    lastUsedDeviceLabel = receiverSettings.label;
-                    lastUsedDeviceJSON = receiverSettings.receiver > "" ? JSON.stringify(receiverSettings.receiver) : "";
+                    lastUsedDeviceLabel = receiver.label;
+                    lastUsedDeviceJSON = receiver.receiver > "" ? JSON.stringify(receiver.receiver) : "";
                     hostname = "";
                     port = "";
+                    nmeaLogFile = "";
+                    updateInterval = 0;
+                    repeat = false;
                     break;
+
                 case kConnectionTypeNetwork:
-                    lastUsedDeviceLabel = receiverSettings.label;
+                    lastUsedDeviceLabel = receiver.label;
                     lastUsedDeviceJSON = ""
-                    hostname = receiverSettings.hostname;
-                    port = receiverSettings.port;
+                    hostname = receiver.hostname;
+                    port = receiver.port;
+                    nmeaLogFile = "";
+                    updateInterval = 0;
+                    repeat = false;
                     break;
+
+                case kConnectionTypeFile:
+                    lastUsedDeviceLabel = receiver.label;
+                    lastUsedDeviceJSON = ""
+                    hostname = "";
+                    port = "";
+                    nmeaLogFile = receiver.filename;
+                    updateInterval = receiver.updateinterval;
+                    repeat = receiver.repeat;
+                    break;
+
                 default:
-                    console.log("Error: unknown connectionType", receiverSettings.connectionType);
+                    console.log("Error: unknown connectionType", receiver.connectionType);
                     updating = false;
                     return;
                 }
 
-                locationAlertsVisual = receiverSettings.locationAlertsVisual ? receiverSettings.locationAlertsVisual : defaultLocationAlertsVisualInternal;
-                locationAlertsSpeech = receiverSettings.locationAlertsSpeech ? receiverSettings.locationAlertsSpeech : defaultLocationAlertsSpeechInternal;
-                locationAlertsVibrate = receiverSettings.locationAlertsVibrate ? receiverSettings.locationAlertsVibrate : defaultLocationAlertsVibrateInternal;
-                locationMaximumDataAge = receiverSettings.locationMaximumDataAge ? receiverSettings.locationMaximumDataAge : defaultLocationMaximumDataAge;
-                locationMaximumPositionAge = receiverSettings.locationMaximumPositionAge ? receiverSettings.locationMaximumPositionAge : defaultLocationMaximumPositionAge;
-                locationSensorConnectionType = receiverSettings.connectionType ? receiverSettings.connectionType : defaultLocationSensorConnectionType;
-                locationAltitudeType = receiverSettings.altitudeType ? receiverSettings.altitudeType : defaultLocationAltitudeType;
-                locationGeoidSeparation = receiverSettings.geoidSeparation ? receiverSettings.geoidSeparation : defaultLocationGeoidSeparation;
-                locationAntennaHeight = receiverSettings.antennaHeight ? receiverSettings.antennaHeight : defaultLocationAntennaHeight;
+                function receiverSetting(name, defaultValue) {
+                    if (!receiver) {
+                        return defaultValue;
+                    }
+
+                    var value = receiver[name];
+                    if (value !== null && value !== undefined) {
+                        return value;
+                    } else {
+                        return defaultValue;
+                    }
+                }
+
+                locationAlertsVisual = receiverSetting("locationAlertsVisual", defaultLocationAlertsVisualInternal);
+                locationAlertsSpeech = receiverSetting("locationAlertsSpeech", defaultLocationAlertsSpeechInternal);
+                locationAlertsVibrate = receiverSetting("locationAlertsVibrate", defaultLocationAlertsVibrateInternal);
+                locationAlertsMonitorNmeaData = receiverSetting("locationAlertsMonitorNmeaData", defaultLocationAlertsMonitorNmeaData);
+                locationMaximumDataAge = receiverSetting("locationMaximumDataAge", defaultLocationMaximumDataAge);
+                locationMaximumPositionAge = receiverSetting("locationMaximumPositionAge", defaultLocationMaximumPositionAge);
+                locationSensorConnectionType = receiverSetting("connectionType", defaultLocationSensorConnectionType);
+                locationAltitudeType = receiverSetting("altitudeType", defaultLocationAltitudeType);
+                locationConfidenceLevelType = receiverSetting("confidenceLevelType", defaultLocationConfidenceLevelType);
+                locationGeoidSeparation = receiverSetting("geoidSeparation", defaultLocationGeoidSeparation);
+                locationAntennaHeight = receiverSetting("antennaHeight", defaultLocationAntennaHeight);
             }
         }
 
@@ -154,11 +202,7 @@ QtObject {
     //--------------------------------------------------------------------------
 
     function read() {
-        console.log("Reading GNSS settings");
-
-        discoverBluetooth = settings.boolValue(kKeyLocationDiscoverBluetooth, defaultDiscoverBluetooth);
-        discoverBluetoothLE = settings.boolValue(kKeyLocationDiscoverBluetoothLE, defaultDiscoverBluetoothLE);
-        discoverSerialPort = settings.boolValue(kKeyLocationDiscoverSerialPort, defaultDiscoverSerialPort);
+        console.log("Reading GNSS settings -", settings.path);
 
         try {
             knownDevices = JSON.parse(settings.value(kKeyLocationKnownDevices, "{}"));
@@ -195,16 +239,12 @@ QtObject {
     //--------------------------------------------------------------------------
 
     function write() {
-        console.log("Writing app settings");
-
-        settings.setValue(kKeyLocationDiscoverBluetooth, discoverBluetooth, defaultDiscoverBluetooth);
-        settings.setValue(kKeyLocationDiscoverBluetoothLE, discoverBluetoothLE, defaultDiscoverBluetoothLE);
-        settings.setValue(kKeyLocationDiscoverSerialPort, discoverSerialPort, defaultDiscoverSerialPort);
+        console.log("Writing GNSS settings -", settings.path);
 
         settings.setValue(kKeyLocationLastUsedDevice, lastUsedDeviceName, kInternalPositionSourceName);
         settings.setValue(kKeyLocationKnownDevices, JSON.stringify(knownDevices), ({}));
 
-        log();
+        //log();
     }
 
     //--------------------------------------------------------------------------
@@ -212,18 +252,17 @@ QtObject {
     function log() {
         console.log("GNSS settings -");
 
-        console.log("* discoverBluetooth:", discoverBluetooth);
-        console.log("* discoverBluetoothLE:", discoverBluetoothLE);
-        console.log("* discoverSerialPort:", discoverSerialPort);
-
         console.log("* locationAlertsVisual:", locationAlertsVisual);
         console.log("* locationAlertsSpeech:", locationAlertsSpeech);
         console.log("* locationAlertsVibrate:", locationAlertsVibrate);
+
+        console.log("* locationAlertsMonitorNmeaData:", locationAlertsMonitorNmeaData);
 
         console.log("* locationMaximumDataAge:", locationMaximumDataAge);
         console.log("* locationMaximumPositionAge:", locationMaximumPositionAge);
         console.log("* locationSensorConnectionType:", locationSensorConnectionType);
         console.log("* locationAltitudeType:", locationAltitudeType);
+        console.log("* locationConfidenceLevelType:", locationConfidenceLevelType);
 
         console.log("* locationGeoidSeparation:", locationGeoidSeparation);
         console.log("* locationAntennaHeight:", locationAntennaHeight);
@@ -241,14 +280,18 @@ QtObject {
             "locationAlertsVisual": connectionType === kConnectionTypeInternal ? defaultLocationAlertsVisualInternal : defaultLocationAlertsVisualExternal,
             "locationAlertsSpeech": connectionType === kConnectionTypeInternal ? defaultLocationAlertsSpeechInternal : defaultLocationAlertsSpeechExternal,
             "locationAlertsVibrate": connectionType === kConnectionTypeInternal ? defaultLocationAlertsVibrateInternal : defaultLocationAlertsVibrateExternal,
+            "locationAlertsMonitorNmeaData": defaultLocationAlertsMonitorNmeaData,
             "locationMaximumDataAge": defaultLocationMaximumDataAge,
             "locationMaximumPositionAge": defaultLocationMaximumPositionAge,
             "altitudeType": defaultLocationAltitudeType,
+            "confidenceLevelType": defaultLocationConfidenceLevelType,
             "antennaHeight": defaultLocationAntennaHeight,
             "geoidSeparation": defaultLocationGeoidSeparation,
             "connectionType": connectionType
         }
     }
+
+    //--------------------------------------------------------------------------
 
     function createInternalSettings() {
         if (knownDevices) {
@@ -262,7 +305,7 @@ QtObject {
                 receiverSettings["label"] = kInternalPositionSourceNameTranslated;
 
                 knownDevices[name] = receiverSettings;
-                receiverListUpdated();
+                receiverAdded(name);
             }
 
             lastUsedDeviceName = name;
@@ -273,15 +316,18 @@ QtObject {
         return "";
     }
 
+    //--------------------------------------------------------------------------
+
     function createExternalReceiverSettings(deviceName, device) {
         if (knownDevices && device && deviceName > "") {
+
             if (!knownDevices[deviceName]) {
                 var receiverSettings = createDefaultSettingsObject(kConnectionTypeExternal);
                 receiverSettings["receiver"] = device;
                 receiverSettings["label"] = deviceName;
 
                 knownDevices[deviceName] = receiverSettings;
-                receiverListUpdated();
+                receiverAdded(deviceName);
             }
 
             lastUsedDeviceName = deviceName;
@@ -291,6 +337,8 @@ QtObject {
 
         return "";
     }
+
+    //--------------------------------------------------------------------------
 
     function createNetworkSettings(hostname, port) {
         if (knownDevices && hostname > "" && port > "") {
@@ -303,7 +351,7 @@ QtObject {
                 receiverSettings["label"] = networkAddress;
 
                 knownDevices[networkAddress] = receiverSettings;
-                receiverListUpdated();
+                receiverAdded(networkAddress);
             }
 
             lastUsedDeviceName = networkAddress;
@@ -314,14 +362,73 @@ QtObject {
         return "";
     }
 
+    //--------------------------------------------------------------------------
+
+    function createNmeaLogFileSettings(fileUrl) {
+        if (knownDevices && fileUrl > "") {
+            var label = fileUrlToLabel(fileUrl);
+
+            if (!knownDevices[fileUrl]) {
+                var receiverSettings = createDefaultSettingsObject(kConnectionTypeFile);
+                receiverSettings["filename"] = fileUrl;
+                receiverSettings["label"] = label;
+                receiverSettings["updateinterval"] = 1000;
+                receiverSettings["repeat"] = true;
+
+                knownDevices[fileUrl] = receiverSettings;
+                receiverAdded(fileUrl);
+            }
+
+            lastUsedDeviceName = fileUrl;
+
+            return label;
+        }
+
+        return "";
+    }
+
+    //--------------------------------------------------------------------------
+
     function deleteKnownDevice(deviceName) {
         try {
             delete knownDevices[deviceName];
-            receiverListUpdated();
+            receiverRemoved(deviceName);
         }
         catch(e){
             console.log(e);
         }
+    }
+
+    //--------------------------------------------------------------------------
+
+    function fileUrlToLabel(fileUrl) {
+        return AppFramework.fileInfo(fileUrl).displayName;
+    }
+
+    //--------------------------------------------------------------------------
+
+    function fileUrlToDisplayPath(fileUrl) {
+        var path = fileUrlToPath(fileUrl);
+
+        if (Qt.platform.os === "android") {
+            path = path.replace(/%3A/g, ":").replace(/%2F/g, "/").replace(/%20/g, ":");
+            var prefix = path.substring(0, path.lastIndexOf(":") + 1);
+            prefix = prefix.substring(prefix.lastIndexOf("/") + 1);
+            path = path.substring(path.lastIndexOf(":") + 1)
+            path = prefix + path.substring(path.lastIndexOf(":") + 1, path.lastIndexOf("/") + 1);
+            path = path + fileUrlToLabel(fileUrl);
+        }
+
+        return path;
+    }
+
+    //--------------------------------------------------------------------------
+
+    function fileUrlToPath(fileUrl) {
+        var fileInfo = AppFramework.fileInfo(fileUrl);
+        var path = Qt.platform.os === "ios" ? fileInfo.filePath.replace(AppFramework.userHomePath + "/", "") : fileInfo.filePath;
+
+        return path;
     }
 
     //--------------------------------------------------------------------------

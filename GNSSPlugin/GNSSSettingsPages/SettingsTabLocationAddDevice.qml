@@ -1,4 +1,4 @@
-/* Copyright 2018 Esri
+/* Copyright 2021 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,29 +14,24 @@
  *
  */
 
-import QtQuick 2.9
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 1.4
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
-import ArcGIS.AppFramework.Positioning 1.0
+import ArcGIS.AppFramework.Platform 1.0
 
-import "../GNSSManager"
 import "../controls"
 
 SettingsTab {
-    id: sensorAddDeviceTab
+    id: addDeviceTab
 
-    title: qsTr("Add Provider")
+    title: qsTr("Select provider")
 
-    property var currentListTabView
+    property var receiverListModel
 
-    //--------------------------------------------------------------------------
-
-    SettingsTabContainer {
-        id: settingsTabContainer
-    }
+    signal showReceiverSettingsPage(var deviceName)
 
     //--------------------------------------------------------------------------
 
@@ -47,18 +42,13 @@ SettingsTab {
 
         // Internal properties -------------------------------------------------
 
-        readonly property PositionSourceManager positionSourceManager: sensorAddDeviceTab.positionSourceManager
-        readonly property PositioningSourcesController controller: positionSourceManager.controller
         readonly property DeviceDiscoveryAgent discoveryAgent: controller.discoveryAgent
 
-        readonly property alias hostname: hostnameTextField.text
-        readonly property alias port: portTextField.text
+        readonly property string kDescriptionBluetooth: qsTr("All GNSS receivers that are paired to the device will be displayed in this list. If your receiver is missing please check that Bluetooth is enabled and that the receiver is paired.")
+        readonly property string kDescriptionSerialPort: qsTr("All GNSS receivers that are physically connected to the device will be displayed in this list. If your receiver is missing please check the connection.")
 
-        readonly property bool bluetoothOnly: Qt.platform.os === "ios" || Qt.platform.os === "android"
-        readonly property bool selectionValid: bluetoothCheckBox.checked || bluetoothLECheckBox.checked || usbCheckBox.checked
-
-        property bool addExternalDevice: true
-        property bool addNetworkDevice: !addExternalDevice
+        readonly property bool scanSerialPort: positionSourceManager.discoverSerialPort
+        readonly property bool iOS: Qt.platform.os === "ios"
 
         property bool initialized
 
@@ -67,27 +57,29 @@ SettingsTab {
         Component.onCompleted: {
             _item.initialized = true;
 
-            // omit previously stored device from discovered devices list
-            // cachedReceiversListModel is available via parent view
+            controller.onDetailedSettingsPage = true;
 
+            // disable Bluetooth scanning if not needed
+            discoveryAgent.setPropertyValue("isScanBluetoothDevices" , scanSerialPort ? false : true);
+            discoveryAgent.setPropertyValue("isScanSerialPortDevices" , scanSerialPort ? true : false);
+
+            // omit previously stored device from discovered devices list
             discoveryAgent.deviceFilter = function(device) {
-                for (var i = 0; i < cachedReceiversListModel.count; i++) {
-                    var cachedReceiver = cachedReceiversListModel.get(i);
+                for (var i = 0; i < receiverListModel.count; i++) {
+                    var cachedReceiver = receiverListModel.get(i);
                     if (device && cachedReceiver && device.name === cachedReceiver.name) {
                         return false;
                     }
                 }
                 return discoveryAgent.filter(device);
             }
-
-            if (addExternalDevice && selectionValid) {
-                discoverySwitch.checked = true;
-            }
         }
 
         // ---------------------------------------------------------------------
 
         Component.onDestruction: {
+            controller.onDetailedSettingsPage = false;
+
             // Clear the model so old devices are not visible if view is re-loaded.
             discoveryAgent.devices.clear();
 
@@ -100,268 +92,205 @@ SettingsTab {
 
         // ---------------------------------------------------------------------
 
-        ColumnLayout {
-            anchors {
-                fill: parent
-                margins: 10 * AppFramework.displayScaleFactor
-            }
+        Connections {
+            target: addDeviceTab
 
-            spacing: 10 * AppFramework.displayScaleFactor
+            function onActivated() {
+                // Activating this here ensures that any error message is displayed
+                // on this page (not it's ancestor)
+                discoverySwitch.checked = true;
+            }
+        }
+
+        //--------------------------------------------------------------------------
+
+        ColumnLayout {
+            anchors.fill: parent
+            spacing: 0
 
             Accessible.role: Accessible.Pane
 
             // -----------------------------------------------------------------
 
-            GroupColumnLayout {
+            Rectangle {
                 Layout.fillWidth: true
+                Layout.preferredHeight: addDeviceTab.listDelegateHeightSingleLine
+                color: addDeviceTab.listBackgroundColor
 
-                title: qsTr("Location provider")
+                AppSwitch {
+                    id: discoverySwitch
 
-                AppRadioButton {
-                    id: showDevicesRadioButton
-                    Layout.fillWidth: true
+                    property bool updating
 
-                    text: qsTr("External receiver")
-                    checked: true
+                    anchors.fill: parent
+                    leftPadding: 16 * AppFramework.displayScaleFactor
+                    rightPadding: 16 * AppFramework.displayScaleFactor
+
+                    text: qsTr("Discover")
+
+                    textColor: addDeviceTab.textColor
+                    checkedColor: addDeviceTab.selectedForegroundColor
+                    backgroundColor: addDeviceTab.listBackgroundColor
+                    hoverBackgroundColor: addDeviceTab.hoverBackgroundColor
+                    fontFamily: addDeviceTab.fontFamily
 
                     onCheckedChanged: {
-                        if (_item.initialized) {
+                        if (_item.initialized && !updating) {
                             if (checked) {
-                                _item.addExternalDevice = true;
-                                discoverySwitch.checked = true;
-                            }
-                        }
-                    }
-                }
-
-                AppRadioButton {
-                    id: networkConnectionRadioButton
-                    Layout.fillWidth: true
-
-                    text: qsTr("Network connection")
-
-                    onCheckedChanged: {
-                        if (_item.initialized) {
-                            if (checked) {
-                                _item.addExternalDevice = false;
-                                discoverySwitch.checked = false;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // -----------------------------------------------------------------
-
-            GroupColumnLayout {
-                Layout.fillWidth: true
-
-                title: qsTr("Connection parameters")
-                visible: _item.addNetworkDevice
-
-                GridLayout {
-                    Layout.fillWidth: true
-
-                    columns: 2
-                    rows: 2
-
-                    // ---------------------------------------------------------
-
-                    AppText {
-                        Layout.row: 0
-                        Layout.column: 0
-
-                        color: foregroundColor
-                        text: qsTr("Hostname")
-                    }
-
-                    AppTextField {
-                        id: hostnameTextField
-
-                        Layout.row: 0
-                        Layout.column: 1
-                        Layout.fillWidth: true
-
-                        text: gnssSettings.hostname
-                        placeholderText: qsTr("Hostname")
-                        textColor: foregroundColor
-                    }
-
-                    AppText {
-                        Layout.row: 1
-                        Layout.column: 0
-
-                        text: qsTr("Port")
-                        color: foregroundColor
-                    }
-
-                    AppTextField {
-                        id: portTextField
-
-                        Layout.row: 1
-                        Layout.column: 1
-                        Layout.fillWidth: true
-
-                        text: gnssSettings.port
-                        placeholderText: qsTr("Port")
-                        textColor: foregroundColor
-                    }
-                }
-
-                StyledButton {
-                    enabled: _item.hostname > "" && _item.port > 0
-
-                    Layout.fillWidth: true
-                    fontFamily: locationSettingsTab.fontFamily
-
-                    text: qsTr("Add")
-
-                    onClicked: {
-                        var networkName = gnssSettings.createNetworkSettings(_item.hostname, _item.port);
-                        controller.networkHostSelected(_item.hostname, _item.port);
-                        _item.showReceiverSettingsPage(networkName);
-                    }
-                }
-            }
-
-            // -----------------------------------------------------------------
-
-            GroupColumnLayout {
-                id: devicesGroup
-
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-
-                title: qsTr("External receivers")
-                visible: _item.addExternalDevice
-
-                layout.height: devicesGroup.height - layout.anchors.margins * 2 - layout.parent.anchors.margins
-                implicitHeight: 0
-
-                AppBusyIndicator {
-                    parent: devicesGroup
-
-                    anchors {
-                        right: parent.right
-                        rightMargin: 10 * AppFramework.displayScaleFactor
-                        top: parent.top
-                        topMargin: 10 * AppFramework.displayScaleFactor
-                    }
-
-                    implicitSize: 8
-
-                    running: discoverySwitch.checked
-                }
-
-                Flow {
-                    Layout.fillWidth: true
-
-                    AppSwitch {
-                        id: discoverySwitch
-
-                        property bool updating
-
-                        enabled: selectionValid
-
-                        text: qsTr("Discover")
-
-                        onCheckedChanged: {
-                            if (_item.initialized && !updating) {
-                                if (checked) {
+                                if (!iOS || _item.scanSerialPort || Permission.serviceStatus(Permission.BluetoothService) === Permission.ServiceStatusPoweredOn) {
                                     devicesListView.model.clear()
                                     controller.startDiscoveryAgent();
                                 } else {
-                                    controller.stopDiscoveryAgent();
+                                    positionSourceManager.discoveryAgentError("")
+                                    checked = false;
                                 }
-                            }
-                        }
-
-                        Connections {
-                            target: _item.discoveryAgent
-
-                            onRunningChanged: {
-                                discoverySwitch.updating = true;
-                                discoverySwitch.checked = _item.discoveryAgent.running;
-                                discoverySwitch.updating = false;
+                            } else {
+                                controller.stopDiscoveryAgent();
                             }
                         }
                     }
 
-                    AppCheckBox {
-                        id: bluetoothCheckBox
+                    Connections {
+                        target: _item.discoveryAgent
 
-                        enabled: !discoverySwitch.checked
-                        visible: true
-
-                        text: qsTr("Bluetooth")
-
-                        checked: gnssSettings.discoverBluetooth ? true : false
-                        onCheckedChanged: {
-                            if (_item.initialized) {
-                                gnssSettings.discoverBluetooth = checked ? true : false
-                            }
-                        }
-                    }
-
-                    AppCheckBox {
-                        id: bluetoothLECheckBox
-
-                        enabled: !discoverySwitch.checked
-                        visible: true
-
-                        text: qsTr("BluetoothLE")
-
-                        checked: gnssSettings.discoverBluetoothLE ? true : false
-                        onCheckedChanged: {
-                            if (_item.initialized) {
-                                gnssSettings.discoverBluetoothLE = checked ? true : false
-                            }
-                        }
-                    }
-
-                    AppCheckBox {
-                        id: usbCheckBox
-
-                        enabled: !discoverySwitch.checked
-                        visible: !_item.bluetoothOnly
-
-                        text: qsTr("USB/COM")
-
-                        checked: gnssSettings.discoverSerialPort ? true : false
-                        onCheckedChanged: {
-                            if (_item.initialized) {
-                                gnssSettings.discoverSerialPort = checked ? true : false
-                            }
+                        function onRunningChanged() {
+                            discoverySwitch.updating = true;
+                            discoverySwitch.checked = _item.discoveryAgent.running;
+                            discoverySwitch.updating = false;
                         }
                     }
                 }
+            }
 
-                Rectangle {
+            // -----------------------------------------------------------------
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 32 * AppFramework.displayScaleFactor
+                Layout.topMargin: 24 * AppFramework.displayScaleFactor
+                Layout.leftMargin: 16 * AppFramework.displayScaleFactor
+                Layout.rightMargin: 16 * AppFramework.displayScaleFactor
+
+                AppText {
                     Layout.fillWidth: true
 
-                    height: 2 * AppFramework.displayScaleFactor
-                    color: dividerColor
+                    text: qsTr("CHOOSE A PROVIDER")
+                    color: addDeviceTab.textColor
+
+                    fontFamily: addDeviceTab.fontFamily
+                    letterSpacing: addDeviceTab.letterSpacing
+                    pixelSize: 10 * AppFramework.displayScaleFactor
+                    bold: true
+
+                    LayoutMirroring.enabled: false
+
+                    horizontalAlignment: isRightToLeft ? Text.AlignRight : Text.AlignLeft
                 }
 
-                ListView {
-                    id: devicesListView
+                AppBusyIndicator {
+                    Layout.alignment: Qt.AlignVCenter
 
+                    implicitSize: 8 * AppFramework.displayScaleFactor
+                    backgroundColor: addDeviceTab.selectedForegroundColor
+
+                    running: discoverySwitch.checked
+                }
+            }
+
+            // -----------------------------------------------------------------
+
+            ListView {
+                id: devicesListView
+
+                Layout.fillWidth: true
+                Layout.preferredHeight: count * (addDeviceTab.listDelegateHeightSingleLine + spacing)
+                Layout.maximumHeight: _item.height / 2
+
+                visible: count > 0
+
+                spacing: addDeviceTab.listSpacing
+
+                clip: true
+
+                model: _item.discoveryAgent.devices
+                delegate: deviceDelegate
+            }
+
+            // -----------------------------------------------------------------
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: addDeviceTab.listDelegateHeightSingleLine
+
+                visible: !devicesListView.visible
+
+                color: addDeviceTab.listBackgroundColor
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 16 * AppFramework.displayScaleFactor
+                    anchors.rightMargin: 16 * AppFramework.displayScaleFactor
+
+                    AppText {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        text: discoverySwitch.checked ? qsTr("Searching...") : qsTr("Press <b>Discover</b> to search.")
+                        color: addDeviceTab.textColor
+                        opacity: 0.5
+
+                        LayoutMirroring.enabled: false
+
+                        horizontalAlignment: isRightToLeft ? Text.AlignRight : Text.AlignLeft
+                        verticalAlignment: Text.AlignVCenter
+
+                        fontFamily: addDeviceTab.fontFamily
+                        letterSpacing: addDeviceTab.letterSpacing
+                        pixelSize: 16 * AppFramework.displayScaleFactor
+                        bold: false
+                    }
+                }
+            }
+
+            // -----------------------------------------------------------------
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.topMargin: 16 * AppFramework.displayScaleFactor
+                Layout.leftMargin: 16 * AppFramework.displayScaleFactor
+                Layout.rightMargin: 16 * AppFramework.displayScaleFactor
+
+                spacing: 10 * AppFramework.displayScaleFactor
+
+                StyledImage {
+                    Layout.preferredWidth: 24 * AppFramework.displayScaleFactor
+                    Layout.preferredHeight: Layout.preferredWidth
+                    Layout.alignment: Qt.AlignTop
+
+                    source: "../images/round_info_white_24dp.png"
+                    color: addDeviceTab.helpTextColor
+                }
+
+                AppText {
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
 
-                    clip: true
-                    spacing: 5 * AppFramework.displayScaleFactor
+                    text: _item.scanSerialPort ? _item.kDescriptionSerialPort : _item.kDescriptionBluetooth
+                    color: addDeviceTab.helpTextColor
 
-                    model: _item.discoveryAgent.devices
-                    delegate: deviceDelegate
+                    fontFamily: addDeviceTab.fontFamily
+                    letterSpacing: addDeviceTab.helpTextLetterSpacing
+                    pixelSize: 12 * AppFramework.displayScaleFactor
+                    bold: false
+
+                    LayoutMirroring.enabled: false
+
+                    horizontalAlignment: isRightToLeft ? Text.AlignRight : Text.AlignLeft
                 }
             }
 
             // -----------------------------------------------------------------
 
             Item {
-                visible: _item.addNetworkDevice
-
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
@@ -373,102 +302,93 @@ SettingsTab {
             id: deviceDelegate
 
             Rectangle {
-                id: delegateRect
+                id: delegate
 
-                height: deviceLayout.height
-                width: devicesListView.width
-                radius: 4 * AppFramework.displayScaleFactor
+                width: ListView.view.width
+                height: addDeviceTab.listDelegateHeightSingleLine
 
-                color: "transparent"
-                opacity: parent.enabled ? 1.0 : 0.7
+                color: mouseArea.containsMouse ? hoverBackgroundColor : listBackgroundColor
+                opacity: ListView.view.enabled ? 1 : 0.5
 
-                ColumnLayout {
-                    id: deviceLayout
+                RowLayout {
+                    anchors.fill: parent
 
-                    width: parent.width
-                    spacing: 2 * AppFramework.displayScaleFactor
+                    spacing: 0
 
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 10 * AppFramework.displayScaleFactor
+                    Item {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: height
+
+                        visible: showInfoIcons
+                        enabled: visible
 
                         StyledImage {
-                            width: 25 * AppFramework.displayScaleFactor
+                            anchors.centerIn: parent
+
+                            width: infoIconSize
                             height: width
 
-                            Layout.preferredWidth: width
-                            Layout.preferredHeight: height
-                            Layout.alignment: Qt.AlignLeft
-
                             source: "../images/deviceType-%1.png".arg(deviceType)
-                            color: foregroundColor
-                        }
-
-                        AppText {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-
-                            text: name
-                            color: foregroundColor
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            verticalAlignment: Text.AlignVCenter
-
-                            pointSize: 14
-                            fontFamily: locationSettingsTab.fontFamily
-                            bold: false
+                            color: infoIconColor
                         }
                     }
 
-                    Rectangle {
+                    AppText {
                         Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        Layout.leftMargin: !showInfoIcons ? 20 * AppFramework.displayScaleFactor : 0
 
-                        height: 1 * AppFramework.displayScaleFactor
-                        color: dividerColor
+                        text: name
+                        color: addDeviceTab.textColor
+
+                        fontFamily: addDeviceTab.fontFamily
+                        letterSpacing: addDeviceTab.letterSpacing
+                        pixelSize: 16 * AppFramework.displayScaleFactor
+                        bold: false
+
+                        LayoutMirroring.enabled: false
+
+                        horizontalAlignment: isRightToLeft ? Text.AlignRight : Text.AlignLeft
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    Item {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: height
+
+                        visible: showInfoIcons
+                        enabled: visible
+
+                        StyledImage {
+                            anchors.centerIn: parent
+
+                            width: nextIconSize
+                            height: width
+
+                            source: nextIcon
+                            color: nextIconColor
+
+                            rotation: isRightToLeft ? 180 : 0
+                        }
                     }
                 }
 
                 MouseArea {
+                    id: mouseArea
+
                     anchors.fill: parent
+                    hoverEnabled: true
 
                     onClicked: {
                         var device = _item.discoveryAgent.devices.get(index);
                         var deviceName = gnssSettings.createExternalReceiverSettings(name, device.toJson());
                         controller.deviceSelected(device);
-                        _item.showReceiverSettingsPage(deviceName);
+                        showReceiverSettingsPage(deviceName);
                     }
                 }
             }
         }
 
         // ---------------------------------------------------------------------
-
-        function showReceiverSettingsPage(name) {
-            // gnssSettings.createExternalReceiverSettings() creates a new tab in
-            // currentListTabView. Go and get it.
-            var item = null;
-            var model = currentListTabView.contentData;
-            for (var i=0; i<model.length; i++) {
-                if (model[i].title === name) {
-                    item = model[i];
-                    break;
-                }
-            }
-
-            if (item) {
-                // go to the detailed settings of the new device
-                stackView.replace(settingsTabContainer, {
-                                      settingsTab: item,
-                                      title: item.title,
-                                      settingsComponent: item.contentComponent
-                                  });
-            } else {
-                // fallback
-                stackView.pop();
-            }
-        }
-
-        // ---------------------------------------------------------------------
     }
-
-    //--------------------------------------------------------------------------
 }

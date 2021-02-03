@@ -27,9 +27,10 @@ Item {
 
     property App app
 
-    property alias stackView: mainStackView
     property alias gnssManager: gnssManager
-    property alias settingsUI: settingsUI
+    property alias gnssStatusPages: gnssStatusPages
+    property alias gnssSettingsPages: gnssSettingsPages
+    property alias stackView: mainStackView
 
     //--------------------------------------------------------------------------
 
@@ -65,8 +66,8 @@ Item {
             Layout.fillWidth: true
 
             stackView: mainView.stackView
-            settingsUI: mainView.settingsUI
             gnssManager: mainView.gnssManager
+            gnssStatusPages: mainView.gnssStatusPages
         }
     }
 
@@ -79,8 +80,8 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            settingsUI: mainView.settingsUI
             gnssManager: mainView.gnssManager
+            gnssSettingsPages: mainView.gnssSettingsPages
         }
     }
 
@@ -95,39 +96,53 @@ Item {
         }
     }
 
-    // Location Provider Management --------------------------------------------
+    //--------------------------------------------------------------------------
 
+    // Manage connections to GNSS providers
     GNSSManager {
         id: gnssManager
 
-        app: mainView.app
+        gnssSettingsPages: mainView.gnssSettingsPages
     }
 
-    // Location Provider Settings UI -------------------------------------------
-
+    // GNSS settings UI
     GNSSSettingsPages {
-        id: settingsUI
+        id: gnssSettingsPages
 
         title: qsTr("Location Provider")
 
-        gnssSettings: gnssManager.gnssSettings
-        positionSourceManager: gnssManager.positionSourceManager
+        stackView: mainView.stackView
+        gnssManager: mainView.gnssManager
 
-        foregroundColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
-        secondaryForegroundColor: buttonTextColor
-        backgroundColor: !nightMode ? dayModeSettings.background : nightModeSettings.background
-        secondaryBackgroundColor: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
-        selectedBackgroundColor: !nightMode ? Qt.lighter(secondaryBackgroundColor) : Qt.darker(secondaryBackgroundColor)
-        hoverBackgroundColor: buttonTextColor
-        dividerColor: !nightMode ? "#c0c0c0" : Qt.darker("#c0c0c0")
+        textColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+        selectedTextColor: buttonTextColor
+
+        headerBarBackgroundColor: pageBackgroundColor
+        headerBarTextColor: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+        pageBackgroundColor: !nightMode ? dayModeSettings.background : nightModeSettings.background
+        listBackgroundColor: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
 
         fontFamily: Qt.application.font.family
         locale: Qt.locale()
 
+        showInfoIcons: true
         showAboutDevice: true
         showAlerts: true
         showAntennaHeight: false
         showAltitude: false
+        showAccuracy: false
+    }
+
+    // GNSS status UI
+    GNSSStatusPages {
+        id: gnssStatusPages
+
+        stackView: mainView.stackView
+        gnssManager: mainView.gnssManager
+        gnssSettingsPages: mainView.gnssSettingsPages
+
+        debugButtonColor: buttonTextColor
+        recordingColor: "red"
     }
 
     //--------------------------------------------------------------------------

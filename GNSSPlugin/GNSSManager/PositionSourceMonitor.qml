@@ -1,4 +1,4 @@
-/* Copyright 2018 Esri
+/* Copyright 2021 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,29 @@
  *
  */
 
-import QtQuick 2.9
+import QtQml 2.15
+import QtQuick 2.15
 
+import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
+import ArcGIS.AppFramework.Positioning 1.0
 
 Item {
+    id: monitor
+
+    //--------------------------------------------------------------------------
+
     property PositionSourceManager positionSourceManager
-    property NmeaSource nmeaSource: positionSourceManager.nmeaSource
-    property DeviceDiscoveryAgent discoveryAgent: positionSourceManager.discoveryAgent
-    property PositioningSourcesController controller: positionSourceManager.controller
+    property bool monitorNmeaData: false
+
+    readonly property NmeaSource nmeaSource: positionSourceManager.nmeaSource
+    readonly property DeviceDiscoveryAgent discoveryAgent: positionSourceManager.discoveryAgent
+    readonly property PositioningSourcesController controller: positionSourceManager.controller
 
     readonly property bool active: positionSourceManager.active
+
+    property bool positionIsCurrent: false
+    property var currentPosition: ({})
 
     //--------------------------------------------------------------------------
 
@@ -33,23 +45,12 @@ Item {
 
     //--------------------------------------------------------------------------
 
-    property int kAlertConnected: 1
-    property int kAlertDisconnected: 2
-    property int kAlertNoData: 3
-    property int kAlertNoPosition: 4
+    property double dataReceivedTime
+    property double positionReceivedTime
 
     //--------------------------------------------------------------------------
 
-    property date startTime
-    property date dataReceivedTime
-    property date positionTime
-
-    //--------------------------------------------------------------------------
-
-    property bool debug: false
-
-    //--------------------------------------------------------------------------
-
+    signal newPosition(var position)
     signal alert(int alertType)
 
     //--------------------------------------------------------------------------
@@ -85,8 +86,8 @@ Item {
         target: nmeaSource
         enabled: active && positionSourceManager.isGNSS
 
-        onReceivedNmeaData: {
-            dataReceivedTime = new Date();
+        function onReceivedNmeaData() {
+            dataReceivedTime = (new Date()).valueOf();
         }
     }
 
@@ -98,27 +99,42 @@ Item {
         target: positionSourceManager
         enabled: active
 
-        onNewPosition: {
-            positionTime = new Date();
+        function onNewPosition(position) {
+            positionReceivedTime = positionSourceManager.positionTimestamp
+
+            if (!positionSourceManager.isGNSS || position.fixTypeValid && position.fixType > 0) {
+                currentPosition = position;
+                positionIsCurrent = true;
+            } else {
+                positionIsCurrent = false;
+            }
+
+            newPosition(position);
         }
 
-        onIsConnectedChanged: {
+        function onIsConnectedChanged() {
             if (positionSourceManager.isGNSS) {
                 if (positionSourceManager.isConnected) {
-                    alert(kAlertConnected);
+                    alert(GNSSAlerts.AlertType.Connected);
                 } else {
-                    alert(kAlertDisconnected);
+                    positionIsCurrent = false;
+                    alert(GNSSAlerts.AlertType.Disconnected);
                 }
             }
         }
+
+        function onTcpError() { positionIsCurrent = false; }
+        function onDeviceError() { positionIsCurrent = false; }
+        function onNmeaLogFileError() { positionIsCurrent = false; }
+        function onDiscoveryAgentError() { positionIsCurrent = false; }
+        function onPositionSourceError() { positionIsCurrent = false; }
     }
 
     //--------------------------------------------------------------------------
 
     function initialize() {
-        startTime = new Date();
-        dataReceivedTime = new Date();
-        positionTime = new Date();
+        dataReceivedTime = (new Date()).valueOf();
+        positionReceivedTime = (new Date()).valueOf();
     }
 
     //--------------------------------------------------------------------------
@@ -126,35 +142,22 @@ Item {
     function monitorCheck() {
         var now = new Date().valueOf();
 
-        if (debug) {
-            console.log("monitorCheck");
-            console.log(" startTime:", startTime);
-        }
-
-        if (nmeaSourceConnections.enabled && !positionSourceManager.onSettingsPage && !positionSourceManager.isConnecting && !discoveryAgent.running) {
-            var dataAge = now - dataReceivedTime.valueOf();
-
-            if (debug) {
-                console.log(" dataReceivedTime:", dataReceivedTime);
-                console.log(" dataAge:", dataAge);
-            }
+        if (nmeaSourceConnections.enabled && monitorNmeaData && !positionSourceManager.onSettingsPage && !positionSourceManager.isConnecting && !discoveryAgent.running) {
+            var dataAge = now - dataReceivedTime;
 
             if (dataAge > maximumDataAge) {
-                alert(kAlertNoData);
+                positionIsCurrent = false;
+                alert(GNSSAlerts.AlertType.NoData);
                 return;
             }
         }
 
         if (positionSourceManagerConnections.enabled && !positionSourceManager.onSettingsPage && !positionSourceManager.isConnecting && !discoveryAgent.running) {
-            var positionAge = now - positionTime.valueOf();
+            var positionAge = now - positionReceivedTime;
 
-            if (debug) {
-                console.log(" positionTime:", startTime);
-                console.log(" positionAge:", positionAge);
-            }
-
-            if (positionAge > maximumPositionAge) {
-                alert(kAlertNoPosition);
+            if (positionAge > maximumPositionAge || positionSourceManager.isGNSS && (!currentPosition.fixTypeValid || currentPosition.fixType === 0)) {
+                positionIsCurrent = false;
+                alert(GNSSAlerts.AlertType.NoPosition);
                 return;
             }
         }

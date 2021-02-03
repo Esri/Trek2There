@@ -36,7 +36,7 @@ Item {
     // PROPERTIES //////////////////////////////////////////////////////////////
 
     property GNSSManager gnssManager
-    property GNSSSettingsPages settingsUI
+    property GNSSSettingsPages gnssSettingsPages
 
     property var distanceFormats: ["Decimal degrees", "Degrees, minutes, seconds", "Degrees, decimal minutes", "UTM (WGS84)", "MGRS"]
 
@@ -74,9 +74,9 @@ Item {
     Connections {
         target: app
 
-        onRequestedDestinationChanged: {
-            if (requestedDestination && requestedDestination.isValid) {
-                setCoordinateInfo(coordinateFormat);
+        function onRequestedDestinationChanged() {
+            if (app.requestedDestination && app.requestedDestination.isValid) {
+                setCoordinateInfo(app.coordinateFormat);
             }
         }
     }
@@ -441,6 +441,7 @@ Item {
                                 text: qsTr("LOCATION PROVIDER")
                                 verticalAlignment: Text.AlignBottom
                                 color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+
                                 Accessible.role: Accessible.Heading
                                 Accessible.name: text
                                 Accessible.description: qsTr("Choose between integrated or external location providers")
@@ -479,6 +480,8 @@ Item {
                                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                             verticalAlignment: Text.AlignVCenter
                                             horizontalAlignment: Text.AlignLeft
+                                            elide: Text.ElideRight
+                                            maximumLineCount: 1
                                         }
 
                                         Text {
@@ -501,7 +504,7 @@ Item {
                                 }
 
                                 onClicked: {
-                                    settingsUI.showLocationSettings(stackView);
+                                    gnssSettingsPages.showLocationSettings(stackView);
                                 }
                             }
                         }

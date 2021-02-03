@@ -1,4 +1,4 @@
-/* Copyright 2018 Esri
+/* Copyright 2021 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  *
  */
 
-import QtQuick 2.9
-import QtQuick.Layouts 1.3
+import QtQuick 2.15
+import QtQuick.Layouts 1.15
 
 import ArcGIS.AppFramework 1.0
 
@@ -23,14 +23,17 @@ import "../controls"
 import "../lib/CoordinateConversions.js" as CC
 
 SettingsTab {
+    id: antennaHeightTab
 
-    title: qsTr("Antenna Height")
-    icon: "../images/antenna_height.png"
+    title: qsTr("Antenna height")
+    icon: "../images/sharp_vertical_align_top_white_24dp.png"
     description: ""
 
-    //--------------------------------------------------------------------------
+    property string deviceType: ""
+    property string deviceName: ""
+    property string deviceLabel: ""
 
-    property var locale: locationSettingsTab.locale
+    //--------------------------------------------------------------------------
 
     readonly property bool isTheActiveSensor: deviceName === gnssSettings.kInternalPositionSourceName || controller.currentName === deviceName
 
@@ -53,53 +56,99 @@ SettingsTab {
         }
 
         ColumnLayout {
-            anchors {
-                fill: parent
-                margins: 10 * AppFramework.displayScaleFactor
-            }
+            anchors.fill: parent
 
             spacing: 10 * AppFramework.displayScaleFactor
 
-            GroupColumnLayout {
+            Rectangle {
                 Layout.fillWidth: true
-
-                title: qsTr("Antenna height of receiver")
-
-                AppText {
-                    Layout.fillWidth: true
-
-                    text: qsTr("The distance from the antenna to the ground surface is subtracted from altitude values.")
-                    color: foregroundColor
-                }
-
-                Image {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 200 * AppFramework.displayScaleFactor
-                    Layout.maximumHeight: Layout.preferredHeight
-
-                    source: "../images/Antenna_Height.svg"
-                    fillMode: Image.PreserveAspectFit
-                }
+                Layout.preferredHeight: antennaHeightTab.listDelegateHeightTextBox
+                color: antennaHeightTab.listBackgroundColor
 
                 AppNumberField {
                     id: antennaHeightField
 
-                    Layout.fillWidth: true
+                    anchors.fill: parent
+                    anchors.topMargin: 2 * AppFramework.displayScaleFactor
+                    anchors.bottomMargin: 2 * AppFramework.displayScaleFactor
+                    anchors.leftMargin: 10 * AppFramework.displayScaleFactor
+                    anchors.rightMargin: 10 * AppFramework.displayScaleFactor
+
+                    value: CC.toLocaleLength(gnssSettings.knownDevices[deviceName].antennaHeight, locale, 10)
 
                     suffixText: CC.localeLengthSuffix(locale)
+                    placeholderText: qsTr("Antenna height")
 
-                    value: CC.toLocaleLength(gnssSettings.knownDevices[deviceName].antennaHeight, locale)
+                    textColor: antennaHeightTab.textColor
+                    borderColor: antennaHeightTab.textColor
+                    selectedColor: antennaHeightTab.selectedForegroundColor
+                    backgroundColor: antennaHeightTab.listBackgroundColor
+                    fontFamily: antennaHeightTab.fontFamily
+                    letterSpacing: antennaHeightTab.letterSpacing
+                    locale: antennaHeightTab.locale
+                    isRightToLeft: antennaHeightTab.isRightToLeft
 
                     onValueChanged: {
-                        var val = CC.fromLocaleLength(value, locale)
+                        var val = CC.fromLocaleLength(value, locale, 10)
                         if (initialized && !gnssSettings.updating) {
                             gnssSettings.knownDevices[deviceName].antennaHeight = val;
                             if (isTheActiveSensor) {
                                 gnssSettings.locationAntennaHeight = val;
                             }
                         }
+
                         changed();
                     }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.leftMargin: 16 * AppFramework.displayScaleFactor
+                Layout.rightMargin: 16 * AppFramework.displayScaleFactor
+
+                spacing: 10 * AppFramework.displayScaleFactor
+
+                StyledImage {
+                    Layout.preferredWidth: 24 * AppFramework.displayScaleFactor
+                    Layout.preferredHeight: Layout.preferredWidth
+                    Layout.alignment: Qt.AlignTop
+
+                    source: "../images/round_info_white_24dp.png"
+                    color: antennaHeightTab.helpTextColor
+                }
+
+                AppText {
+                    Layout.fillWidth: true
+
+                    text: qsTr("This is the distance from the antenna to the ground. The antenna height is subtracted from altitude values.")
+                    color: antennaHeightTab.helpTextColor
+
+                    fontFamily: antennaHeightTab.fontFamily
+                    letterSpacing: antennaHeightTab.helpTextLetterSpacing
+                    pixelSize: 12 * AppFramework.displayScaleFactor
+                    bold: false
+
+                    LayoutMirroring.enabled: false
+
+                    horizontalAlignment: isRightToLeft ? Text.AlignRight : Text.AlignLeft
+                }
+            }
+
+            Rectangle {
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                Layout.leftMargin: 20 * AppFramework.displayScaleFactor
+                Layout.rightMargin: 20 * AppFramework.displayScaleFactor
+
+                color: "transparent"
+
+                Image {
+                    anchors.fill: parent
+
+                    source: "../images/antenna_height_large.png"
+                    fillMode: Image.PreserveAspectFit
+                    mipmap: true
                 }
             }
 

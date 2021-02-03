@@ -1,4 +1,4 @@
-/* Copyright 2018 Esri
+/* Copyright 2021 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,19 @@
  *
  */
 
-import QtQuick 2.9
+import QtQml 2.15
+import QtQuick 2.15
 
+import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Positioning 1.0
-import ArcGIS.AppFramework.Devices 1.0
 import ArcGIS.AppFramework.Networking 1.0
+import ArcGIS.AppFramework.Devices 1.0
 
 Item {
+    id: positioningSources
+
+    // -------------------------------------------------------------------------
+
     property alias positionSource: positionSource
     property alias satelliteInfoSource: satelliteInfoSource
     property alias nmeaSource: nmeaSource
@@ -31,14 +37,21 @@ Item {
     property bool isConnecting
     property bool isConnected
 
-    property int connectionType: 0
-    property bool discoverBluetooth: true
-    property bool discoverBluetoothLE: false
-    property bool discoverSerialPort: false
+    property int connectionType
+    property bool discoverBluetooth
+    property bool discoverBluetoothLE
+    property bool discoverSerialPort
 
+    property string currentNmeaLogFile
     property string currentNetworkAddress
     property string integratedProviderName: "Integrated Provider"
 
+    property int updateInterval: 1000
+    property bool repeat: true
+
+    // -------------------------------------------------------------------------
+
+    signal nmeaLogFileSelected(string fileName)
     signal networkHostSelected(string hostname, int port)
     signal deviceSelected(Device device)
     signal disconnect()
@@ -49,6 +62,7 @@ Item {
         id: positionSource
 
         active: false
+
         nmeaSource: connectionType > 0 ? nmeaSource : null
 
         onNameChanged: {
@@ -64,6 +78,7 @@ Item {
         id: satelliteInfoSource
 
         active: valid && positionSource.active
+
         nmeaSource: connectionType > 0 ? nmeaSource : null
     }
 
@@ -78,6 +93,14 @@ Item {
                 isConnecting = false;
             }
         }
+
+        properties: {
+            "interval": updateInterval,
+            "repeat": repeat,
+            "type": NmeaSource.NmeaSourceTypeGNSS
+        }
+
+        onErrorChanged: disconnect()
     }
 
     // -------------------------------------------------------------------------
@@ -93,14 +116,16 @@ Item {
     Connections {
         target: currentDevice
 
-        onConnectedChanged: {
+        function onConnectedChanged() {
             // cleanup in case the connection to the device is lost
             if (currentDevice && !currentDevice.connected) {
                 disconnect();
             }
         }
 
-        onErrorChanged: disconnect()
+        function onErrorChanged() {
+            disconnect();
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -184,6 +209,20 @@ Item {
 
     // -------------------------------------------------------------------------
 
+    onNmeaLogFileSelected: {
+        console.log("Loading NMEA log file", fileName);
+
+        disconnect();
+
+        isConnected = false;
+        isConnecting = true;
+
+        currentNmeaLogFile = fileName;
+        nmeaSource.source = Qt.platform.os === "ios" ? (AppFramework.userHomePath + "/" + fileName) : fileName;
+    }
+
+    // -------------------------------------------------------------------------
+
     onNetworkHostSelected: {
         console.log("Connecting to remote host:", hostname, "port:", port);
 
@@ -207,6 +246,10 @@ Item {
         isConnected = false;
         isConnecting = true;
 
+        if (currentDevice && currentDevice !== device) {
+            currentDevice.destroy();
+        }
+
         currentDevice = device;
         nmeaSource.source = currentDevice;
         currentDevice.connected = true;
@@ -216,11 +259,15 @@ Item {
 
     onDisconnect: {
         if (tcpSocket.valid && tcpSocket.state !== AbstractSocket.StateUnConnected) {
-            tcpSocket.disconnectFromHost();
+            tcpSocket.abort();
         }
 
         if (currentDevice && currentDevice.connected) {
             currentDevice.connected = false;
+        }
+
+        if (currentNmeaLogFile > "") {
+            currentNmeaLogFile = "";
         }
 
         isConnected = false;

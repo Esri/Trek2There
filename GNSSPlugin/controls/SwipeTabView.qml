@@ -1,4 +1,4 @@
-/* Copyright 2018 Esri
+/* Copyright 2021 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  *
  */
 
-import QtQuick 2.9
-import QtQuick.Controls 2.2
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 
 import ArcGIS.AppFramework 1.0
 
@@ -49,8 +49,18 @@ Rectangle {
             bottom: parent.bottom
             bottomMargin: tabIndicator.height
         }
+
+        Component.onCompleted: {
+            // remove hidden items
+            for (var i=swipeView.count-1; i>=0; i--) {
+                let item = swipeView.itemAt(i);
+                if (!item.visible) {
+                    swipeView.removeItem(item)
+                }
+            }
+        }
     }
-    
+
     //--------------------------------------------------------------------------
 
     Rectangle {
@@ -66,12 +76,12 @@ Rectangle {
 
     SwipeTabIndicator {
         id: tabIndicator
-        
+
         anchors {
             bottom: parent.bottom
             horizontalCenter: parent.horizontalCenter
         }
-        
+
         swipeView: swipeView
         interactive: true
 

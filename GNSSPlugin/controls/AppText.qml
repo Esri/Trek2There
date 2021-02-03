@@ -1,4 +1,4 @@
-/* Copyright 2018 Esri
+/* Copyright 2021 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,28 @@
  *
  */
 
-import QtQuick 2.9
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Controls.Material 2.15
 
-Text {
+import ArcGIS.AppFramework 1.0
+
+Label {
     id: appText
 
     property string fontFamily: Qt.application.font.family
-    property real pointSize: 12
+    property real pixelSize: 12 * AppFramework.displayScaleFactor
+    property real letterSpacing: 0
     property bool bold: false
 
     font {
         family: appText.fontFamily
-        pointSize: appText.pointSize
+        pixelSize: appText.pixelSize
+        letterSpacing: appText.letterSpacing
         bold: appText.bold
     }
 
-    textFormat: Text.RichText
+    textFormat: Text.AutoText
 
     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
 

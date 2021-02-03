@@ -1,4 +1,4 @@
-/* Copyright 2019 Esri
+/* Copyright 2021 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 .pragma library
 
-.import QtQml 2.11 as QML
+.import QtQml 2.15 as QML
 .import ArcGIS.AppFramework.Sql 1.0 as Sql
 
 //------------------------------------------------------------------------------
@@ -33,6 +33,21 @@ var options = {
         south: "S"
     }
 };
+
+var kDefaultNumberLocale = Qt.locale("C");
+
+//------------------------------------------------------------------------------
+
+function escapeRegExp(text) {
+    return text.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+}
+
+//------------------------------------------------------------------------------
+
+function replaceAll(string, find, replace) {
+    //console.log("replaceAll string:", string, "find:", find, "replace:", replace);
+    return string.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+}
 
 //------------------------------------------------------------------------------
 
@@ -215,6 +230,33 @@ function formatUniversalCoordinate(coordinate) {
     .arg(Math.floor(universalGrid.northing).toString());
 }
 
+//------------------------------------------------------------------------------
+
+function isNullOrUndefined(value) {
+    return value === null || value === undefined;
+}
+
+//------------------------------------------------------------------------------
+// Round number to nearest decimal places specified by precision
+
+function round(number, precision) {
+    if (!isFinite(number) && number !== null) {
+        return number;
+    }
+
+    var factor = Math.pow(10, precision);
+
+    return Math.round(number * factor) / factor;
+}
+
+//--------------------------------------------------------------------------
+
+function getNumberLocale(locale) {
+    return locale.zeroDigit !== "0"
+            ? kDefaultNumberLocale
+            : locale;
+}
+
 //--------------------------------------------------------------------------
 
 function localeLengthSuffix(locale) {
@@ -308,11 +350,11 @@ function toLocaleLengthString(metres, locale, precision, invalidText) {
     switch (locale.measurementSystem) {
     case QML.Locale.MetricSystem:
     case QML.Locale.ImperialUKSystem:
-        return qsTr("%1 m").arg(round(metres, precision));
+        return qsTr("%1 m").arg(numberToLocaleString(locale, round(metres, precision)));
 
     case QML.Locale.ImperialUSSystem:
     case QML.Locale.ImperialSystem:
-        return qsTr("%1 ft").arg(round(metres / 0.3048, precision));
+        return qsTr("%1 ft").arg(numberToLocaleString(locale, round(metres / 0.3048, precision)));
     }
 }
 
@@ -333,32 +375,51 @@ function toLocaleSpeedString(metresPerSecond, locale, precision, invalidText) {
 
     switch (locale.measurementSystem) {
     case QML.Locale.MetricSystem:
-        return qsTr("%1 km/h").arg(round(metresPerSecond * 3.6, precision));
+        return qsTr("%1 km/h").arg(numberToLocaleString(locale, round(metresPerSecond * 3.6, precision)));
 
     case QML.Locale.ImperialUKSystem:
     case QML.Locale.ImperialUSSystem:
     case QML.Locale.ImperialSystem:
-        return qsTr("%1 mph").arg(round(metresPerSecond * 2.23694, precision));
+        return qsTr("%1 mph").arg(numberToLocaleString(locale, round(metresPerSecond * 2.23694, precision)));
     }
 }
 
-//------------------------------------------------------------------------------
-// Round number to nearest decimal places specified by precision
+//--------------------------------------------------------------------------
 
-function round(number, precision) {
-    if (!isFinite(number) && number !== null) {
-        return number;
+function numberFromLocaleString(locale, text) {
+    var value;
+
+    try {
+        value = Number.fromLocaleString(getNumberLocale(locale), replaceAll(text, getNumberLocale(locale).groupSeparator, ""));
+    } catch (e) {
+        value = Number.NaN;
     }
 
-    var factor = Math.pow(10, precision);
-
-    return Math.round(number * factor) / factor;
+    return value;
 }
 
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 
-function isNullOrUndefined(value) {
-    return value === null || value === undefined;
+function numberToLocaleString(locale, value, precision, groupSeparators) {
+    var text;
+
+    if (!isFinite(precision)) {
+        text = value.toString();
+
+        precision = 0;
+        var decimalPointIndex = text.indexOf(".");
+        if (decimalPointIndex >= 0) {
+            precision = text.length - decimalPointIndex - 1;
+        }
+    }
+
+    text = value.toLocaleString(getNumberLocale(locale), "", precision);
+
+    if (!groupSeparators) {
+        text = replaceAll(text, locale.groupSeparator, "");
+    }
+
+    return text;
 }
 
 //------------------------------------------------------------------------------

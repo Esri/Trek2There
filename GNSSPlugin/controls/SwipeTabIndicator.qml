@@ -1,4 +1,4 @@
-/* Copyright 2018 Esri
+/* Copyright 2021 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  *
  */
 
-import QtQuick 2.9
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 2.2
-import QtGraphicalEffects 1.0
+import QtQuick 2.15
+import QtQuick.Layouts 1.15
+import QtQuick.Controls 2.15
+import QtGraphicalEffects 1.15
 
 import ArcGIS.AppFramework 1.0
 
@@ -37,15 +37,15 @@ PageIndicator {
     property real tabsPadding: 0//1 * AppFramework.displayScaleFactor
     property real imageSize: 25 * AppFramework.displayScaleFactor
     property string fontFamily: Qt.application.font.family
-    property real textSize: showImages ? 9 : 13
+    property real textSize: showImages ? 9 * AppFramework.displayScaleFactor : 13 * AppFramework.displayScaleFactor
     property bool resize: true
 
     //--------------------------------------------------------------------------
 
     visible: interactive
-    
+
     // height: 50 * AppFramework.displayScaleFactor
-    
+
     count: swipeView.count
     currentIndex: swipeView.currentIndex
     interactive: swipeView.interactive
@@ -57,7 +57,7 @@ PageIndicator {
     Connections {
         target: swipeView
 
-        onCurrentIndexChanged: {
+        function onCurrentIndexChanged() {
             currentIndex = swipeView.currentIndex;
         }
     }
@@ -71,13 +71,13 @@ PageIndicator {
         implicitHeight: 42 * AppFramework.displayScaleFactor
 
         visible: swipeView.itemAt(index).visible
-        
+
         Rectangle {
             anchors {
                 fill: parent
                 margins: tabsPadding
             }
-            
+
             color: currentIndex == index ? tabsSelectedBackgroundColor : tabsBackgroundColor
 
             border {
@@ -85,26 +85,26 @@ PageIndicator {
                 width: 1
             }
             radius: showImages ? 5 * AppFramework.displayScaleFactor : height / 2
-            
+
             ColumnLayout {
                 anchors {
                     fill: parent
                     leftMargin: tabsPadding
                     rightMargin: tabsPadding
                 }
-                
+
                 spacing: 0
-                
+
                 Item {
                     Layout.preferredWidth: imageSize
                     Layout.preferredHeight: imageSize
                     Layout.alignment: Qt.AlignCenter
-                    
+
                     visible: showImages
-                    
+
                     Image {
                         id: tabImage
-                        
+
                         anchors.fill: parent
                         source: swipeView.itemAt(index).icon
                         fillMode: Image.PreserveAspectFit
@@ -112,19 +112,19 @@ PageIndicator {
                         verticalAlignment: Image.AlignVCenter
                         visible: false
                     }
-                    
+
                     ColorOverlay {
                         anchors.fill: tabImage
                         source: tabImage
                         color: tabText.color
                     }
                 }
-                
+
                 Text {
                     id: tabText
-                    
+
                     Layout.fillWidth: true
-                    
+
                     visible: showText
                     text: swipeView.itemAt(index).title
                     elide: Text.ElideRight
@@ -133,19 +133,19 @@ PageIndicator {
                     color: swipeView.itemAt(index).enabled ? (currentIndex == index) ? tabsSelectedTextColor : tabsTextColor : disabledColor
                     font {
                         bold: false//true//styleData.selected
-                        pointSize: textSize
+                        pixelSize: textSize
                         family: fontFamily
                     }
                 }
             }
-            
+
             Rectangle {
                 anchors {
                     horizontalCenter: parent.horizontalCenter
                     top: parent.bottom
                     //bottomMargin: -tabsPadding - 1 * AppFramework.displayScaleFactor
                 }
-                
+
                 visible: showImages && currentIndex == index
                 height: (showText ? 2 : 3) * AppFramework.displayScaleFactor
                 width: tabText.paintedWidth

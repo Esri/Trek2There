@@ -1,4 +1,4 @@
-/* Copyright 2018 Esri
+/* Copyright 2021 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,22 @@
  *
  */
 
-import QtQuick 2.9
-import QtQuick.Controls 2.2
-import QtQuick.Layouts 1.3
-import QtGraphicalEffects 1.0
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
+import QtGraphicalEffects 1.15
 
 import ArcGIS.AppFramework 1.0
 
 Item {
     default property alias contentData: container.data
+    property alias listTabView: listTabViewListView
+    property alias listSpacing: listTabViewListView.spacing
 
     property alias tabViewContainer: container
     property alias delegate: listTabViewListView.delegate
+
+    property color backgroundColor: "#e1f0fb"
 
     //--------------------------------------------------------------------------
 
@@ -39,16 +43,21 @@ Item {
 
     //--------------------------------------------------------------------------
 
-    ScrollView {
+    Rectangle {
         anchors.fill: parent
+
+        color: backgroundColor
 
         ListView {
             id: listTabViewListView
 
+            anchors.fill: parent
             clip: true
-            boundsBehavior: Flickable.StopAtBounds
 
-            model: container.children
+            boundsBehavior: Flickable.StopAtBounds
+            spacing: 2 * AppFramework.displayScaleFactor
+
+            model: container.visibleChildren
         }
     }
 

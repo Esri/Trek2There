@@ -1,4 +1,4 @@
-/* Copyright 2015 Esri
+/* Copyright 2021 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  *
  */
 
-import QtQuick 2.5
-import QtGraphicalEffects 1.0
+import QtQuick 2.15
+import QtGraphicalEffects 1.15
 
 Item {
     id: button

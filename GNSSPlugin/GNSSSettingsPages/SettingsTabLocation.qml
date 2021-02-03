@@ -1,4 +1,4 @@
-/* Copyright 2018 Esri
+/* Copyright 2021 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,62 +14,67 @@
  *
  */
 
-import QtQml 2.2
-import QtQuick 2.9
-import QtQuick.Controls 2.2
-import QtQuick.Layouts 1.3
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
+import QtQml.Models 2.15
 
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
-import ArcGIS.AppFramework.Positioning 1.0
+import ArcGIS.AppFramework.Platform 1.0
 
-import "../GNSSManager"
 import "../controls"
 
 SettingsTab {
-    id: locationSettingsTab
+    id: settingsTabLocation
 
-    property color foregroundColor: "#000000"
-    property color secondaryForegroundColor: "#007ac2"
-    property color backgroundColor: "#e1f0fb"
-    property color secondaryBackgroundColor: "#e1f0fb"
-    property color selectedBackgroundColor: "#FAFAFA"
-    property color hoverBackgroundColor: "#e1f0fb"
-    property color dividerColor: "#c0c0c0"
+    title: qsTr("Location providers")
 
-    property string fontFamily: Qt.application.font.family
-    property var locale: Qt.locale()
+    //--------------------------------------------------------------------------
+    // Settings configuration
 
+    // Show various "Add Provider" buttons (if supported by the platform)
+    property bool showAddUSBProvider: true
+    property bool showAddNetworkProvider: true
+    property bool showAddFileProvider: true
+
+    // Settings tabs to show in the detailed device configuration settings
     property bool showAboutDevice: true
     property bool showAlerts: true
     property bool showAntennaHeight: true
     property bool showAltitude: true
+    property bool showAccuracy: true
 
-    readonly property bool showDetailedSettingsCog: showAboutDevice || showAlerts || showAntennaHeight || showAltitude
+    // Alert types to show in the alerts settings
+    property bool showAlertsVisual: true
+    property bool showAlertsSpeech: true
+    property bool showAlertsVibrate: true
+    property bool showAlertsTimeout: false
 
-    // Internal properties -----------------------------------------------------
+    // Show provider alias if available
+    property bool showProviderAlias: true
 
-    readonly property PositioningSourcesController controller: positionSourceManager.controller
+    //--------------------------------------------------------------------------
+    // Internal properties
+
     readonly property Device currentDevice: controller.currentDevice
+    readonly property string currentNmeaLogFile: controller.nmeaLogFile
+    readonly property string currentNetworkAddress: controller.currentNetworkAddress
 
     readonly property bool isConnecting: controller.isConnecting
     readonly property bool isConnected: controller.isConnected
 
-    readonly property string kConnected: qsTr("Connected")
-    readonly property string kConnecting: qsTr("Connecting")
-    readonly property string kDisconnected: qsTr("Disconnected")
+    readonly property bool showDetailedSettingsCog: showAboutDevice || showAlerts || showAntennaHeight || showAltitude || showAccuracy
+    readonly property bool showBluetoothOnly: !settingsTabLocation.showAddUSB && !settingsTabLocation.showAddNetworkProvider && !settingsTabLocation.showAddFileProvider
+    readonly property bool showAddUSB: !(Qt.platform.os === "ios" || Qt.platform.os === "android") && showAddUSBProvider
 
-    readonly property string kDeviceTypeInternal: "Internal"
-    readonly property string kDeviceTypeNetwork: "Network"
-    readonly property string kDeviceTypeBluetooth: "Bluetooth"
-    readonly property string kDeviceTypeBluetoothLE: "BluetoothLE"
-    readonly property string kDeviceTypeSerialPort: "SerialPort"
-    readonly property string kDeviceTypeUnknown: "Unknown"
+    property string logFileLocation: AppFramework.userHomePath + "/ArcGIS/" + Qt.application.name + "/Logs/"
 
-    readonly property string kDelegateTypeCachedDevice: "cached_device"
-    readonly property string kDelegateTypeAddDevice: "add_device"
+    property var _addDeviceTab
+    property var _addNetworkTab
+    property var _addNMEALogTab
 
-    property var currentListTabView: null
+    property bool _dirty: true
 
     signal selectInternal()
 
@@ -86,15 +91,30 @@ SettingsTab {
         Component.onCompleted: {
             controller.onSettingsPage = true;
 
-            _item.createListTabView();
+            if (Qt.platform.os === "ios") {
+                // On iOS this brings up a dialog notifying the user that Bluetooth
+                // needs to be enabled to connect to external accessories
+                Permission.serviceStatus(Permission.BluetoothService)
+            }
         }
 
         //----------------------------------------------------------------------
 
         Component.onDestruction: {
-            gnssSettings.write();
-
             controller.onSettingsPage = false;
+        }
+
+        //----------------------------------------------------------------------
+
+        Connections {
+            target: settingsTabLocation
+
+            function onActivated() {
+                if (_dirty) {
+                    _item.createListTabView(gnssSettings.knownDevices);
+                    _dirty = false;
+                }
+            }
         }
 
         //----------------------------------------------------------------------
@@ -102,8 +122,14 @@ SettingsTab {
         Connections {
             target: gnssSettings
 
-            onReceiverListUpdated: {
-                _item.createListTabView();
+            function onReceiverAdded(name) {
+                _item.addDeviceListTab(name, gnssSettings.knownDevices)
+                sortedListTabView.sort();
+                _dirty = true;
+            }
+
+            function onReceiverRemoved() {
+                _dirty = true;
             }
         }
 
@@ -115,104 +141,281 @@ SettingsTab {
 
         //----------------------------------------------------------------------
 
-        Component {
-            id: listTabView
+        ScrollView {
+            anchors.fill: parent
 
-            SortedListTabView {
+            clip: true
+
+            ScrollBar.vertical.policy: ScrollBar.AlwaysOff
+
+            ColumnLayout {
                 anchors.fill: parent
-                delegate: deviceListDelegate
 
-                SettingsTabContainer {
-                    id: settingsTabContainer
-                }
+                spacing: settingsTabLocation.listSpacing
 
-                onSelected: {
-                    stackView.push(settingsTabContainer, {
-                                       settingsTab: item,
-                                       title: item.title,
-                                       settingsComponent: item.contentComponent
-                                   });
-                }
+                Accessible.role: Accessible.Pane
 
-                lessThan: function(left, right) {
-                    switch (left.deviceType) {
-                    case kDeviceTypeInternal:
-                        return true;
-                    case kDeviceTypeBluetooth:
-                    case kDeviceTypeBluetoothLE:
-                    case kDeviceTypeNetwork:
-                    case kDeviceTypeSerialPort:
-                    case kDeviceTypeUnknown:
-                        if (right.deviceType === kDeviceTypeInternal) {
-                            return false;
+                // -----------------------------------------------------------------
+
+                SortedListTabView {
+                    id: sortedListTabView
+
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: listTabView.contentHeight
+                    Layout.maximumHeight: _item.height / 2
+
+                    backgroundColor: settingsTabLocation.backgroundColor
+                    listSpacing: settingsTabLocation.listSpacing
+
+                    delegate: deviceListDelegate
+
+                    onSelected: pushItem(item)
+
+                    lessThan: function(left, right) {
+                        switch (left.deviceType) {
+                        case kDeviceTypeInternal:
+                            return true;
+                        case kDeviceTypeBluetooth:
+                        case kDeviceTypeBluetoothLE:
+                        case kDeviceTypeNetwork:
+                        case kDeviceTypeSerialPort:
+                        case kDeviceTypeFile:
+                        case kDeviceTypeUnknown:
+                        default:
+                            if (right.deviceType === kDeviceTypeInternal) {
+                                return false;
+                            }
+
+                            return left.deviceLabel.localeCompare(right.deviceLabel) < 0 ? true : false;
                         }
+                    }
+                }
 
-                        return left.deviceLabel.localeCompare(right.deviceLabel) < 0 ? true : false;
+                // -----------------------------------------------------------------
+
+                Item {
+                    visible: showBluetoothOnly
+
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 20 * AppFramework.displayScaleFactor
+                }
+
+                // -----------------------------------------------------------------
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 32 * AppFramework.displayScaleFactor
+                    Layout.topMargin: 24 * AppFramework.displayScaleFactor
+
+                    spacing: 0
+
+                    visible: !showBluetoothOnly
+
+                    Item {
+                        Layout.preferredWidth: 16 * AppFramework.displayScaleFactor
+                        Layout.preferredHeight: 32 * AppFramework.displayScaleFactor
                     }
 
-                    // capture the "Add Provider" case
-                    return false;
-                }
-            }
-        }
+                    AppText {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 32 * AppFramework.displayScaleFactor
+                        Layout.alignment: Qt.AlignBottom
 
-        //----------------------------------------------------------------------
+                        text: qsTr("ADD PROVIDER")
 
-        function createListTabView() {
-            if (currentListTabView !== null) {
-                currentListTabView.children = null; // This seems to be required
-                currentListTabView = null; // destory() method can lead to crashes
-            }
+                        color: settingsTabLocation.textColor
 
-            currentListTabView = listTabView.createObject(_item);
-            _item.initializeCachedReceivers(gnssSettings.knownDevices);
+                        fontFamily: settingsTabLocation.fontFamily
+                        letterSpacing: settingsTabLocation.letterSpacing
+                        pixelSize: 10 * AppFramework.displayScaleFactor
+                        bold: true
 
-            addDeviceTab.createObject(currentListTabView.tabViewContainer);
-        }
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignLeft
+                    }
 
-        //----------------------------------------------------------------------
-
-        function initializeCachedReceivers(devicesList) {
-            cachedReceiversListModel.clear();
-
-            var deviceType = "";
-
-            for (var deviceName in devicesList) {
-
-                if (deviceName === "") {
-                    continue;
+                    Item {
+                        Layout.preferredWidth: 16 * AppFramework.displayScaleFactor
+                        Layout.preferredHeight: 32 * AppFramework.displayScaleFactor
+                    }
                 }
 
-                var receiverSettings = devicesList[deviceName];
+                // -----------------------------------------------------------------
 
-                if (receiverSettings.receiver) {
-                    deviceType = receiverSettings.receiver.deviceType;
-                    cachedReceiversListModel.append({name: deviceName, deviceType: receiverSettings.receiver.deviceType});
-                } else if (receiverSettings.hostname > "" && receiverSettings.port) {
-                    deviceType = kDeviceTypeNetwork;
-                    cachedReceiversListModel.append({name: deviceName, deviceType: kDeviceTypeNetwork});
-                } else if (deviceName === gnssSettings.kInternalPositionSourceName) {
-                    deviceType = kDeviceTypeInternal;
-                    cachedReceiversListModel.append({name: deviceName, deviceType: kDeviceTypeInternal});
-                } else {
-                    continue;
+                PlainButton {
+                    Layout.preferredWidth: settingsTabLocation.width
+                    Layout.preferredHeight: settingsTabLocation.listDelegateHeightSingleLine
+
+                    text: showBluetoothOnly ? qsTr("Add provider") : qsTr("Via Bluetooth")
+
+                    horizontalAlignment: isRightToLeft ? Text.AlignRight : Text.AlignLeft
+
+                    textColor: settingsTabLocation.addProviderButtonTextColor
+                    pressedTextColor: settingsTabLocation.textColor
+                    hoveredTextColor: settingsTabLocation.textColor
+                    backgroundColor: settingsTabLocation.listBackgroundColor
+                    pressedBackgroundColor: settingsTabLocation.hoverBackgroundColor
+                    hoveredBackgroundColor: settingsTabLocation.hoverBackgroundColor
+
+                    nextIconColor: settingsTabLocation.nextIconColor
+                    nextIconSize: settingsTabLocation.nextIconSize
+                    nextIcon: settingsTabLocation.nextIcon
+                    showNextIcon: true
+
+                    infoIconColor: settingsTabLocation.nextIconColor
+                    infoIconSize: settingsTabLocation.infoIconSize
+                    showInfoIcon: settingsTabLocation.showInfoIcons
+
+                    fontFamily: settingsTabLocation.fontFamily
+                    letterSpacing: settingsTabLocation.letterSpacing
+                    isRightToLeft: settingsTabLocation.isRightToLeft
+
+                    onClicked: {
+                        positionSourceManager.discoverBluetooth = true;
+                        positionSourceManager.discoverBluetoothLE = false;
+                        positionSourceManager.discoverSerialPort = false;
+
+                        if (!_addDeviceTab) {
+                            _addDeviceTab = addDeviceTab.createObject(_item);
+                        }
+
+                        pushItem(_addDeviceTab);
+                    }
                 }
 
-                var _deviceTab = deviceTab.createObject(currentListTabView.tabViewContainer, {
-                                                            "title": receiverSettings.label && receiverSettings.label > "" ? receiverSettings.label : deviceName,
-                                                            "deviceType": deviceType,
-                                                            "deviceName": deviceName,
-                                                            "deviceLabel": receiverSettings.label && receiverSettings.label > "" ? receiverSettings.label : deviceName,
-                                                            "deviceProperties": receiverSettings
-                                                        });
+                // -----------------------------------------------------------------
 
-                _deviceTab.selectInternal.connect(function(){
-                    selectInternal();
-                });
+                PlainButton {
+                    visible: settingsTabLocation.showAddUSB
 
-                _deviceTab.updateViewAndDelegate.connect(function(){
-                    _item.createListTabView();
-                });
+                    Layout.preferredWidth: settingsTabLocation.width
+                    Layout.preferredHeight: settingsTabLocation.listDelegateHeightSingleLine
+
+                    text: qsTr("Via USB")
+
+                    horizontalAlignment: isRightToLeft ? Text.AlignRight : Text.AlignLeft
+
+                    textColor: settingsTabLocation.addProviderButtonTextColor
+                    pressedTextColor: settingsTabLocation.textColor
+                    hoveredTextColor: settingsTabLocation.textColor
+                    backgroundColor: settingsTabLocation.listBackgroundColor
+                    pressedBackgroundColor: settingsTabLocation.hoverBackgroundColor
+                    hoveredBackgroundColor: settingsTabLocation.hoverBackgroundColor
+
+                    nextIconColor: settingsTabLocation.nextIconColor
+                    nextIconSize: settingsTabLocation.nextIconSize
+                    nextIcon: settingsTabLocation.nextIcon
+                    showNextIcon: true
+
+                    infoIconColor: settingsTabLocation.nextIconColor
+                    infoIconSize: settingsTabLocation.infoIconSize
+                    showInfoIcon: settingsTabLocation.showInfoIcons
+
+                    fontFamily: settingsTabLocation.fontFamily
+                    letterSpacing: settingsTabLocation.letterSpacing
+                    isRightToLeft: settingsTabLocation.isRightToLeft
+
+                    onClicked: {
+                        positionSourceManager.discoverBluetooth = false;
+                        positionSourceManager.discoverBluetoothLE = false;
+                        positionSourceManager.discoverSerialPort = true;
+
+                        if (!_addDeviceTab) {
+                            _addDeviceTab = addDeviceTab.createObject(_item);
+                        }
+
+                        pushItem(_addDeviceTab);
+                    }
+                }
+
+                // -----------------------------------------------------------------
+
+                PlainButton {
+                    visible: settingsTabLocation.showAddNetworkProvider
+
+                    Layout.preferredWidth: settingsTabLocation.width
+                    Layout.preferredHeight: settingsTabLocation.listDelegateHeightSingleLine
+
+                    text: qsTr("Via Network")
+
+                    horizontalAlignment: isRightToLeft ? Text.AlignRight : Text.AlignLeft
+
+                    textColor: settingsTabLocation.addProviderButtonTextColor
+                    pressedTextColor: settingsTabLocation.textColor
+                    hoveredTextColor: settingsTabLocation.textColor
+                    backgroundColor: settingsTabLocation.listBackgroundColor
+                    pressedBackgroundColor: settingsTabLocation.hoverBackgroundColor
+                    hoveredBackgroundColor: settingsTabLocation.hoverBackgroundColor
+
+                    nextIconColor: settingsTabLocation.nextIconColor
+                    nextIconSize: settingsTabLocation.nextIconSize
+                    nextIcon: settingsTabLocation.nextIcon
+                    showNextIcon: true
+
+                    infoIconColor: settingsTabLocation.nextIconColor
+                    infoIconSize: settingsTabLocation.infoIconSize
+                    showInfoIcon: settingsTabLocation.showInfoIcons
+
+                    fontFamily: settingsTabLocation.fontFamily
+                    letterSpacing: settingsTabLocation.letterSpacing
+                    isRightToLeft: settingsTabLocation.isRightToLeft
+
+                    onClicked: {
+                        if (!_addNetworkTab) {
+                            _addNetworkTab = addNetworkTab.createObject(_item);
+                        }
+
+                        pushItem(_addNetworkTab);
+                    }
+                }
+
+                // -----------------------------------------------------------------
+
+                PlainButton {
+                    visible: settingsTabLocation.showAddFileProvider
+
+                    Layout.preferredWidth: settingsTabLocation.width
+                    Layout.preferredHeight: settingsTabLocation.listDelegateHeightSingleLine
+
+                    text: qsTr("Via File")
+
+                    horizontalAlignment: isRightToLeft ? Text.AlignRight : Text.AlignLeft
+
+                    textColor: settingsTabLocation.addProviderButtonTextColor
+                    pressedTextColor: settingsTabLocation.textColor
+                    hoveredTextColor: settingsTabLocation.textColor
+                    backgroundColor: settingsTabLocation.listBackgroundColor
+                    pressedBackgroundColor: settingsTabLocation.hoverBackgroundColor
+                    hoveredBackgroundColor: settingsTabLocation.hoverBackgroundColor
+
+                    nextIconColor: settingsTabLocation.nextIconColor
+                    nextIconSize: settingsTabLocation.nextIconSize
+                    nextIcon: settingsTabLocation.nextIcon
+                    showNextIcon: true
+
+                    infoIconColor: settingsTabLocation.nextIconColor
+                    infoIconSize: settingsTabLocation.infoIconSize
+                    showInfoIcon: settingsTabLocation.showInfoIcons
+
+                    fontFamily: settingsTabLocation.fontFamily
+                    letterSpacing: settingsTabLocation.letterSpacing
+                    isRightToLeft: settingsTabLocation.isRightToLeft
+
+                    onClicked: {
+                        if (!_addNMEALogTab) {
+                            _addNMEALogTab = addNMEALogTab.createObject(_item);
+                        }
+
+                        pushItem(_addNMEALogTab);
+                    }
+                }
+
+                // -----------------------------------------------------------------
+
+                Item {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                }
             }
         }
 
@@ -222,16 +425,21 @@ SettingsTab {
             id: deviceTab
 
             SettingsTabLocationDevice {
-                property string tabType: kDelegateTypeCachedDevice
+                settingsTabContainer: settingsTabLocation.settingsTabContainer
+                settingsTabContainerComponent: settingsTabLocation.settingsTabContainerComponent
 
-                stackView: locationSettingsTab.stackView
-                gnssSettings: locationSettingsTab.gnssSettings
-                positionSourceManager: locationSettingsTab.positionSourceManager
+                showAboutDevice: settingsTabLocation.showAboutDevice
+                showAlerts: settingsTabLocation.showAlerts
+                showAntennaHeight: settingsTabLocation.showAntennaHeight
+                showAltitude: settingsTabLocation.showAltitude
+                showAccuracy: settingsTabLocation.showAccuracy
 
-                showAboutDevice: locationSettingsTab.showAboutDevice
-                showAlerts: locationSettingsTab.showAlerts
-                showAntennaHeight: locationSettingsTab.showAntennaHeight
-                showAltitude: locationSettingsTab.showAltitude
+                showAlertsVisual: settingsTabLocation.showAlertsVisual
+                showAlertsSpeech: settingsTabLocation.showAlertsSpeech
+                showAlertsVibrate: settingsTabLocation.showAlertsVibrate
+                showAlertsTimeout: settingsTabLocation.showAlertsTimeout
+
+                showProviderAlias: settingsTabLocation.showProviderAlias
             }
         }
 
@@ -241,19 +449,46 @@ SettingsTab {
             id: addDeviceTab
 
             SettingsTabLocationAddDevice {
-                property string tabType: kDelegateTypeAddDevice
+                settingsTabContainer: settingsTabLocation.settingsTabContainer
+                settingsTabContainerComponent: settingsTabLocation.settingsTabContainerComponent
 
-                // placeholder properties are required since we use a shared delegate
-                property string deviceType: ""
-                property string deviceName: ""
-                property string deviceLabel: ""
-                property var deviceProperties: null
+                receiverListModel: cachedReceiversListModel
 
-                stackView: locationSettingsTab.stackView
-                gnssSettings: locationSettingsTab.gnssSettings
-                positionSourceManager: locationSettingsTab.positionSourceManager
+                onShowReceiverSettingsPage: {
+                    _item.showReceiverSettingsPage(deviceName)
+                }
+            }
+        }
 
-                currentListTabView: locationSettingsTab.currentListTabView
+        //----------------------------------------------------------------------
+
+        Component {
+            id: addNetworkTab
+
+            SettingsTabLocationAddNetwork {
+                settingsTabContainer: settingsTabLocation.settingsTabContainer
+                settingsTabContainerComponent: settingsTabLocation.settingsTabContainerComponent
+
+                onShowReceiverSettingsPage: {
+                    _item.showReceiverSettingsPage(deviceName)
+                }
+            }
+        }
+
+        //----------------------------------------------------------------------
+
+        Component {
+            id: addNMEALogTab
+
+            SettingsTabLocationAddNmeaLog {
+                settingsTabContainer: settingsTabLocation.settingsTabContainer
+                settingsTabContainerComponent: settingsTabLocation.settingsTabContainerComponent
+
+                logFileLocation: settingsTabLocation.logFileLocation
+
+                onShowReceiverSettingsPage: {
+                    _item.showReceiverSettingsPage(deviceName)
+                }
             }
         }
 
@@ -265,264 +500,516 @@ SettingsTab {
             Rectangle {
                 id: delegate
 
-                Accessible.role: Accessible.Pane
-
                 property string delegateDeviceType: deviceType !== undefined ? deviceType : kDeviceTypeUnknown
                 property string delegateDeviceName: deviceName !== undefined ? deviceName : ""
                 property string delegateHostname: deviceProperties && deviceProperties.hostname !== undefined
-                                            ? deviceProperties.hostname
-                                            : ""
+                                                  ? deviceProperties.hostname
+                                                  : ""
                 property string delegatePort: deviceProperties && deviceProperties.port !== undefined
-                                      ? deviceProperties.port
-                                      : ""
+                                              ? deviceProperties.port
+                                              : ""
+                property string delegateFileName: deviceProperties && deviceProperties.filename !== undefined
+                                                  ? deviceProperties.filename
+                                                  : ""
+
+                readonly property string label: deviceProperties.label
 
                 property bool isInternal: delegateDeviceType === kDeviceTypeInternal
                 property bool isNetwork: delegateDeviceType === kDeviceTypeNetwork
-                property bool isDevice: !isInternal && !isNetwork
+                property bool isFile: delegateDeviceType === kDeviceTypeFile
+                property bool isDevice: !isInternal && !isNetwork && !isFile
 
                 property bool isSelected: isDevice && controller.useExternalGPS
                                           ? currentDevice && currentDevice.name === delegateDeviceName
                                           : isNetwork && controller.useTCPConnection
                                             ? controller.currentNetworkAddress === delegateHostname + ":" + delegatePort
-                                            : isInternal && controller.useInternalGPS
+                                            : isFile && controller.useFile
+                                              ? controller.nmeaLogFile === delegateFileName
+                                              : isInternal && controller.useInternalGPS
 
-                property int delegateHeight: 65 * AppFramework.displayScaleFactor
+                readonly property bool hovered: tabAction.containsMouse || deviceSettingsMouseArea.containsMouse
+                readonly property bool pressed: tabAction.containsPress || deviceSettingsMouseArea.containsPress
 
-                width: parent.parent.width
-                height: visible ? delegateHeight : 0
+                Accessible.role: Accessible.Pane
 
-                color: isSelected
-                       ? selectedBackgroundColor
-                       : tabAction.containsMouse
-                         ? hoverBackgroundColor
-                         : "transparent"
+                width: ListView.view.width
+                height: settingsTabLocation.showProviderAlias ? settingsTabLocation.listDelegateHeightMultiLine : settingsTabLocation.listDelegateHeightSingleLine
 
-                ColumnLayout {
-                    anchors {
-                        fill: parent
+                color: delegate.pressed
+                       ? settingsTabLocation.hoverBackgroundColor
+                       : delegate.hovered
+                         ? settingsTabLocation.hoverBackgroundColor
+                         : delegate.isSelected
+                           ? settingsTabLocation.selectedBackgroundColor
+                           : settingsTabLocation.listBackgroundColor
+
+                //----------------------------------------------------------------------
+
+                onIsSelectedChanged: {
+                    if (isSelected) {
+                        Qt.callLater(ListView.view.positionViewAtIndex, DelegateModel.itemsIndex, ListView.Contain)
                     }
+                }
+
+                //----------------------------------------------------------------------
+
+                RowLayout {
+                    anchors.fill: parent
 
                     spacing: 0
 
-                    Item {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
+                    Accessible.role: Accessible.Pane
 
-                        Accessible.role: Accessible.Pane
+                    Item {
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
 
                         RowLayout {
-                            anchors {
-                                fill: parent
-                            }
+                            anchors.fill: parent
+
                             spacing: 0
 
                             Accessible.role: Accessible.Pane
 
                             Item {
+                                Layout.preferredWidth: 16 * AppFramework.displayScaleFactor
                                 Layout.fillHeight: true
-                                Layout.preferredWidth: height
-
-                                Accessible.role: Accessible.Pane
-
-                                StyledImage {
-                                    id: deviceTypeImage
-
-                                    width: 30 * AppFramework.displayScaleFactor
-                                    height: width
-                                    anchors.centerIn: parent
-
-                                    visible: tabType !== kDelegateTypeAddDevice
-                                    source: visible && delegate.delegateDeviceType > ""
-                                            ? "../images/deviceType-%1.png".arg(delegate.delegateDeviceType)
-                                            : ""
-                                    color: delegate.isSelected && (isConnecting || isConnected)
-                                           ? secondaryForegroundColor
-                                           : foregroundColor
-                                }
-
-                                StyledImage {
-                                    id: addDeviceImage
-
-                                    width: 30 * AppFramework.displayScaleFactor
-                                    height: width
-                                    anchors.centerIn: parent
-
-                                    visible: tabType === kDelegateTypeAddDevice
-                                    source: "../images/plus.png"
-                                    color: foregroundColor
-                                }
                             }
 
                             Item {
                                 Layout.fillHeight: true
-                                Layout.fillWidth: true
+                                Layout.preferredWidth: settingsTabLocation.infoIconSize
+
+                                visible: settingsTabLocation.showInfoIcons
+                                enabled: visible
 
                                 Accessible.role: Accessible.Pane
 
-                                ColumnLayout {
-                                    anchors.fill: parent
+                                StyledImage {
+                                    anchors.centerIn: parent
 
-                                    spacing: 5 * AppFramework.displayScaleFactor
+                                    width: settingsTabLocation.infoIconSize
+                                    height: width
 
-                                    AppText {
-                                        Layout.fillWidth: true
+                                    source: delegate.delegateDeviceType > ""
+                                            ? "../images/deviceType-%1.png".arg(delegate.delegateDeviceType)
+                                            : ""
 
-                                        text: delegate.isSelected
-                                              ? "%1<br><span style='font-size:%2pt'>%3</span>".arg(modelData.title).arg(font.pointSize * .8).arg(isConnecting ? kConnecting : isConnected ? kConnected : kDisconnected)
-                                              : tabType === kDelegateTypeCachedDevice && modelData.title !== delegate.delegateDeviceName && !delegate.isInternal
-                                                ? "%1<br><span style='font-size:%2pt'>%3</span>".arg(modelData.title).arg(font.pointSize * .8).arg(delegate.delegateDeviceName)
-                                                : modelData.title
-
-                                        color: delegate.isSelected && (isConnecting || isConnected)
-                                               ? secondaryForegroundColor
-                                               : foregroundColor
-
-                                        fontFamily: locationSettingsTab.fontFamily
-                                        pointSize: 16
-                                        bold: true
-                                    }
-
-                                    AppText {
-                                        Layout.fillWidth: true
-
-                                        visible: text > ""
-
-                                        text: modelData.description
-
-                                        color: delegate.isSelected && (isConnecting || isConnected)
-                                               ? secondaryForegroundColor
-                                               : foregroundColor
-
-                                        fontFamily: locationSettingsTab.fontFamily
-                                        pointSize: 12
-                                        bold: false
-                                    }
+                                    color: delegate.pressed
+                                           ? settingsTabLocation.textColor
+                                           : delegate.hovered
+                                             ? settingsTabLocation.textColor
+                                             : delegate.isSelected
+                                               ? settingsTabLocation.selectedForegroundColor
+                                               : settingsTabLocation.infoIconColor
                                 }
+                            }
 
-                                MouseArea {
-                                    id: tabAction
+                            Item {
+                                Layout.preferredWidth: settingsTabLocation.showInfoIcons ? 12 * AppFramework.displayScaleFactor : 4 * AppFramework.displayScaleFactor
+                                Layout.fillHeight: true
+                            }
+
+                            Item {
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+
+                                ColumnLayout {
+                                    id: textColumn
+
                                     anchors.fill: parent
-                                    hoverEnabled: true
 
-                                    Accessible.role: Accessible.Button
+                                    spacing: 0
 
-                                    Connections {
-                                        target: locationSettingsTab
-                                        onSelectInternal: {
-                                            if (delegate.delegateDeviceType === kDeviceTypeInternal) {
-                                                tabAction.clicked(null);
-                                            }
-                                        }
+                                    readonly property bool hasAlias: modelData.title !== settingsTabLocation.resolveDeviceName(delegate.delegateDeviceType, delegate.delegateDeviceName, false) && !delegate.isInternal
+
+                                    Item {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 14 * AppFramework.displayScaleFactor
                                     }
 
-                                    onClicked: {
+                                    AppText {
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
 
-                                        // Different actions based on tab type ---------
+                                        text: modelData.title
 
-                                        // Cached Devices Tab Action -------------------
-                                        if (tabType === kDelegateTypeCachedDevice) {
+                                        color: delegate.pressed
+                                               ? settingsTabLocation.textColor
+                                               : delegate.hovered
+                                                 ? settingsTabLocation.textColor
+                                                 : delegate.isSelected
+                                                   ? settingsTabLocation.selectedTextColor
+                                                   : settingsTabLocation.textColor
 
-                                            if (delegate.isDevice) {
-                                                if ( (!isConnecting && !isConnected) || !controller.useExternalGPS || (currentDevice && currentDevice.name !== delegate.delegateDeviceName) ) {
+                                        fontFamily: settingsTabLocation.fontFamily
+                                        letterSpacing: settingsTabLocation.letterSpacing
+                                        pixelSize: 16 * AppFramework.displayScaleFactor
+                                        bold: true
 
-                                                    var device = gnssSettings.knownDevices[delegate.delegateDeviceName].receiver;
-                                                    gnssSettings.createExternalReceiverSettings(delegate.delegateDeviceName, device);
+                                        LayoutMirroring.enabled: false
 
-                                                    controller.deviceSelected(Device.fromJson(JSON.stringify(device)));
-                                                } else {
-                                                    controller.deviceDeselected();
-                                                }
-                                            }
-                                            else if (delegate.isNetwork) {
-                                                if ( (!isConnecting && !isConnected) || !controller.useTCPConnection || (delegate.delegateHostname > "" && delegate.delegatePort > "" && delegate.delegateHostname + ":" + delegate.delegatePort !== delegate.delegateDeviceName) ) {
-                                                    var address = delegate.delegateDeviceName.split(":");
-                                                    gnssSettings.createNetworkSettings(address[0], address[1]);
-                                                    controller.networkHostSelected(address[0], address[1]);
-                                                } else {
-                                                    controller.deviceDeselected();
-                                                }
-                                            }
-                                            else if (delegate.isInternal) {
-                                                controller.deviceDeselected();
-                                                gnssSettings.createInternalSettings();
-                                            }
-                                            else {
-                                                controller.deviceDeselected();
-                                            }
+                                        horizontalAlignment: isRightToLeft ? Text.AlignRight : Text.AlignLeft
+                                        verticalAlignment: Text.AlignVCenter
 
-                                            return;
-                                        }
+                                        wrapMode: Text.NoWrap
+                                        maximumLineCount: 1
+                                        elide: isRightToLeft ? Text.ElideLeft : Text.ElideRight
+                                        clip: true
+                                    }
 
-                                        // Add Device Tab Action -----------------------
-                                        if (tabType === kDelegateTypeAddDevice) {
-                                            currentListTabView.selected(modelData);
-                                            return;
-                                        }
+                                    Item {
+                                        visible: settingsTabLocation.showProviderAlias && textColumn.hasAlias
+
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 4 * AppFramework.displayScaleFactor
+                                    }
+
+                                    AppText {
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
+
+                                        visible: settingsTabLocation.showProviderAlias && textColumn.hasAlias
+
+                                        text: "<span style='font-size:%1pt'>%2</span>".arg(font.pixelSize*0.8).arg(settingsTabLocation.resolveDeviceName(delegate.delegateDeviceType, delegate.delegateDeviceName, false))
+
+                                        color: delegate.pressed
+                                               ? settingsTabLocation.helpTextColor
+                                               : delegate.hovered
+                                                 ? settingsTabLocation.helpTextColor
+                                                 : delegate.isSelected
+                                                   ? settingsTabLocation.selectedTextColor
+                                                   : settingsTabLocation.helpTextColor
+
+                                        fontFamily: settingsTabLocation.fontFamily
+                                        letterSpacing: settingsTabLocation.letterSpacing
+                                        pixelSize: 14 * AppFramework.displayScaleFactor
+                                        bold: false
+
+                                        LayoutMirroring.enabled: false
+
+                                        horizontalAlignment: isRightToLeft ? Text.AlignRight : Text.AlignLeft
+                                        verticalAlignment: Text.AlignVCenter
+
+                                        wrapMode: Text.NoWrap
+                                        maximumLineCount: 1
+                                        elide: isRightToLeft ? Text.ElideLeft : Text.ElideRight
+                                        clip: true
+                                    }
+
+                                    Item {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 14 * AppFramework.displayScaleFactor
                                     }
                                 }
                             }
 
+                            Item {
+                                visible: delegate.isSelected
+
+                                Layout.preferredWidth: 16 * AppFramework.displayScaleFactor
+                                Layout.fillHeight: true
+                            }
+
+                            Item {
+                                Layout.preferredWidth: settingsTabLocation.settingsIconSize
+                                Layout.fillHeight: true
+
+                                visible: delegate.isSelected
+
+                                Accessible.role: Accessible.Pane
+
+                                StyledImage {
+                                    anchors.centerIn: parent
+
+                                    width: settingsTabLocation.settingsIconSize
+                                    height: width
+
+                                    visible: delegate.isSelected && !isConnecting
+                                    source: isConnected ? "../images/round_done_white_24dp.png" : "../images/round_error_white_24dp.png"
+
+                                    color: delegate.pressed
+                                           ? settingsTabLocation.textColor
+                                           : delegate.hovered
+                                             ? settingsTabLocation.textColor
+                                             : delegate.isSelected
+                                               ? settingsTabLocation.selectedForegroundColor
+                                               : settingsTabLocation.settingsIconColor
+                                }
+
+                                AppBusyIndicator {
+                                    anchors.centerIn: parent
+
+                                    visible: delegate.isSelected && isConnecting
+
+                                    implicitSize: 14 * AppFramework.displayScaleFactor
+                                    backgroundColor: settingsTabLocation.selectedForegroundColor
+
+                                    running: visible
+                                }
+                            }
+
+                            Item {
+                                visible: showDetailedSettingsCog
+
+                                Layout.preferredWidth: 16 * AppFramework.displayScaleFactor
+                                Layout.fillHeight: true
+                            }
+
                             Rectangle {
-                                visible: showDetailedSettingsCog && tabType !== kDelegateTypeAddDevice
+                                visible: showDetailedSettingsCog
                                 enabled: visible
 
                                 Layout.fillHeight: true
+                                Layout.topMargin: 8 * AppFramework.displayScaleFactor
+                                Layout.bottomMargin: 8 * AppFramework.displayScaleFactor
                                 Layout.preferredWidth: 1 * AppFramework.displayScaleFactor
-                                color: dividerColor
+
+                                color: delegate.pressed
+                                       ? settingsTabLocation.textColor
+                                       : delegate.hovered
+                                         ? settingsTabLocation.textColor
+                                         : delegate.isSelected
+                                           ? settingsTabLocation.selectedForegroundColor
+                                           : settingsTabLocation.settingsIconColor
 
                                 Accessible.role: Accessible.Separator
                                 Accessible.ignored: true
                             }
 
-                            Rectangle {
-                                visible: showDetailedSettingsCog && tabType !== kDelegateTypeAddDevice
-                                enabled: visible
+                            Item {
+                                visible: !showDetailedSettingsCog
 
+                                Layout.preferredWidth: 16 * AppFramework.displayScaleFactor
                                 Layout.fillHeight: true
-                                Layout.preferredWidth: height
-                                color: "transparent"
+                            }
+                        }
+
+                        MouseArea {
+                            id: tabAction
+
+                            anchors.fill: parent
+                            hoverEnabled: true
+
+                            Accessible.role: Accessible.Button
+
+                            onClicked: {
+                                _item.connectProvider(delegate);
+                            }
+                        }
+                    }
+
+                    Item {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: settingsTabLocation.settingsIconSize + 32 * AppFramework.displayScaleFactor
+
+                        visible: showDetailedSettingsCog
+                        enabled: visible
+
+                        RowLayout {
+                            anchors.fill: parent
+
+                            spacing: 0
+
+                            Accessible.role: Accessible.Pane
+
+                            Item {
+                                Layout.preferredWidth: 16 * AppFramework.displayScaleFactor
+                                Layout.fillHeight: true
+                            }
+
+                            Item {
+                                Layout.fillHeight: true
+                                Layout.preferredWidth: settingsTabLocation.settingsIconSize
 
                                 Accessible.role: Accessible.Pane
 
                                 StyledImage {
                                     anchors.centerIn: parent
-                                    width: 28 * AppFramework.displayScaleFactor
+
+                                    width: settingsTabLocation.settingsIconSize
                                     height: width
 
-                                    source: "../images/gear.png"
+                                    source: settingsTabLocation.settingsIcon
 
-                                    color: delegate.isSelected && (isConnecting || isConnected)
-                                           ? secondaryForegroundColor
-                                           : foregroundColor
+                                    color: delegate.pressed
+                                           ? settingsTabLocation.textColor
+                                           : delegate.hovered
+                                             ? settingsTabLocation.textColor
+                                             : delegate.isSelected
+                                               ? settingsTabLocation.selectedForegroundColor
+                                               : settingsTabLocation.settingsIconColor
                                 }
+                            }
 
-                                MouseArea {
-                                    id: deviceSettingsMouseArea
+                            Item {
+                                Layout.preferredWidth: 16 * AppFramework.displayScaleFactor
+                                Layout.fillHeight: true
+                            }
+                        }
 
-                                    anchors.fill: parent
-                                    hoverEnabled: true
+                        MouseArea {
+                            id: deviceSettingsMouseArea
 
-                                    onClicked: {
-                                        currentListTabView.selected(modelData);
-                                    }
+                            anchors.fill: parent
+                            hoverEnabled: true
 
-                                    Accessible.role: Accessible.Button
-                                }
+                            Accessible.role: Accessible.Button
+
+                            onClicked: {
+                                sortedListTabView.selected(modelData);
                             }
                         }
                     }
+                }
 
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 1 * AppFramework.displayScaleFactor
-                        color: dividerColor
+                Connections {
+                    target: settingsTabLocation
 
-                        Accessible.role: Accessible.Separator
-                        Accessible.ignored: true
+                    function onSelectInternal() {
+                        if (delegate.delegateDeviceType === kDeviceTypeInternal) {
+                            _item.connectProvider(delegate);
+                        }
                     }
                 }
             }
         }
+
+        //----------------------------------------------------------------------
+
+        function createListTabView(devicesList) {
+            for (var i = 0; i < sortedListTabView.contentData.length; i++) {
+                var tab = sortedListTabView.contentData[i]
+                tab.destroy();
+            }
+
+            sortedListTabView.contentData = null;
+            cachedReceiversListModel.clear();
+
+            for (var deviceName in devicesList) {
+                _item.addDeviceListTab(deviceName, devicesList)
+            }
+
+            // make sure the list is sorted
+            sortedListTabView.sort();
+
+            // highlight the currently selected item
+            for (i = 0; i < sortedListTabView.model.count; i++) {
+                var item = sortedListTabView.model.get(i).model;
+
+                if (item.deviceName === controller.currentName) {
+                    sortedListTabView.listTabView.positionViewAtIndex(i, ListView.Contain);
+                    break;
+                }
+            }
+        }
+
+        //----------------------------------------------------------------------
+
+        function addDeviceListTab(deviceName, devicesList) {
+            if (deviceName === "") {
+                return;
+            }
+
+            var receiverSettings = devicesList[deviceName];
+            var deviceType = "";
+
+            if (receiverSettings.receiver) {
+                deviceType = receiverSettings.receiver.deviceType;
+                cachedReceiversListModel.append({name: deviceName, deviceType: receiverSettings.receiver.deviceType});
+            } else if (receiverSettings.hostname > "" && receiverSettings.port) {
+                deviceType = kDeviceTypeNetwork;
+                cachedReceiversListModel.append({name: deviceName, deviceType: kDeviceTypeNetwork});
+            } else if (receiverSettings.filename > "") {
+                deviceType = kDeviceTypeFile;
+                cachedReceiversListModel.append({name: deviceName, deviceType: kDeviceTypeFile});
+            } else if (deviceName === gnssSettings.kInternalPositionSourceName) {
+                deviceType = kDeviceTypeInternal;
+                cachedReceiversListModel.append({name: deviceName, deviceType: kDeviceTypeInternal});
+            } else {
+                return;
+            }
+
+            var _deviceTab = deviceTab.createObject(sortedListTabView.tabViewContainer, {
+                                                        "title": receiverSettings.label && receiverSettings.label > "" ? receiverSettings.label : deviceName,
+                                                        "deviceType": deviceType,
+                                                        "deviceName": deviceName,
+                                                        "deviceLabel": receiverSettings.label && receiverSettings.label > "" ? receiverSettings.label : deviceName,
+                                                        "deviceProperties": receiverSettings
+                                                    });
+
+            _deviceTab.selectInternal.connect(function() {
+                selectInternal();
+            });
+
+            _deviceTab.updateViewAndDelegate.connect(function() {
+                _dirty = true;
+            });
+        }
+
+        //----------------------------------------------------------------------
+
+        function connectProvider(delegate) {
+            if (delegate.isDevice) {
+                if ( (!isConnecting && !isConnected) || !controller.useExternalGPS || (currentDevice && currentDevice.name !== delegate.delegateDeviceName) ) {
+                    var device = gnssSettings.knownDevices[delegate.delegateDeviceName].receiver;
+                    gnssSettings.createExternalReceiverSettings(delegate.delegateDeviceName, device);
+
+                    controller.deviceSelected(Device.fromJson(JSON.stringify(device), controller));
+                } else {
+                    controller.deviceDeselected();
+                }
+            } else if (delegate.isNetwork) {
+                if ( (!isConnecting && !isConnected) || !controller.useTCPConnection || (currentNetworkAddress > "" && currentNetworkAddress !== delegate.delegateDeviceName) ) {
+                    var address = delegate.delegateDeviceName.split(":");
+                    gnssSettings.createNetworkSettings(address[0], address[1]);
+
+                    controller.networkHostSelected(address[0], address[1]);
+                } else {
+                    controller.deviceDeselected();
+                }
+            } else if (delegate.isFile) {
+                if ( (!isConnecting && !isConnected) || !controller.useFile || (currentNmeaLogFile > "" && currentNmeaLogFile !== delegate.delegateDeviceName) ) {
+                    gnssSettings.createNmeaLogFileSettings(delegate.delegateFileName);
+
+                    controller.nmeaLogFileSelected(delegate.delegateFileName);
+                } else {
+                    controller.deviceDeselected();
+                }
+            } else if (delegate.isInternal) {
+                controller.deviceDeselected();
+                gnssSettings.createInternalSettings();
+            } else {
+                controller.deviceDeselected();
+            }
+
+            return;
+        }
+
+        //----------------------------------------------------------------------
+
+        function showReceiverSettingsPage(name) {
+            var listModel = sortedListTabView.contentData;
+
+            var item = null;
+            for (var i=0; i<listModel.length; i++) {
+                if (listModel[i].deviceType === kDeviceTypeFile && listModel[i].deviceProperties.filename === name) {
+                    item = listModel[i];
+                    break;
+                } else if (listModel[i].title === name) {
+                    item = listModel[i];
+                    break;
+                }
+            }
+
+            if (item) {
+                replaceItem(item);
+            } else {
+                stackView.pop();
+            }
+        }
+
+        //----------------------------------------------------------------------
     }
 
     //--------------------------------------------------------------------------

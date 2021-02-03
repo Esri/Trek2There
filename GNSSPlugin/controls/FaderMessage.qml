@@ -1,4 +1,4 @@
-/* Copyright 2018 Esri
+/* Copyright 2021 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
  *
  */
 
-import QtQuick 2.9
-import QtQuick.Layouts 1.3
-import QtGraphicalEffects 1.0
+import QtQuick 2.15
+import QtQuick.Layouts 1.15
+import QtGraphicalEffects 1.15
 
 import ArcGIS.AppFramework 1.0
 
@@ -30,13 +30,18 @@ Item {
     property alias glowColor: glow.color
     property alias icon: image.source
 
+    property string fontFamily: Qt.application.font.family
+    property real pixelSize: 20 * AppFramework.displayScaleFactor
+    property real letterSpacing: 0
+    property bool bold: false
+
     readonly property int kDefaultDuration: 3000
     readonly property color kDefaultTextColor: "white"
     readonly property color kDefaultBackgroundColor: "blue"
 
     //--------------------------------------------------------------------------
 
-    height: layout.height + 20 * AppFramework.displayScaleFactor
+    height: 60 * AppFramework.displayScaleFactor
 
     anchors {
         left: parent.left
@@ -118,9 +123,11 @@ Item {
 
             color: kDefaultTextColor
             horizontalAlignment: Text.AlignHCenter
-            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
 
-            pointSize: 20
+            fontFamily: control.fontFamily
+            pixelSize: control.pixelSize
+            letterSpacing: control.letterSpacing
+            bold: control.bold
         }
     }
 

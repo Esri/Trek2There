@@ -1,6 +1,22 @@
-import QtQuick 2.9
-import QtQuick.Controls 1.4
-import QtQuick.Layouts 1.3
+/* Copyright 2021 Esri
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 
 import ArcGIS.AppFramework 1.0
 
@@ -11,73 +27,151 @@ Rectangle {
 
     property var listTabView
 
-    property string fontFamily: Qt.application.font.family
-    property color foregroundColor: "#000000"
+    property real listDelegateHeightTextBox: 60 * AppFramework.displayScaleFactor
+    property real listDelegateHeightMultiLine: 60 * AppFramework.displayScaleFactor
+    property real listDelegateHeightSingleLine: 60 * AppFramework.displayScaleFactor
+
+    property color textColor: "#000000"
+    property color helpTextColor: "#000000"
+    property color backgroundColor: "#e1f0fb"
+    property color listBackgroundColor: "#e1f0fb"
     property color hoverBackgroundColor: "#e1f0fb"
 
-    width: ListView.view.width
-    height: visible ? rowLayout.height + rowLayout.anchors.margins * 2 : 0
+    property color nextIconColor: "#c0c0c0"
+    property real nextIconSize: 30 * AppFramework.displayScaleFactor
+    property url nextIcon: "../images/next.png"
 
+    property color infoIconColor: "#c0c0c0"
+    property real infoIconSize: 30 * AppFramework.displayScaleFactor
+
+    property string fontFamily: Qt.application.font.family
+    property real letterSpacing: 0
+    property real helpTextLetterSpacing: 0
+    property var locale: Qt.locale()
+    property bool isRightToLeft: AppFramework.localeInfo().esriName === "ar" || AppFramework.localeInfo().esriName === "he"
+
+    property bool showInfoIcons: true
+
+    width: ListView.view.width
+    height: description.visible ? listDelegateHeightMultiLine : listDelegateHeightSingleLine
+
+    color: mouseArea.containsMouse ? hoverBackgroundColor : listBackgroundColor
     visible: modelData.enabled
-    color: mouseArea.containsMouse ? hoverBackgroundColor : "transparent"
+    opacity: modelData.enabled ? 1 : 0.5
 
     RowLayout {
-        id: rowLayout
+        anchors.fill: parent
 
-        anchors {
-            top: parent.top
-            left: parent.left
-            right: parent.right
-            margins: 10 * AppFramework.displayScaleFactor
+        spacing: 0
+
+        Accessible.role: Accessible.Pane
+
+        Item {
+            Layout.fillHeight: true
+            Layout.preferredWidth: height
+
+            visible: showInfoIcons
+            enabled: visible
+
+            StyledImage {
+                anchors.centerIn: parent
+
+                width: infoIconSize
+                height: width
+
+                source: modelData.icon
+                color: infoIconColor
+            }
         }
 
-        spacing: 10 * AppFramework.displayScaleFactor
-
-        StyledImage {
-            id: iconImage
-
-            Layout.preferredWidth: 45 * AppFramework.displayScaleFactor
-            Layout.preferredHeight: Layout.preferredWidth
-
-            source: modelData.icon
-            color: foregroundColor
-        }
-
-        ColumnLayout {
+        Item {
+            Layout.fillHeight: true
             Layout.fillWidth: true
+            Layout.leftMargin: !showInfoIcons ? 20 * AppFramework.displayScaleFactor : 0
 
-            spacing: 3 * AppFramework.displayScaleFactor
+            ColumnLayout {
+                anchors.fill: parent
 
-            AppText {
-                Layout.fillWidth: true
+                spacing: 0
 
-                text: modelData.title
-                color: foregroundColor
+                Item {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 14 * AppFramework.displayScaleFactor
+                }
 
-                pointSize: 16
-                fontFamily: delegate.fontFamily
-                bold: true
-            }
+                AppText {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
 
-            AppText {
-                Layout.fillWidth: true
-                visible: text > ""
+                    text: modelData.title
+                    color: delegate.textColor
 
-                text: modelData.description
-                color: foregroundColor
+                    fontFamily: delegate.fontFamily
+                    letterSpacing: delegate.letterSpacing
+                    pixelSize: 16 * AppFramework.displayScaleFactor
+                    bold: true
 
-                pointSize: 12
-                fontFamily: delegate.fontFamily
-                bold: false
+                    lineHeight: 24 * AppFramework.displayScaleFactor
+                    lineHeightMode: Label.FixedHeight
+
+                    LayoutMirroring.enabled: false
+
+                    horizontalAlignment: isRightToLeft ? Text.AlignRight : Text.AlignLeft
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 4 * AppFramework.displayScaleFactor
+                }
+
+                AppText {
+                    id: description
+
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    visible: text > ""
+
+                    text: modelData.description
+                    color: delegate.helpTextColor
+
+                    fontFamily: delegate.fontFamily
+                    letterSpacing: delegate.helpTextLetterSpacing
+                    pixelSize: 14 * AppFramework.displayScaleFactor
+                    bold: false
+
+                    maximumLineCount: 1
+                    elide: isRightToLeft ? Label.ElideLeft : Label.ElideRight
+
+                    LayoutMirroring.enabled: false
+
+                    horizontalAlignment: isRightToLeft ? Text.AlignRight : Text.AlignLeft
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 14 * AppFramework.displayScaleFactor
+                }
             }
         }
 
-        StyledImage {
-            Layout.preferredWidth: 25 * AppFramework.displayScaleFactor
-            Layout.preferredHeight: Layout.preferredWidth
+        Item {
+            Layout.fillHeight: true
+            Layout.preferredWidth: height
 
-            source: "../images/next.png"
-            color: foregroundColor
+            StyledImage {
+                anchors.centerIn: parent
+
+                width: nextIconSize
+                height: width
+
+                source: nextIcon
+                color: nextIconColor
+
+                rotation: isRightToLeft ? 180 : 0
+            }
         }
     }
 
@@ -92,4 +186,3 @@ Rectangle {
         }
     }
 }
-

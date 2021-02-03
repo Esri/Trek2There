@@ -1,4 +1,4 @@
-/* Copyright 2018 Esri
+/* Copyright 2021 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,8 @@
  *
  */
 
-import QtQuick 2.9
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 1.4
+import QtQuick 2.15
+import QtQuick.Layouts 1.15
 
 import ArcGIS.AppFramework 1.0
 
@@ -24,19 +23,28 @@ import "../controls"
 import "../lib/CoordinateConversions.js" as CC
 
 SettingsTab {
-    id: sensorDeviceTab
+    id: deviceTab
 
     property string deviceType: ""
     property string deviceName: ""
     property string deviceLabel: ""
+
+    //--------------------------------------------------------------------------
+
     property var deviceProperties: null
 
     property bool showAboutDevice: true
     property bool showAlerts: true
     property bool showAntennaHeight: true
     property bool showAltitude: true
+    property bool showAccuracy: true
 
-    property var locale: locationSettingsTab.locale
+    property bool showAlertsVisual: true
+    property bool showAlertsSpeech: true
+    property bool showAlertsVibrate: true
+    property bool showAlertsTimeout: false
+
+    property bool showProviderAlias: true
 
     signal selectInternal()
     signal updateViewAndDelegate()
@@ -45,10 +53,10 @@ SettingsTab {
 
     onUpdateViewAndDelegate: {
         var deviceLabel = gnssSettings.knownDevices[deviceName].label > "" ? gnssSettings.knownDevices[deviceName].label : deviceName;
-        if (stackView.currentItem.settingsItem.objectName === sensorDeviceTab.deviceName) {
+        if (stackView.currentItem.settingsItem.objectName === deviceTab.deviceName) {
             stackView.currentItem.title = deviceLabel;
         }
-        sensorDeviceTab.deviceLabel = deviceLabel;
+        deviceTab.deviceLabel = deviceLabel;
     }
 
     //--------------------------------------------------------------------------
@@ -59,135 +67,199 @@ SettingsTab {
         Accessible.role: Accessible.Pane
 
         Component.onCompleted: {
+            controller.onDetailedSettingsPage = controller.useInternalGPS ? gnssSettings.kInternalPositionSourceName !== deviceName : controller.currentName !== deviceName;
             objectName = deviceName;
             updateDescriptions();
         }
 
+        Component.onDestruction: {
+            controller.onDetailedSettingsPage = false;
+        }
+
         ColumnLayout {
             anchors.fill: parent
-            spacing: 5 * AppFramework.displayScaleFactor
+            spacing: 0
 
             Accessible.role: Accessible.Pane
 
+            ListTabView {
+                id: settingsTabView
+
+                Layout.fillWidth: true
+                Layout.preferredHeight: settingsTabView.listTabView.contentHeight
+                Layout.maximumHeight: _item.height * 3 / 4
+
+                backgroundColor: deviceTab.backgroundColor
+                listSpacing: deviceTab.listSpacing
+
+                delegate: settingsDelegate
+
+                SettingsTabLocationAboutDevice {
+                    id: sensorAbout
+
+                    visible: showAboutDevice
+                    enabled: visible
+
+                    settingsTabContainer: deviceTab.settingsTabContainer
+                    settingsTabContainerComponent: deviceTab.settingsTabContainerComponent
+
+                    deviceType: deviceTab.deviceType
+                    deviceName: deviceTab.deviceName
+                    deviceLabel: deviceTab.deviceLabel
+
+                    showProviderAlias: deviceTab.showProviderAlias
+
+                    onChanged: {
+                        updateViewAndDelegate();
+                        _item.updateDescriptions();
+                    }
+                }
+
+                SettingsTabLocationAlerts {
+                    id: sensorAlerts
+
+                    visible: showAlerts
+                    enabled: visible
+
+                    settingsTabContainer: deviceTab.settingsTabContainer
+                    settingsTabContainerComponent: deviceTab.settingsTabContainerComponent
+
+                    deviceType: deviceTab.deviceType
+                    deviceName: deviceTab.deviceName
+                    deviceLabel: deviceTab.deviceLabel
+
+                    showAlertsVisual: deviceTab.showAlertsVisual
+                    showAlertsSpeech: deviceTab.showAlertsSpeech
+                    showAlertsVibrate: deviceTab.showAlertsVibrate
+                    showAlertsTimeout: deviceTab.showAlertsTimeout
+
+                    onChanged: {
+                        _item.updateDescriptions();
+                    }
+                }
+
+                SettingsTabLocationAntennaHeight {
+                    id: sensorAntennaHeight
+
+                    visible: showAntennaHeight
+                    enabled: visible
+
+                    settingsTabContainer: deviceTab.settingsTabContainer
+                    settingsTabContainerComponent: deviceTab.settingsTabContainerComponent
+
+                    deviceType: deviceTab.deviceType
+                    deviceName: deviceTab.deviceName
+                    deviceLabel: deviceTab.deviceLabel
+
+                    onChanged: {
+                        _item.updateDescriptions();
+                    }
+                }
+
+                SettingsTabLocationAltitude {
+                    id: sensorAltitude
+
+                    visible: showAltitude
+                    enabled: visible
+
+                    settingsTabContainer: deviceTab.settingsTabContainer
+                    settingsTabContainerComponent: deviceTab.settingsTabContainerComponent
+
+                    deviceType: deviceTab.deviceType
+                    deviceName: deviceTab.deviceName
+                    deviceLabel: deviceTab.deviceLabel
+
+                    onChanged: {
+                        _item.updateDescriptions();
+                    }
+                }
+
+                SettingsTabLocationAccuracy {
+                    id: sensorAccuracy
+
+                    visible: showAccuracy
+                    enabled: visible
+
+                    settingsTabContainer: deviceTab.settingsTabContainer
+                    settingsTabContainerComponent: deviceTab.settingsTabContainerComponent
+
+                    deviceType: deviceTab.deviceType
+                    deviceName: deviceTab.deviceName
+                    deviceLabel: deviceTab.deviceLabel
+
+                    onChanged: {
+                        _item.updateDescriptions();
+                    }
+                }
+
+                onSelected: pushItem(item)
+            }
+
             Item {
                 Layout.fillWidth: true
-                Layout.fillHeight: true
+                Layout.preferredHeight: 20 * AppFramework.displayScaleFactor
+            }
+
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: deviceTab.listDelegateHeightSingleLine
+                visible: deviceType !== kDeviceTypeInternal
 
                 Accessible.role: Accessible.Pane
 
-                ListTabView {
-                    id: devicesTabView
+                PlainButton {
+                    id: removeDeviceButton
 
                     anchors.fill: parent
 
-                    delegate: settingsDelegate
+                    enabled: deviceType !== kDeviceTypeInternal
 
-                    SettingsTabLocationAboutDevice {
-                        id: sensorAbout
+                    text: qsTr("Remove this provider")
 
-                        visible: showAboutDevice
-                        enabled: visible
+                    horizontalAlignment: isRightToLeft ? Text.AlignRight : Text.AlignLeft
 
-                        stackView: sensorDeviceTab.stackView
-                        gnssSettings: sensorDeviceTab.gnssSettings
-                        positionSourceManager: sensorDeviceTab.positionSourceManager
+                    textColor: deviceTab.forgetProviderButtonTextColor
+                    pressedTextColor: deviceTab.textColor
+                    hoveredTextColor: deviceTab.textColor
+                    backgroundColor: deviceTab.listBackgroundColor
+                    pressedBackgroundColor: deviceTab.hoverBackgroundColor
+                    hoveredBackgroundColor: deviceTab.hoverBackgroundColor
 
-                        onChanged: {
-                            updateViewAndDelegate();
-                            _item.updateDescriptions();
-                        }
-                    }
+                    nextIconColor: deviceTab.nextIconColor
+                    nextIconSize: deviceTab.nextIconSize
+                    nextIcon: deviceTab.nextIcon
+                    showNextIcon: false
 
-                    SettingsTabLocationAlerts {
-                        id: sensorAlerts
+                    infoIconColor: deviceTab.infoIconColor
+                    infoIconSize: deviceTab.infoIconSize
+                    showInfoIcon: false
 
-                        visible: showAlerts
-                        enabled: visible
+                    fontFamily: deviceTab.fontFamily
+                    letterSpacing: deviceTab.letterSpacing
+                    isRightToLeft: deviceTab.isRightToLeft
 
-                        stackView: sensorDeviceTab.stackView
-                        gnssSettings: sensorDeviceTab.gnssSettings
-                        positionSourceManager: sensorDeviceTab.positionSourceManager
+                    onClicked: {
+                        gnssDialog.parent = stackView.currentItem;
+                        gnssDialog.openDialog(
+                                    qsTr("Remove %1?").arg(deviceLabel),
+                                    qsTr("CANCEL"), qsTr("REMOVE"),
+                                    function() {},
+                                    function() {
+                                        // If this is the currently connected device, select the internal
+                                        if (controller.currentName === deviceTab.deviceName) {
+                                            selectInternal();
+                                        }
 
-                        onChanged: {
-                            _item.updateDescriptions();
-                        }
-                    }
-
-                    SettingsTabLocationAntennaHeight {
-                        id: sensorAntennaHeight
-
-                        visible: showAntennaHeight
-                        enabled: visible
-
-                        stackView: sensorDeviceTab.stackView
-                        gnssSettings: sensorDeviceTab.gnssSettings
-                        positionSourceManager: sensorDeviceTab.positionSourceManager
-
-                        onChanged: {
-                            _item.updateDescriptions();
-                        }
-                    }
-
-                    SettingsTabLocationAltitude {
-                        id: sensorAltitude
-
-                        visible: showAltitude
-                        enabled: visible
-
-                        stackView: sensorDeviceTab.stackView
-                        gnssSettings: sensorDeviceTab.gnssSettings
-                        positionSourceManager: sensorDeviceTab.positionSourceManager
-
-                        onChanged: {
-                            _item.updateDescriptions();
-                        }
-                    }
-
-                    SettingsTabContainer {
-                        id: settingsTabContainer
-                    }
-
-                    onSelected: {
-                        stackView.push(settingsTabContainer, {
-                                           settingsTab: item,
-                                           title: item.title,
-                                           settingsComponent: item.contentComponent,
-                                       });
+                                        gnssSettings.deleteKnownDevice(deviceTab.deviceName);
+                                        stackView.pop();
+                                    });
                     }
                 }
             }
 
             Item {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 44 * AppFramework.displayScaleFactor
-                Layout.bottomMargin: 5 * AppFramework.displayScaleFactor
-                visible: deviceType !== kDeviceTypeInternal
-
-                Accessible.role: Accessible.Pane
-
-                StyledButton {
-                    id: removeDeviceButton
-
-                    backgroundColor: locationSettingsTab.backgroundColor
-                    textColor: locationSettingsTab.foregroundColor
-                    hoveredBackgroundColor: locationSettingsTab.hoverBackgroundColor
-                    borderColor: locationSettingsTab.dividerColor
-
-                    text: qsTr("Remove %1").arg(deviceLabel > "" ? deviceLabel : deviceName)
-                    fontFamily: locationSettingsTab.fontFamily
-
-                    anchors{
-                        fill: parent
-                        leftMargin: 15 * AppFramework.displayScaleFactor
-                        rightMargin: 15 * AppFramework.displayScaleFactor
-                    }
-
-                    enabled: deviceType !== kDeviceTypeInternal
-
-                    onClicked: {
-                        confirmDeletionDialog.confirmDeletion();
-                    }
-                }
+                Layout.fillHeight: true
             }
         }
 
@@ -197,36 +269,44 @@ SettingsTab {
             id: settingsDelegate
 
             SettingsTabDelegate {
-                listTabView: devicesTabView
-                foregroundColor: locationSettingsTab.foregroundColor
-                hoverBackgroundColor: locationSettingsTab.hoverBackgroundColor
-                fontFamily: locationSettingsTab.fontFamily
+                listTabView: settingsTabView
+
+                listDelegateHeightTextBox: deviceTab.listDelegateHeightTextBox
+                listDelegateHeightMultiLine: deviceTab.listDelegateHeightMultiLine
+                listDelegateHeightSingleLine: deviceTab.listDelegateHeightSingleLine
+                textColor: deviceTab.textColor
+                helpTextColor: deviceTab.helpTextColor
+                backgroundColor: deviceTab.backgroundColor
+                listBackgroundColor: deviceTab.listBackgroundColor
+                hoverBackgroundColor: deviceTab.hoverBackgroundColor
+
+                nextIconColor: deviceTab.nextIconColor
+                nextIconSize: deviceTab.nextIconSize
+                nextIcon: deviceTab.nextIcon
+
+                infoIconColor: deviceTab.infoIconColor
+                infoIconSize: deviceTab.infoIconSize
+
+                fontFamily: deviceTab.fontFamily
+                letterSpacing: deviceTab.letterSpacing
+                helpTextLetterSpacing: deviceTab.helpTextLetterSpacing
+                locale: deviceTab.locale
+                isRightToLeft: deviceTab.isRightToLeft
+
+                showInfoIcons: deviceTab.showInfoIcons
             }
         }
 
-        //--------------------------------------------------------------------------
+        //-------------------------------------------------------------------------
 
-        ConfirmPanel {
-            id: confirmDeletionDialog
+        AppDialog {
+            id: gnssDialog
 
-            function confirmDeletion() {
-                confirmDeletionDialog.clear();
-                confirmDeletionDialog.icon = "../images/warning.png";
-                confirmDeletionDialog.title = qsTr("Remove");
-                confirmDeletionDialog.text = qsTr("This action will remove the selected location provider");
-                confirmDeletionDialog.question = qsTr("Are you sure you want to remove this provider?")
-                confirmDeletionDialog.show(deleteProvider);
-            }
-
-            function deleteProvider() {
-                // If this is the currently connected device, select the internal
-                if (controller.currentName === sensorDeviceTab.deviceName) {
-                    selectInternal();
-                }
-
-                gnssSettings.deleteKnownDevice(sensorDeviceTab.deviceName);
-                stackView.pop();
-            }
+            backgroundColor: deviceTab.listBackgroundColor
+            buttonColor: deviceTab.selectedTextColor
+            titleColor: deviceTab.textColor
+            textColor: deviceTab.textColor
+            fontFamily: deviceTab.fontFamily
         }
 
         //--------------------------------------------------------------------------
@@ -239,8 +319,14 @@ SettingsTab {
                 return;
             }
 
-            // information
-            sensorAbout.description = deviceType !== kDeviceTypeInternal ? deviceName : controller.integratedProviderName
+            // about
+            var aboutDescString = deviceTab.resolveDeviceName(deviceType, deviceName, false);
+
+            if (props.receiver && props.receiver.deviceType !== undefined && props.receiver.deviceType === kDeviceTypeSerialPort) {
+                aboutDescString += qsTr(", %1 Bd").arg(props.receiver.address.deviceBaudRate)
+            }
+
+            sensorAbout.description = aboutDescString;
 
             // alert styles
             var alertStylesDescString = "";
@@ -278,9 +364,17 @@ SettingsTab {
                         ? CC.toLocaleLengthString(props.antennaHeight, locale)
                         : CC.toLocaleLengthString(0, locale);
             }
+
+            // accuracy type
+            if (props.confidenceLevelType !== undefined) {
+                sensorAccuracy.description = props.confidenceLevelType === gnssSettings.kConfidenceLevelType68
+                        ? sensorAccuracy.confidenceLevelType68Label
+                        : props.confidenceLevelType === gnssSettings.kConfidenceLevelType95
+                          ? sensorAccuracy.confidenceLevelType95Label
+                          : "";
+            }
         }
     }
 
     //--------------------------------------------------------------------------
-
 }

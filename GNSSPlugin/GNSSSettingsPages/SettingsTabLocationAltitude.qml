@@ -1,4 +1,4 @@
-/* Copyright 2018 Esri
+/* Copyright 2021 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  *
  */
 
-import QtQuick 2.9
-import QtQuick.Layouts 1.3
+import QtQuick 2.15
+import QtQuick.Layouts 1.15
 
 import ArcGIS.AppFramework 1.0
 
@@ -23,16 +23,20 @@ import "../controls"
 import "../lib/CoordinateConversions.js" as CC
 
 SettingsTab {
+    id: altitudeTab
 
-    title: qsTr("Altitude")
-    icon: "../images/mountain.png"
+    title: qsTr("Altitude type")
+    icon: "../images/sharp_terrain_white_24dp.png"
     description: ""
+
+    property string deviceType: ""
+    property string deviceName: ""
+    property string deviceLabel: ""
 
     //--------------------------------------------------------------------------
 
-    property var locale: locationSettingsTab.locale
-
     readonly property bool isTheActiveSensor: deviceName === gnssSettings.kInternalPositionSourceName || controller.currentName === deviceName
+
     readonly property string altitudeTypeMSLLabel: qsTr("Altitude above mean sea level")
     readonly property string altitudeTypeHAELabel: qsTr("Height above ellipsoid")
 
@@ -48,7 +52,6 @@ SettingsTab {
         Accessible.role: Accessible.Pane
 
         Component.onCompleted: {
-
             var altitudeType = gnssSettings.knownDevices[deviceName].altitudeType;
 
             if (altitudeType === gnssSettings.kAltitudeTypeMSL) {
@@ -59,6 +62,7 @@ SettingsTab {
                 haeButton.checked = true;
             }
 
+            updateDescriptions();
             initialized = true;
         }
 
@@ -66,106 +70,215 @@ SettingsTab {
         }
 
         ColumnLayout {
-            anchors {
-                fill: parent
-                margins: 10 * AppFramework.displayScaleFactor
-            }
+            anchors.fill: parent
 
             spacing: 10 * AppFramework.displayScaleFactor
 
-            GroupColumnLayout {
+            ColumnLayout {
                 Layout.fillWidth: true
 
-                title: qsTr("Altitude type")
+                spacing: altitudeTab.listSpacing
 
-                AppRadioButton {
-                    id: mslButton
-
+                Rectangle {
                     Layout.fillWidth: true
+                    Layout.preferredHeight: altitudeTab.listDelegateHeightSingleLine
+                    color: altitudeTab.listBackgroundColor
 
-                    text: altitudeTypeMSLLabel
+                    AppRadioButton {
+                        id: mslButton
 
-                    onCheckedChanged: {
-                        if (initialized && !gnssSettings.updating && checked) {
-                            haeButton.checked = false;
-                            gnssSettings.knownDevices[deviceName].altitudeType = gnssSettings.kAltitudeTypeMSL;
-                            if (isTheActiveSensor) {
-                                gnssSettings.locationAltitudeType = gnssSettings.kAltitudeTypeMSL;
+                        anchors.fill: parent
+                        leftPadding: 20 * AppFramework.displayScaleFactor
+                        rightPadding: 20 * AppFramework.displayScaleFactor
+
+                        text: altitudeTypeMSLLabel
+
+                        textColor: altitudeTab.textColor
+                        checkedColor: altitudeTab.selectedForegroundColor
+                        backgroundColor: altitudeTab.listBackgroundColor
+                        hoverBackgroundColor: altitudeTab.hoverBackgroundColor
+                        fontFamily: altitudeTab.fontFamily
+                        letterSpacing: altitudeTab.letterSpacing
+                        isRightToLeft: altitudeTab.isRightToLeft
+
+                        onCheckedChanged: {
+                            if (initialized && !gnssSettings.updating && checked) {
+                                haeButton.checked = false;
+                                gnssSettings.knownDevices[deviceName].altitudeType = gnssSettings.kAltitudeTypeMSL;
+                                if (isTheActiveSensor) {
+                                    gnssSettings.locationAltitudeType = gnssSettings.kAltitudeTypeMSL;
+                                }
                             }
+                            changed();
                         }
-                        changed();
                     }
                 }
 
-                AppRadioButton {
-                    id: haeButton
-
+                Rectangle {
                     Layout.fillWidth: true
+                    Layout.preferredHeight: altitudeTab.listDelegateHeightSingleLine
+                    color: altitudeTab.listBackgroundColor
 
-                    text: altitudeTypeHAELabel
+                    AppRadioButton {
+                        id: haeButton
 
-                    onCheckedChanged: {
-                        if (initialized && !gnssSettings.updating && checked) {
-                            mslButton.checked = false;
-                            gnssSettings.knownDevices[deviceName].altitudeType = gnssSettings.kAltitudeTypeHAE;
-                            if (isTheActiveSensor) {
-                                gnssSettings.locationAltitudeType = gnssSettings.kAltitudeTypeHAE;
+                        anchors.fill: parent
+                        leftPadding: 20 * AppFramework.displayScaleFactor
+                        rightPadding: 20 * AppFramework.displayScaleFactor
+
+                        text: altitudeTypeHAELabel
+
+                        textColor: altitudeTab.textColor
+                        checkedColor: altitudeTab.selectedForegroundColor
+                        backgroundColor: altitudeTab.listBackgroundColor
+                        hoverBackgroundColor: altitudeTab.hoverBackgroundColor
+                        fontFamily: altitudeTab.fontFamily
+                        letterSpacing: altitudeTab.letterSpacing
+                        isRightToLeft: altitudeTab.isRightToLeft
+
+                        onCheckedChanged: {
+                            if (initialized && !gnssSettings.updating && checked) {
+                                mslButton.checked = false;
+                                gnssSettings.knownDevices[deviceName].altitudeType = gnssSettings.kAltitudeTypeHAE;
+                                if (isTheActiveSensor) {
+                                    gnssSettings.locationAltitudeType = gnssSettings.kAltitudeTypeHAE;
+                                }
                             }
+                            changed();
                         }
-                        changed();
                     }
                 }
             }
 
-            GroupColumnLayout {
+            Item {
                 visible: mslButton.checked
 
                 Layout.fillWidth: true
+                Layout.preferredHeight: geoidTabView.listTabView.contentHeight
 
-                title: qsTr("Geoid separation")
+                Accessible.role: Accessible.Pane
+
+                ListTabView {
+                    id: geoidTabView
+
+                    anchors.fill: parent
+
+                    backgroundColor: altitudeTab.backgroundColor
+                    listSpacing: altitudeTab.listSpacing
+
+                    delegate: settingsDelegate
+
+                    SettingsTabLocationGeoid {
+                        id: sensorGeoidSeparation
+
+                        visible: mslButton.checked
+                        enabled: visible
+
+                        settingsTabContainer: altitudeTab.settingsTabContainer
+                        settingsTabContainerComponent: altitudeTab.settingsTabContainerComponent
+
+                        deviceType: altitudeTab.deviceType
+                        deviceName: altitudeTab.deviceName
+                        deviceLabel: altitudeTab.deviceLabel
+
+                        onChanged: {
+                            _item.updateDescriptions();
+                        }
+                    }
+
+                    onSelected: pushItem(item)
+                }
+            }
+
+            RowLayout {
+                visible: mslButton.checked
+
+                Layout.fillWidth: true
+                Layout.leftMargin: 20 * AppFramework.displayScaleFactor
+                Layout.rightMargin: 20 * AppFramework.displayScaleFactor
+
+                spacing: 10 * AppFramework.displayScaleFactor
+
+                StyledImage {
+                    Layout.preferredWidth: 24 * AppFramework.displayScaleFactor
+                    Layout.preferredHeight: Layout.preferredWidth
+                    Layout.alignment: Qt.AlignTop
+
+                    source: "../images/round_info_white_24dp.png"
+                    color: altitudeTab.helpTextColor
+                }
 
                 AppText {
                     Layout.fillWidth: true
 
-                    text: qsTr('The distance <font color="#e04f1d"><b>N</b></font> from the surface on an ellipsoid <font color="#6db5e3"><b>E</b></font> to the surface of the geoid (or mean sea level) <font color="#68aa67"><b>G</b></font>, measured along a line perpendicular to the ellipsoid. <font color="#e04f1d"><b>N</b></font> is positive if the geoid lies above the ellipsoid, negative if it lies below.')
-                    color: foregroundColor
-                }
+                    text: qsTr('The geoid separation is the distance between mean sea level and the ellipsoid at your location. Set this if your location provider does not report this value.')
+                    color: altitudeTab.helpTextColor
 
-                Image {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 200 * AppFramework.displayScaleFactor
-                    Layout.maximumHeight: Layout.preferredHeight
+                    fontFamily: altitudeTab.fontFamily
+                    letterSpacing: altitudeTab.helpTextLetterSpacing
+                    pixelSize: 12 * AppFramework.displayScaleFactor
+                    bold: false
 
-                    source: "../images/Geoid_Separation.svg"
-                    fillMode: Image.PreserveAspectFit
-                }
+                    LayoutMirroring.enabled: false
 
-                AppNumberField {
-                    id: geoidSeparationField
-
-                    Layout.fillWidth: true
-
-                    suffixText: CC.localeLengthSuffix(locale)
-
-                    value: CC.toLocaleLength(gnssSettings.knownDevices[deviceName].geoidSeparation, locale)
-
-                    onValueChanged: {
-                        var val = CC.fromLocaleLength(value, locale)
-                        if (initialized && !gnssSettings.updating) {
-                            gnssSettings.knownDevices[deviceName].geoidSeparation = val;
-                            if (isTheActiveSensor) {
-                                gnssSettings.locationGeoidSeparation = val;
-                            }
-                        }
-                        changed();
-                    }
+                    horizontalAlignment: isRightToLeft ? Text.AlignRight : Text.AlignLeft
                 }
             }
 
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Accessible.ignored: true
+            }
+        }
+
+        //--------------------------------------------------------------------------
+
+        Component {
+            id: settingsDelegate
+
+            SettingsTabDelegate {
+                listTabView: geoidTabView
+
+                listDelegateHeightTextBox: altitudeTab.listDelegateHeightTextBox
+                listDelegateHeightMultiLine: altitudeTab.listDelegateHeightMultiLine
+                listDelegateHeightSingleLine: altitudeTab.listDelegateHeightSingleLine
+                textColor: altitudeTab.textColor
+                helpTextColor: altitudeTab.helpTextColor
+                backgroundColor: altitudeTab.backgroundColor
+                listBackgroundColor: altitudeTab.listBackgroundColor
+                hoverBackgroundColor: altitudeTab.hoverBackgroundColor
+
+                nextIconColor: altitudeTab.nextIconColor
+                nextIconSize: altitudeTab.nextIconSize
+                nextIcon: altitudeTab.nextIcon
+
+                infoIconColor: altitudeTab.infoIconColor
+                infoIconSize: altitudeTab.infoIconSize
+
+                fontFamily: altitudeTab.fontFamily
+                letterSpacing: altitudeTab.letterSpacing
+                helpTextLetterSpacing: altitudeTab.helpTextLetterSpacing
+                locale: altitudeTab.locale
+                isRightToLeft: altitudeTab.isRightToLeft
+
+                showInfoIcons: false
+            }
+        }
+
+        //--------------------------------------------------------------------------
+
+        function updateDescriptions(){
+
+            var props = gnssSettings.knownDevices[deviceName] || null;
+
+            if (props === null) {
+                return;
+            }
+
+            if (props.geoidSeparation !== undefined) {
+                sensorGeoidSeparation.description = isFinite(props.geoidSeparation)
+                        ? CC.toLocaleLengthString(props.geoidSeparation, locale)
+                        : CC.toLocaleLengthString(0, locale);
             }
         }
     }
