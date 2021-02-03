@@ -194,7 +194,7 @@ Rectangle {
 
                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 maximumLineCount: 1
-                elide: isRightToLeft ? Label.ElideLeft : Label.ElideRight
+                elide: isRightToLeft ? Text.ElideLeft : Text.ElideRight
 
                 fontSizeMode: Text.HorizontalFit
                 horizontalAlignment: Text.AlignHCenter

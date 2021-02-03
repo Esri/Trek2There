@@ -204,11 +204,11 @@ Item {
                 font.bold: true
                 color: dialog.titleColor
                 lineHeight: 27 * scaleFactor
-                lineHeightMode: Label.FixedHeight
+                lineHeightMode: Text.FixedHeight
 
                 padding: 0
 
-                wrapMode: Label.Wrap
+                wrapMode: Text.Wrap
 
                 LayoutMirroring.enabled: false
 
@@ -243,11 +243,11 @@ Item {
                 color: dialog.textColor
                 font.letterSpacing: 0
                 lineHeight: 24 * scaleFactor
-                lineHeightMode: Label.FixedHeight
+                lineHeightMode: Text.FixedHeight
 
                 padding: 0
 
-                wrapMode: Label.Wrap
+                wrapMode: Text.Wrap
 
                 horizontalAlignment: isRightToLeft ? Text.AlignRight : Text.AlignLeft
             }
@@ -290,9 +290,9 @@ Item {
                         font.letterSpacing: 0.75 * scaleFactor
                         font.bold: true
                         lineHeight: 19 * scaleFactor
-                        lineHeightMode: Label.FixedHeight
+                        lineHeightMode: Text.FixedHeight
                         color: buttonColor
-                        elide: isRightToLeft ? Label.ElideLeft : Label.ElideRight
+                        elide: isRightToLeft ? Text.ElideLeft : Text.ElideRight
 
                         MouseArea {
                             anchors.fill: parent
@@ -326,9 +326,9 @@ Item {
                         font.letterSpacing: 0.75 * scaleFactor
                         font.bold: true
                         lineHeight: 19 * scaleFactor
-                        lineHeightMode: Label.FixedHeight
+                        lineHeightMode: Text.FixedHeight
                         color: buttonColor
-                        elide: isRightToLeft ? Label.ElideLeft : Label.ElideRight
+                        elide: isRightToLeft ? Text.ElideLeft : Text.ElideRight
 
                         MouseArea {
                             anchors.fill: parent
@@ -385,7 +385,7 @@ Item {
                                     leftPadding: 12 * scaleFactor
                                     rightPadding: leftPadding
                                     text: buttonDisplays[index].title
-                                    elide: isRightToLeft ? Label.ElideLeft : Label.ElideRight
+                                    elide: isRightToLeft ? Text.ElideLeft : Text.ElideRight
 
                                     LayoutMirroring.enabled: false
                                     horizontalAlignment: isRightToLeft ? Text.AlignRight : Text.AlignLeft

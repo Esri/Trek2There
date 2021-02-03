@@ -17,10 +17,11 @@
 import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
+import QtPositioning 5.15
+import QtLocation 5.15
 
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Positioning 1.0
-import Esri.ArcGISRuntime 100.8
 
 import "../"
 import "../controls"
@@ -33,53 +34,41 @@ SwipeTab {
     icon: "../images/map-32-f.svg"
 
     property GNSSManager gnssManager
-
-    //--------------------------------------------------------------------------
-
-    Component.onCompleted: {
-        toggleActive();
-    }
+    property var currentPosition
 
     //--------------------------------------------------------------------------
 
     Connections {
         target: gnssManager
 
-        function onActiveChanged() {
-            toggleActive();
+        function onNewPosition(position) {
+            currentPosition = position;
         }
     }
 
     //--------------------------------------------------------------------------
 
-    MapView {
+    Map {
         id: mapView
 
         anchors.fill: parent
 
-        locationDisplay {
-            dataSource: DefaultLocationDataSource {
-                positionInfoSource: gnssManager
-            }
-
-            autoPanMode: Enums.LocationDisplayAutoPanModeRecenter
+        plugin: Plugin {
+            preferred: ["AppStudio"]
         }
 
-        Map {
-            BasemapTopographic {}
-        }
-    }
+        center: positionCircle.center
+        zoomLevel: 16
 
-    //--------------------------------------------------------------------------
+        MapCircle {
+            id: positionCircle
 
-    function toggleActive() {
-        if (gnssManager) {
-            if (gnssManager.active) {
-                mapView.locationDisplay.start();
-                gnssManager.positionChanged(gnssManager.position)
-            } else {
-                mapView.locationDisplay.stop();
-            }
+            center: currentPosition ? currentPosition.coordinate : QtPositioning.coordinate()
+            radius: currentPosition && currentPosition.horizontalAccuracy ? currentPosition.horizontalAccuracy : 20
+
+            border.color: "#8000B2FF"
+            border.width: 2
+            color: currentPosition && currentPosition.horizontalAccuracy ? "#4000B2FF" : "transparent"
         }
     }
 

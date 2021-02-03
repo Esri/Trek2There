@@ -112,7 +112,7 @@ Rectangle {
                     bold: true
 
                     lineHeight: 24 * AppFramework.displayScaleFactor
-                    lineHeightMode: Label.FixedHeight
+                    lineHeightMode: Text.FixedHeight
 
                     LayoutMirroring.enabled: false
 
@@ -142,7 +142,7 @@ Rectangle {
                     bold: false
 
                     maximumLineCount: 1
-                    elide: isRightToLeft ? Label.ElideLeft : Label.ElideRight
+                    elide: isRightToLeft ? Text.ElideLeft : Text.ElideRight
 
                     LayoutMirroring.enabled: false
 
