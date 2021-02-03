@@ -1,5 +1,10 @@
 {
-    "arcgisRuntime": 0,
+    "arcgisRuntime": {
+        "version": {
+            "major": 100,
+            "minor": 8
+        }
+    },
     "capabilities": {
         "audio": false,
         "backgroundBluetoothCentral": false,
@@ -100,7 +105,7 @@
     "urlScheme": "arcgis-trek2there",
     "version": {
         "major": 3,
-        "micro": 13,
+        "micro": 14,
         "minor": 1
     }
 }
