@@ -1,10 +1,4 @@
 {
-    "arcgisRuntime": {
-        "version": {
-            "major": 100,
-            "minor": 8
-        }
-    },
     "capabilities": {
         "audio": false,
         "backgroundBluetoothCentral": false,
