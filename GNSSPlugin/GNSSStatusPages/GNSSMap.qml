@@ -1,4 +1,4 @@
-/* Copyright 2020 Esri
+/* Copyright 2021 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
  *
  */
 
-import QtQuick 2.12
-import QtQuick.Layouts 1.12
-import QtQuick.Controls 2.12
-import QtPositioning 5.12
-import QtLocation 5.12
+import QtQuick 2.15
+import QtQuick.Layouts 1.15
+import QtQuick.Controls 2.15
+import QtPositioning 5.15
+import QtLocation 5.15
 
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Positioning 1.0

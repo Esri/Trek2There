@@ -1,4 +1,4 @@
-/* Copyright 2019 Esri
+/* Copyright 2021 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
  *
  */
 
-import QtQuick 2.12
+import QtQuick 2.15
 
 Item {
     id: fader
-    
+
     //--------------------------------------------------------------------------
 
     property QtObject target: parent
@@ -27,7 +27,7 @@ Item {
     property int animationDuration: 3000
     property real minumumOpacity: 0.4
     property real maximumOpacity: 1
-    
+
     //--------------------------------------------------------------------------
 
     Component.onCompleted: {
@@ -35,7 +35,7 @@ Item {
             start();
         }
     }
-    
+
     //--------------------------------------------------------------------------
 
     function start() {
@@ -48,13 +48,13 @@ Item {
         target.opacity = maximumOpacity;
         fadeTimer.start();
     }
-    
+
     function stop() {
         fadeTimer.stop();
         fadeAnimation.stop();
         target.opacity = maximumOpacity;
     }
-    
+
     //--------------------------------------------------------------------------
 
     onEnabledChanged: {
@@ -64,7 +64,7 @@ Item {
             stop();
         }
     }
-    
+
     //--------------------------------------------------------------------------
 
     PropertyAnimation {
@@ -77,14 +77,14 @@ Item {
             type: Easing.OutCubic
         }
     }
-    
+
     //--------------------------------------------------------------------------
 
     Timer {
         id: fadeTimer
         repeat: false
         interval: timeoutDuration
-        
+
         onTriggered: {
             fadeAnimation.restart();
         }
