@@ -19,7 +19,6 @@ import QtPositioning 5.8
 import QtLocation 5.8
 
 import ArcGIS.AppFramework 1.0
-import ArcGIS.AppFramework.Controls 1.0
 
 //------------------------------------------------------------------------------
 
