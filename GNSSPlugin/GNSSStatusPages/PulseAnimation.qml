@@ -1,4 +1,4 @@
-/* Copyright 2021 Esri
+/* Copyright 2019 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  *
  */
 
-import QtQuick 2.15
+import QtQuick 2.12
 
 
 SequentialAnimation {
@@ -45,7 +45,7 @@ SequentialAnimation {
         easing.type: Easing.InQuad
         duration: animation.duration / 2
     }
-
+    
     OpacityAnimator {
         target: animator1.target
         from: animator1.to

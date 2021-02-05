@@ -1,4 +1,4 @@
-/* Copyright 2021 Esri
+/* Copyright 2020 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  *
  */
 
-import QtQml 2.15
-import QtQuick 2.15
+import QtQml 2.12
+import QtQuick 2.12
 
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Speech 1.0
