@@ -703,7 +703,7 @@ Item {
 
         source: compassIndicator
         color: buttonTextColor
-        visible: color !== "transparent"
+        visible: useCompassForNavigation
     }
 
     // Toolbar -----------------------------------------------------------------
