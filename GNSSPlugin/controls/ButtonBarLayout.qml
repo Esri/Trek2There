@@ -37,6 +37,7 @@ Control {
     property alias fader: fader
     property alias layout: layout
     property alias dropShadow: dropShadow
+    property alias color: background.color
 
     //--------------------------------------------------------------------------
 

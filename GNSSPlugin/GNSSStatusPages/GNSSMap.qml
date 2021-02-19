@@ -33,8 +33,10 @@ SwipeTab {
     title: qsTr("Map")
     icon: "../images/map-32-f.svg"
 
+    //--------------------------------------------------------------------------
+
     property GNSSManager gnssManager
-    property var currentPosition
+    property var position: gnssManager.position
 
     //--------------------------------------------------------------------------
 
@@ -42,7 +44,7 @@ SwipeTab {
         target: gnssManager
 
         function onNewPosition(position) {
-            currentPosition = position;
+            gnssMap.position = position;
         }
     }
 
@@ -63,12 +65,12 @@ SwipeTab {
         MapCircle {
             id: positionCircle
 
-            center: currentPosition ? currentPosition.coordinate : QtPositioning.coordinate()
-            radius: currentPosition && currentPosition.horizontalAccuracy ? currentPosition.horizontalAccuracy : 20
+            center: position && position.coordinate ? position.coordinate : QtPositioning.coordinate()
+            radius: position && position.horizontalAccuracy ? position.horizontalAccuracy : 20
 
             border.color: "#8000B2FF"
             border.width: 2
-            color: currentPosition && currentPosition.horizontalAccuracy ? "#4000B2FF" : "transparent"
+            color: position && position.horizontalAccuracy ? "#4000B2FF" : "transparent"
         }
     }
 

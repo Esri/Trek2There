@@ -128,7 +128,7 @@ SettingsTab {
                 _dirty = true;
             }
 
-            function onReceiverRemoved() {
+            function onReceiverRemoved(name) {
                 _dirty = true;
             }
         }

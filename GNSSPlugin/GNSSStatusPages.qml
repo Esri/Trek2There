@@ -73,8 +73,19 @@ Item {
     property color labelColor: gnssSettingsPages.helpTextColor
     property color backgroundColor: gnssSettingsPages.pageBackgroundColor
     property color listBackgroundColor: gnssSettingsPages.listBackgroundColor
-    property color debugButtonColor: gnssSettingsPages.headerBarBackgroundColor
-    property color recordingColor: "mediumvioletred"
+
+    property color buttonBarBorderColor: gnssSettingsPages.pageBackgroundColor
+    property color buttonBarButtonColor: gnssSettingsPages.headerBarBackgroundColor
+    property color buttonBarRecordingColor: "mediumvioletred"
+    property color buttonBarBackgroundColor: gnssSettingsPages.listBackgroundColor
+
+    property color tabBarBackgroundColor: gnssSettingsPages.headerBarBackgroundColor
+    property color tabBarTabBorderColor: "transparent"
+    property color tabBarTabForegroundColor: gnssSettingsPages.headerBarTextColor
+    property color tabBarTabBackgroundColor: "transparent"
+    property color tabBarSelectedTabForegroundColor: Qt.darker(tabBarTabForegroundColor, 1.25)
+    property color tabBarSelectedTabBackgroundColor: "transparent"
+    property color tabBarDisabledTabColor: "grey"
 
     // Font styling
     property string fontFamily: gnssSettingsPages.fontFamily
@@ -155,8 +166,19 @@ Item {
             labelColor: gnssStatusPages.labelColor
             backgroundColor: gnssStatusPages.backgroundColor
             listBackgroundColor: gnssStatusPages.listBackgroundColor
-            debugButtonColor: gnssStatusPages.debugButtonColor
-            recordingColor: gnssStatusPages.recordingColor
+
+            buttonBarBorderColor: gnssStatusPages.buttonBarBorderColor
+            buttonBarButtonColor: gnssStatusPages.buttonBarButtonColor
+            buttonBarRecordingColor: gnssStatusPages.buttonBarRecordingColor
+            buttonBarBackgroundColor: gnssStatusPages.buttonBarBackgroundColor
+
+            tabBarBackgroundColor: gnssStatusPages.tabBarBackgroundColor
+            tabBarTabBorderColor: gnssStatusPages.tabBarTabBorderColor
+            tabBarTabForegroundColor: gnssStatusPages.tabBarTabForegroundColor
+            tabBarTabBackgroundColor: gnssStatusPages.tabBarTabBackgroundColor
+            tabBarSelectedTabForegroundColor: gnssStatusPages.tabBarSelectedTabForegroundColor
+            tabBarSelectedTabBackgroundColor: gnssStatusPages.tabBarSelectedTabBackgroundColor
+            tabBarDisabledTabColor: gnssStatusPages.tabBarDisabledTabColor
 
             fontFamily: gnssStatusPages.fontFamily
             letterSpacing: gnssStatusPages.letterSpacing
@@ -208,8 +230,19 @@ Item {
             labelColor: gnssStatusPages.labelColor
             backgroundColor: gnssStatusPages.backgroundColor
             listBackgroundColor: gnssStatusPages.listBackgroundColor
-            debugButtonColor: gnssStatusPages.debugButtonColor
-            recordingColor: gnssStatusPages.recordingColor
+
+            buttonBarBackgroundColor: gnssStatusPages.buttonBarBackgroundColor
+            buttonBarBorderColor: gnssStatusPages.buttonBarBorderColor
+            buttonBarButtonColor: gnssStatusPages.buttonBarButtonColor
+            buttonBarRecordingColor: gnssStatusPages.buttonBarRecordingColor
+
+            tabBarBackgroundColor: gnssStatusPages.tabBarBackgroundColor
+            tabBarTabBorderColor: gnssStatusPages.tabBarTabBorderColor
+            tabBarTabForegroundColor: gnssStatusPages.tabBarTabForegroundColor
+            tabBarTabBackgroundColor: gnssStatusPages.tabBarTabBackgroundColor
+            tabBarSelectedTabForegroundColor: gnssStatusPages.tabBarSelectedTabForegroundColor
+            tabBarSelectedTabBackgroundColor: gnssStatusPages.tabBarSelectedTabBackgroundColor
+            tabBarDisabledTabColor: gnssStatusPages.tabBarDisabledTabColor
 
             fontFamily: gnssStatusPages.fontFamily
             letterSpacing: gnssStatusPages.letterSpacing

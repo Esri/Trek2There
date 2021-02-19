@@ -114,6 +114,8 @@ Item {
             horizontalAlignment: Text.AlignLeft
             verticalAlignment: Text.AlignVCenter
             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+            maximumLineCount: 1
+            elide: isRightToLeft ? Text.ElideLeft : Text.ElideRight
 
             MouseArea {
                 anchors.fill: parent

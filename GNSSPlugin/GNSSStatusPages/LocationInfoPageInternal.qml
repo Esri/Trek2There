@@ -48,9 +48,11 @@ LocationInfoPage {
         gnssManager: gpsStatus.gnssManager
         nmeaLogger: gpsStatus.nmeaLogger
         textColor: gpsStatus.textColor
-        buttonColor: gpsStatus.debugButtonColor
-        recordingColor: gpsStatus.recordingColor
         backgroundColor: gpsStatus.listBackgroundColor
+        buttonBarBorderColor: gpsStatus.buttonBarBorderColor
+        buttonBarButtonColor: gpsStatus.buttonBarButtonColor
+        buttonBarRecordingColor: gpsStatus.buttonBarRecordingColor
+        buttonBarBackgroundColor: gpsStatus.buttonBarBackgroundColor
         fontFamily: gpsStatus.fontFamily
         letterSpacing: gpsStatus.letterSpacing
         locale: gpsStatus.locale

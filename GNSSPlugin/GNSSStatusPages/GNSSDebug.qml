@@ -44,11 +44,14 @@ SwipeTab {
     property bool isPaused: nmeaLogger ? nmeaLogger.isPaused : false
     property bool isRecording: nmeaLogger ? nmeaLogger.isRecording : false
 
-    property color buttonColor: "lightgrey"
-    property color recordingColor: "mediumvioletred"
     property color textColor: "#000000"
     property color dividerColor: "#80808080"
     property color backgroundColor: "white"
+
+    property color buttonBarBorderColor: "#efefef"
+    property color buttonBarButtonColor: "#8f499c"
+    property color buttonBarRecordingColor: "mediumvioletred"
+    property color buttonBarBackgroundColor: "#f8f8f8"
 
     //--------------------------------------------------------------------------
 
@@ -154,6 +157,9 @@ SwipeTab {
             margins: 15 * AppFramework.displayScaleFactor
         }
 
+        color: buttonBarBackgroundColor
+        border.color: buttonBarBorderColor
+
         StyledImageButton {
             id: pauseButton
 
@@ -161,7 +167,7 @@ SwipeTab {
             Layout.preferredHeight: Layout.preferredWidth
 
             source: "../images/pause-32-f.svg"
-            color: buttonColor
+            color: buttonBarButtonColor
 
             onClicked: {
                 if (nmeaLogger) {
@@ -187,7 +193,7 @@ SwipeTab {
 
             source: isRecording ? "../images/square-32-f.svg" : "../images/recording-start.png"
             visible: nmeaLogger ? nmeaLogger.allowLogging : false
-            color: recordingColor
+            color: buttonBarRecordingColor
 
             onClicked: {
                 if (nmeaLogger) {
@@ -210,7 +216,7 @@ SwipeTab {
             Layout.preferredHeight: Layout.preferredWidth
 
             source: "../images/x-circle-32-f.svg"
-            color: buttonColor
+            color: buttonBarButtonColor
 
             onClicked: {
                 clear();

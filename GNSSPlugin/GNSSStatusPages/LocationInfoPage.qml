@@ -38,9 +38,23 @@ Page {
     readonly property PositionSourceManager positionSourceManager: gnssManager.positionSourceManager
     property NmeaLogger nmeaLogger
 
-    property color labelColor: "grey"
-    property color debugButtonColor: headerBarBackgroundColor
-    property color recordingColor: "mediumvioletred"
+    property color labelColor: "#303030"
+
+    property color buttonBarBorderColor: "#efefef"
+    property color buttonBarButtonColor: "#8f499c"
+    property color buttonBarRecordingColor: "mediumvioletred"
+    property color buttonBarBackgroundColor: "#f8f8f8"
+
+    property alias tabBarBackgroundColor: tabView.tabBarBackgroundColor
+    property alias tabBarTabBorderColor: tabView.tabBarTabBorderColor
+    property alias tabBarTabForegroundColor: tabView.tabBarTabForegroundColor
+    property alias tabBarTabBackgroundColor: tabView.tabBarTabBackgroundColor
+    property alias tabBarSelectedTabForegroundColor: tabView.tabBarSelectedTabForegroundColor
+    property alias tabBarSelectedTabBackgroundColor: tabView.tabBarSelectedTabBackgroundColor
+    property alias tabBarDisabledTabColor: tabView.tabBarDisabledTabColor
+
+    property color tabBarTabForegroundColor: textColor
+    property color tabBarSelectedTabForegroundColor: Qt.darker(tabBarTabForegroundColor, 1.25)
 
     //--------------------------------------------------------------------------
 
@@ -49,10 +63,9 @@ Page {
 
         anchors.fill: parent
 
+        backgroundColor: locationInfoPage.backgroundColor
+
         fontFamily: locationInfoPage.fontFamily
-        tabBarBackgroundColor: locationInfoPage.headerBarBackgroundColor
-        selectedTextColor: locationInfoPage.headerBarTextColor
-        color: locationInfoPage.backgroundColor
 
         clip: true
     }

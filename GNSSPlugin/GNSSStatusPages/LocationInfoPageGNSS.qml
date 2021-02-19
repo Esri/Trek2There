@@ -61,9 +61,11 @@ LocationInfoPage {
         gnssManager: gnssStatus.gnssManager
         nmeaLogger: gnssStatus.nmeaLogger
         textColor: gnssStatus.textColor
-        buttonColor: gnssStatus.debugButtonColor
-        recordingColor: gnssStatus.recordingColor
         backgroundColor: gnssStatus.listBackgroundColor
+        buttonBarBorderColor: gnssStatus.buttonBarBorderColor
+        buttonBarButtonColor: gnssStatus.buttonBarButtonColor
+        buttonBarRecordingColor: gnssStatus.buttonBarRecordingColor
+        buttonBarBackgroundColor: gnssStatus.buttonBarBackgroundColor
         fontFamily: gnssStatus.fontFamily
         letterSpacing: gnssStatus.letterSpacing
         locale: gnssStatus.locale

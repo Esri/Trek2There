@@ -141,8 +141,12 @@ Item {
         gnssManager: mainView.gnssManager
         gnssSettingsPages: mainView.gnssSettingsPages
 
-        debugButtonColor: buttonTextColor
-        recordingColor: "red"
+        tabBarTabForegroundColor: buttonTextColor
+        tabBarSelectedTabForegroundColor: !nightMode ? Qt.darker(tabBarTabForegroundColor, 1.25) : Qt.lighter(tabBarTabForegroundColor, 1.25)
+
+        buttonBarBorderColor: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.background
+        buttonBarButtonColor: buttonTextColor
+        buttonBarBackgroundColor: !nightMode ? dayModeSettings.background : nightModeSettings.secondaryBackground
     }
 
     //--------------------------------------------------------------------------

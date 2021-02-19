@@ -116,7 +116,7 @@ Button {
             letterSpacing: button.letterSpacing
             bold: button.bold
             fontSizeMode: Text.Fit
-            elide: isRightToLeft ? Text.AlignLeft : Text.AlignRight
+            elide: isRightToLeft ? Text.ElideLeft : Text.ElideRight
             wrapMode: button.wrapMode
         }
 

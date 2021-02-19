@@ -123,11 +123,11 @@ Item {
             }
         }
 
-        function onTcpError() { positionIsCurrent = false; }
-        function onDeviceError() { positionIsCurrent = false; }
-        function onNmeaLogFileError() { positionIsCurrent = false; }
-        function onDiscoveryAgentError() { positionIsCurrent = false; }
-        function onPositionSourceError() { positionIsCurrent = false; }
+        function onTcpError(errorString) { positionIsCurrent = false; }
+        function onDeviceError(errorString) { positionIsCurrent = false; }
+        function onNmeaLogFileError(errorString) { positionIsCurrent = false; }
+        function onDiscoveryAgentError(errorString) { positionIsCurrent = false; }
+        function onPositionSourceError(errorString) { positionIsCurrent = false; }
     }
 
     //--------------------------------------------------------------------------

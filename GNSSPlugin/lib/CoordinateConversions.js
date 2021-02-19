@@ -84,6 +84,7 @@ function isLatLonFormat(coordinateFormat) {
     case "dd":
     case "d":
     case "dmss":
+    case "dms":
     case "ddm":
     case "dmm":
     case "dm":
