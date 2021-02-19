@@ -29,6 +29,11 @@ import "../GNSSManager"
 SwipeTab {
     id: tab
 
+    title: qsTr("Satellites")
+    icon: "../images/assessment-black-24dp.svg"
+
+    //--------------------------------------------------------------------------
+
     property GNSSManager gnssManager
 
     readonly property PositionSourceManager positionSourceManager: gnssManager.positionSourceManager
@@ -62,11 +67,6 @@ SwipeTab {
     //--------------------------------------------------------------------------
 
     signal clear();
-
-    //--------------------------------------------------------------------------
-
-    title: qsTr("Sky Plot")
-    icon: "../images/skyplot.png"
 
     //--------------------------------------------------------------------------
 

@@ -32,8 +32,7 @@ SwipeTab {
     id: gpsInfo
 
     title: qsTr("Data")
-
-    icon: "../images/quality.png"
+    icon: "../images/article-black-24dp.svg"
 
     //--------------------------------------------------------------------------
 

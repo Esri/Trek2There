@@ -31,7 +31,7 @@ SwipeTab {
     id: gnssMap
 
     title: qsTr("Map")
-    icon: "../images/map-32-f.svg"
+    icon: "../images/map-black-24dp.svg"
 
     //--------------------------------------------------------------------------
 

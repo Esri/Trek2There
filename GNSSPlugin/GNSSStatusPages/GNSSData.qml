@@ -32,8 +32,7 @@ SwipeTab {
     id: gnssData
 
     title: qsTr("Data")
-
-    icon: "../images/quality.png"
+    icon: "../images/article-black-24dp.svg"
 
     //--------------------------------------------------------------------------
 

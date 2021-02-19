@@ -29,8 +29,8 @@ import "../GNSSManager"
 SwipeTab {
     id: tab
 
-    title: qsTr("Debug")
-    icon: "../images/debug.png"
+    title: qsTr("NMEA Log")
+    icon: "../images/list-black-24dp.svg"
 
     //--------------------------------------------------------------------------
 
