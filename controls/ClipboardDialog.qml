@@ -24,10 +24,11 @@ Dialog {
     id: clipboardDialog
 
     title: "Use Coordinates on Clipboard"
+    font.pixelSize: 20 * AppFramework.displayScaleFactor
     standardButtons: Dialog.Yes | Dialog.No
     modal: true
 
-    width: parent.width
+    width: 0.9 * parent.width
     contentHeight: sf(200)
 
     property string clipLat: ""
@@ -74,7 +75,7 @@ Dialog {
                     anchors.margins: sf(5)
                     text: qsTr("It looks like you copied coordinates to the clipboard. Do you want to use them in Trek2There?")
                     wrapMode: Text.WordWrap
-                    font.pointSize: 15
+                    font.pixelSize: 15 * AppFramework.displayScaleFactor
                     Accessible.role: Accessible.StaticText
                     Accessible.name: text
                 }
@@ -161,7 +162,7 @@ Dialog {
                                 text: icons.swap
                                 anchors.centerIn: parent
                                 color: buttonTextColor
-                                font.pointSize: 24
+                                font.pixelSize: 24 * AppFramework.displayScaleFactor
                                 Accessible.ignored: true
                             }
 

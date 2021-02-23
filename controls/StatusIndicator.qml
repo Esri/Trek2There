@@ -26,9 +26,9 @@ Rectangle {
     property bool hideAutomatically: false
     property bool animateHide: false
     property int hideAfter: 30000
-    property int containerHeight: 50
-    property int statusTextFontSize: 14
-    property int indicatorBorderWidth: 1
+    property int containerHeight: 50 * AppFramework.displayScaleFactor
+    property int statusTextFontSize: 14 * AppFramework.displayScaleFactor
+    property int indicatorBorderWidth: 1 * AppFramework.displayScaleFactor
     property string statusTextFontColor: "#111"
     property alias message: statusText.text
     property alias statusTextObject: statusText
@@ -79,7 +79,7 @@ Rectangle {
         horizontalAlignment: Text.AlignHCenter
         textFormat: Text.RichText
         text: ""
-        font.pointSize: statusTextFontSize
+        font.pixelSize: statusTextFontSize
         wrapMode: Text.WordWrap
         onLinkActivated: {
             Qt.openUrlExternally(link);

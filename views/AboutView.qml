@@ -27,6 +27,10 @@ Item {
 
     // UI //////////////////////////////////////////////////////////////////////
 
+    property string fontFamily: Qt.application.font.family
+    property real pixelSize: 22 * AppFramework.displayScaleFactor
+    property bool bold: false
+
     Rectangle {
         anchors.fill: parent
         color: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
@@ -54,6 +58,7 @@ Item {
 
                     Rectangle {
                         id: backButtonContainer
+
                         Layout.fillHeight: true
                         Layout.preferredWidth: sf(50)
                         Accessible.role: Accessible.Pane
@@ -68,11 +73,9 @@ Item {
 
                             Image {
                                 id: backArrow
+
                                 source: "../images/back_arrow.png"
-                                anchors.left: parent.left
-                                anchors.leftMargin: sideMargin
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: parent.width - sf(30)
+                                anchors.fill: parent
                                 fillMode: Image.PreserveAspectFit
                                 Accessible.ignored: true
                             }
@@ -108,8 +111,16 @@ Item {
                             anchors.rightMargin: backButtonContainer.width
                             verticalAlignment: Text.AlignVCenter
                             horizontalAlignment: Text.AlignHCenter
+
                             text: qsTr("About")
+                            font {
+                                family: aboutView.fontFamily
+                                pixelSize: aboutView.pixelSize
+                                bold: aboutView.bold
+                            }
+
                             color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+
                             Accessible.role: Accessible.Heading
                             Accessible.name: text
                         }

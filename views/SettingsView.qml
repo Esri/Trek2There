@@ -569,7 +569,7 @@ Item {
                                     color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                     opacity: .8
                                     Accessible.ignored: true
-                                    font.pointSize: 10
+                                    font.pixelSize: 10 * AppFramework.displayScaleFactor
                                     wrapMode: Text.Wrap
                                     textFormat: Text.StyledText
                                     linkColor: "#007ac2"
@@ -631,7 +631,7 @@ Item {
                                     color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                     opacity: .8
                                     Accessible.ignored: true
-                                    font.pointSize: 10
+                                    font.pixelSize: 10 * AppFramework.displayScaleFactor
                                     wrapMode: Text.Wrap
                                     textFormat: Text.StyledText
                                 }
@@ -687,7 +687,7 @@ Item {
                                     color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                     opacity: .8
                                     Accessible.ignored: true
-                                    font.pointSize: 10
+                                    font.pixelSize: 10 * AppFramework.displayScaleFactor
                                     wrapMode: Text.Wrap
                                     textFormat: Text.StyledText
                                 }

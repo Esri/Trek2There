@@ -18,7 +18,7 @@ Rectangle {
     property color dividerColor: !nightMode ? dayModeSettings.secondaryBackground : nightModeSettings.secondaryBackground
 
     property string fontFamily: Qt.application.font.family
-    property real pointSize: 22
+    property real pixelSize: 22 * AppFramework.displayScaleFactor
     property bool bold: false
 
     Layout.fillWidth: true
@@ -58,10 +58,7 @@ Rectangle {
                         id: backArrow
 
                         source: "../images/back_arrow.png"
-                        anchors.left: parent.left
-                        anchors.leftMargin: sideMargin
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width - sf(15)
+                        anchors.fill: parent
                         fillMode: Image.PreserveAspectFit
                         Accessible.ignored: true
                     }
@@ -105,7 +102,7 @@ Rectangle {
 
                     font {
                         family: control.fontFamily
-                        pointSize: control.pointSize
+                        pixelSize: control.pixelSize
                         bold: control.bold
                     }
 
@@ -136,10 +133,8 @@ Rectangle {
                         id: aboutIcon
 
                         source: "../images/about.png"
-                        anchors.right: parent.right
-                        anchors.rightMargin: sideMargin
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width - sf(25)
+                        anchors.fill: parent
+                        anchors.margins: sf(10)
                         fillMode: Image.PreserveAspectFit
                         Accessible.ignored: true
                     }

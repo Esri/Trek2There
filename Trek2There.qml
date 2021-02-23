@@ -69,7 +69,7 @@ App {
     property string applicationCallback: ""
 
     property int sideMargin: sf(15)
-    property int baseFontSize: 14
+    property int baseFontSize: 14 * AppFramework.displayScaleFactor
     property double largeFontSize: baseFontSize * 1.3
     property double extraLargeFontSize: baseFontSize * 3
     property double smallFontSize: baseFontSize * .8
@@ -212,7 +212,8 @@ App {
     ClipboardDialog {
         id: clipboardDialog
 
-        anchors.centerIn: parent
+        x: app.width/2-width/2
+        y: app.height/2-height/2
 
         onUseCoordinates: {
             if (clipLat !== "" && clipLon !== "") {

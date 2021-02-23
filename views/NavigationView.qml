@@ -463,10 +463,10 @@ Item {
                     text: displayDistance(currentPosition.distanceToDestination)
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    font.pointSize: extraLargeFontSize
+                    font.pixelSize: extraLargeFontSize
                     font.weight: Font.Light
                     fontSizeMode: Text.Fit
-                    minimumPointSize: largeFontSize
+                    minimumPixelSize: largeFontSize
                     color: hudOn ? buttonTextColor : !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
 
                     Accessible.role: Accessible.Indicator
@@ -484,8 +484,8 @@ Item {
                         text: currentPosition.degreesOffCourse || currentPosition.degreesOffCourse == 0 ? qsTr("%1° %2").arg(Math.round((currentPosition.degreesOffCourse+360) % 360).toFixed(0)).arg(cardinalDirection(directionArrow.rotation))  : "----"
                         horizontalAlignment: Text.AlignRight
                         verticalAlignment: Text.AlignVCenter
-                        font.pointSize: largeFontSize
-                        minimumPointSize: largeFontSize
+                        font.pixelSize: largeFontSize
+                        minimumPixelSize: largeFontSize
                         color: !currentPosition.degreesOffCourse && currentPosition.degreesOffCourse != 0  ? "#aaa" : buttonTextColor
                         opacity: currentPosition.degreesOffCourse || currentPosition.degreesOffCourse == 0  ? 1 : .4
                         textFormat: Text.RichText
@@ -510,7 +510,7 @@ Item {
 
                             text: icons.accuracy_indicator
                             font.family: icons.name
-                            font.pointSize: 24
+                            font.pixelSize: 24 * AppFramework.displayScaleFactor
                             color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
                             opacity: .4
                             z: 100
@@ -527,7 +527,7 @@ Item {
 
                             text: currentAccuracy > 0 ? icons.getIconByName("accuracy" + currentAccuracy.toString()) : ""
                             font.family: icons.name
-                            font.pointSize: 24
+                            font.pixelSize: 24 * AppFramework.displayScaleFactor
                             color: buttonTextColor
                             opacity: 1
                             z: locationAccuracyBaseline.z + 1
@@ -542,8 +542,8 @@ Item {
                         text: currentAccuracy > 0 ? qsTr("<p>&plusmn;%1%2</p>").arg(currentAccuracyInUnits.toString()).arg(usesMetric ? "m" : "ft") : "----"
                         horizontalAlignment: Text.AlignLeft
                         verticalAlignment: Text.AlignVCenter
-                        font.pointSize: largeFontSize
-                        minimumPointSize: largeFontSize
+                        font.pixelSize: largeFontSize
+                        minimumPixelSize: largeFontSize
                         color: currentAccuracy <= 0 ? "#aaa" : buttonTextColor
                         opacity: currentAccuracy > 0 ? 1 : .4
                         textFormat: Text.RichText
@@ -589,8 +589,8 @@ Item {
                         color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                         fontSizeMode: Text.Fit
                         wrapMode: Text.Wrap
-                        font.pointSize: largeFontSize
-                        minimumPointSize: 9
+                        font.pixelSize: largeFontSize
+                        minimumPixelSize: 9 * AppFramework.displayScaleFactor
                         font.weight: Font.Black
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
@@ -605,12 +605,12 @@ Item {
                         color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                         fontSizeMode: Text.Fit
                         wrapMode: Text.Wrap
-                        font.pointSize: baseFontSize
-                        minimumPointSize: 9
+                        font.pixelSize: baseFontSize
+                        minimumPixelSize: 9 * AppFramework.displayScaleFactor
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         textFormat: Text.RichText
-                        text: qsTr("Go to <span style='font-family:%1; font-size:%2pt; color:%3' alt='settings'>%4</span> to set your destination.".arg(icons.name).arg(font.pointSize * 1.2).arg(buttonTextColor).arg(icons.settings))
+                        text: qsTr("Go to <span style='font-family:%1; font-size:%2pt; color:%3' alt='settings'>%4</span> to set your destination.".arg(icons.name).arg(16).arg(buttonTextColor).arg(icons.settings))
                         Accessible.role: Accessible.AlertMessage
                         Accessible.name: qsTr("Click the settings button in the bottom toolbar to set your destination")
                     }

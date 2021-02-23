@@ -190,7 +190,7 @@ SettingsTab {
                 AppBusyIndicator {
                     Layout.alignment: Qt.AlignVCenter
 
-                    implicitSize: 8 * AppFramework.displayScaleFactor
+                    implicitSize: 12 * AppFramework.displayScaleFactor
                     backgroundColor: addDeviceTab.selectedForegroundColor
 
                     running: discoverySwitch.checked
