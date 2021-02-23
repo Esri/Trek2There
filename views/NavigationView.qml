@@ -112,6 +112,16 @@ Item {
 
     //--------------------------------------------------------------------------
 
+    onWidthChanged: {
+        adjustScaling();
+    }
+
+    onHeightChanged: {
+        adjustScaling();
+    }
+
+    //--------------------------------------------------------------------------
+
     Connections {
         target: gnssManager
 
@@ -250,14 +260,16 @@ Item {
 
                     property var viewCoords
                     property double scale: 1
-                    property int offsetx: videoOutput.contentRect.x
-                    property int offsety: videoOutput.contentRect.y
-                    property int scalex: videoOutput.contentRect.width
-                    property int scaley: videoOutput.contentRect.height
+                    property int offsetx: canvas.x
+                    property int offsety: canvas.y
+                    property int scalex: canvas.width
+                    property int scaley: canvas.height
 
                     onPaint: {
                         var ctx = getContext("2d");
                         ctx.save();
+
+                        adjustScaling();
 
                         ctx.clearRect(0, 0, width, height);
 
@@ -269,8 +281,8 @@ Item {
                     function drawSymbol(ctx, viewCoords, scale) {
                         if (viewCoords) {
                             var size = Math.ceil(sf(50) * scale);
-                            var centeredY = overlay.height / 2 - size; // pt.y - size;
-                            var centeredX = viewCoords.x - overlay.width / 2 - size/2;
+                            var centeredY = overlay.height / 2 - size;
+                            var centeredX = viewCoords.x - size/2
                             ctx.drawImage(mapPin.source, centeredX, centeredY, size, size);
                         }
                     }
@@ -287,14 +299,16 @@ Item {
                     width: sf(200)
                     height: sf(200)
 
+                    property real angle: 75
+
                     x: parent.width/2 - width/2
-                    y: parent.height - height*0.66 - toolbar.height - (!isLandscape ? distanceReadoutContainer.height : 0)
+                    y: parent.height - height/2 * (1 + Math.cos(angle*Math.PI/180)) - toolbar.height - (!isLandscape ? distanceReadoutContainer.height : sf(16))
                     z: 10000
 
                     radius: 5
                     opacity: .8
                     color: "green"
-                    transform: Rotation { origin.x: sf(100); origin.y: sf(100); axis { x: 1; y: 0 ; z: 0 } angle: 75 }
+                    transform: Rotation { origin.x: rect.width/2; origin.y: rect.height/2; axis { x: 1; y: 0 ; z: 0 } angle: rect.angle }
 
                     Image {
                         id: hudDirectionArrow
@@ -425,7 +439,7 @@ Item {
             Accessible.role: Accessible.Pane
 
             x: 0
-            y: parent.height - height - toolbar.height - directionUI.imageBorder / 2
+            y: parent.height - height - toolbar.height
             width: parent.width
             height: sf(100)
 
@@ -1046,7 +1060,7 @@ Item {
         onRollOffsetChanged: updateRoll()
 
         function updateBearing() {
-            if ((sensors.azimuthFromTrueNorth || sensors.azimuthFromTrueNorth == 0) && useCompassForNavigation) {
+            if (useCompassForNavigation && isFinite(sensors.azimuthFromTrueNorth)) {
                 viewData.deviceBearing = sensors.azimuthFromTrueNorth;
             }
         }
@@ -1283,6 +1297,16 @@ Item {
 
     function toScreenCoord(pt) {
         return (pt ? Qt.vector2d(overlay.scalex * pt.x + overlay.offsetx, overlay.scaley * pt.y + overlay.offsety) : null);
+    }
+
+    // -------------------------------------------------------------------------
+
+    function adjustScaling() {
+        var rect = overlay//videoOutput.contentRect;
+        overlay.scalex = rect.width;
+        overlay.scaley = rect.height;
+        overlay.offsetx = rect.x;
+        overlay.offsety = rect.y;
     }
 
     // -------------------------------------------------------------------------
