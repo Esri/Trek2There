@@ -72,6 +72,25 @@ SwipeTab {
             border.width: 2
             color: position && position.horizontalAccuracy ? "#4000B2FF" : "transparent"
         }
+
+        MapQuickItem {
+            id: locationPin
+
+            anchorPoint.x: pinImage.width/2
+            anchorPoint.y: pinImage.height
+
+            visible: app.requestedDestination && app.requestedDestination.isValid
+            coordinate: app.requestedDestination && app.requestedDestination.isValid ? app.requestedDestination : QtPositioning.coordinate()
+
+            sourceItem: Image {
+                id: pinImage
+
+                width: 40 * AppFramework.displayScaleFactor
+                height: width
+
+                source: "../../images/map_pin.png"
+            }
+        }
     }
 
     //--------------------------------------------------------------------------
