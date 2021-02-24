@@ -1,8 +1,23 @@
 {
+    "appLink": "",
     "capabilities": {
-        "audio": false,
-        "backgroundBluetoothCentral": false,
-        "backgroundLocation": true,
+        "audio": true,
+        "backgroundModes": {
+            "audio": {
+                "enabled": false
+            },
+            "bluetooth": {
+                "central": {
+                    "enabled": false
+                }
+            },
+            "ios": {
+                "externalAccessory": true
+            },
+            "location": {
+                "enabled": true
+            }
+        },
         "beacon": false,
         "biometricAuthentication": false,
         "bluetooth": true,
@@ -10,7 +25,6 @@
         "fileSharing": false,
         "highAccuracyLocation": true,
         "ios": {
-            "backgroundExternalAccessory": false,
             "externalAccessoryProtocolStrings": [
                 "com.bad-elf.gps",
                 "com.eos-gnss.positioningsource"
