@@ -212,8 +212,7 @@ App {
     ClipboardDialog {
         id: clipboardDialog
 
-        x: app.width/2-width/2
-        y: app.height/2-height/2
+        anchors.centerIn: parent
 
         onUseCoordinates: {
             if (clipLat !== "" && clipLon !== "") {

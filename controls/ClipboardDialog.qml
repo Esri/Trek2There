@@ -1,4 +1,4 @@
-/* Copyright 2017 Esri
+/* Copyright 2021 Esri
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,74 +16,215 @@
 
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import QtQuick.Controls.Material 2.15
 import QtQuick.Layouts 1.15
+import QtGraphicalEffects 1.15
+import QtPositioning 5.15
 
 import ArcGIS.AppFramework 1.0
 
-Dialog {
-    id: clipboardDialog
+Item {
+    id: dialog
 
-    title: "Use Coordinates on Clipboard"
-    font.pixelSize: 20 * AppFramework.displayScaleFactor
-    standardButtons: Dialog.Yes | Dialog.No
-    modal: true
+    anchors.fill: parent
+    visible: false
 
-    width: 0.9 * parent.width
-    contentHeight: sf(200)
+    //-----------------------------------------------------------------------------------
 
-    property string clipLat: ""
-    property string clipLon: ""
+    property string title: ""
+    property string description: ""
+    property string leftBtnString: ""
+    property string rightBtnString: ""
+    property var leftFunction
+    property var rightFunction
 
+    property color backgroundColor: "#ffffff"
+    property color buttonColor: "#007ac2"
+    property color titleColor: "#303030"
+    property color textColor: "#303030"
+
+    property string fontFamily: Qt.application.font.family
+    property string thumbnail: ""
+
+    property var clipLat: Math.NaN
+    property var clipLon: Math.NaN
+
+    readonly property real scaleFactor: AppFramework.displayScaleFactor
+    readonly property bool isRightToLeft: AppFramework.localeInfo().esriName === "ar" || AppFramework.localeInfo().esriName === "he"
+
+    signal clickLeft()
+    signal clickRight()
     signal useCoordinates()
-    signal dismissCoordinates()
 
-    onAccepted: {
+    //-----------------------------------------------------------------------------------
+
+    function open() {
+        openDialog(qsTr("Use Coordinates on Clipboard"),
+                            qsTr("It looks like you copied coordinates to the clipboard. Do you want to use them in Trek2There?"),
+                            qsTr("NO"),
+                            qsTr("YES"),
+                            discarded, accepted);
+    }
+
+    function accepted() {
         useCoordinates();
         swapError.hide();
-        clipboardDialog.close();
     }
 
-    onDiscarded: {
+    function discarded() {
         dismissCoordinates();
         swapError.hide();
-        clipboardDialog.close();
     }
 
-    onDismissCoordinates: {
+    function openDialog(dialogTitle, dialogDescription, dialogLeftStr, dialogRightStr, left, right) {
+        resetDialog();
+
+        title = dialogTitle;
+        description = dialogDescription
+        leftBtnString = dialogLeftStr;
+        rightBtnString = dialogRightStr;
+        leftFunction = left;
+        rightFunction = right;
+
+        dialog.visible = true
+    }
+
+    function resetDialog() {
+        title = "";
+        description = "";
+        leftBtnString = "";
+        rightBtnString = "";
+    }
+
+    function dismissCoordinates() {
         clipLat = "";
         clipLon = "";
     }
 
-    contentItem:  Rectangle {
-        color: "#fff"
+    //-----------------------------------------------------------------------------------
+    // backbutton handling
 
-        Accessible.role: Accessible.Dialog
-        Accessible.name: title
-        Accessible.description: qsTr("This dialog appears when coordinates have been copied to the clipboard. It allows the user to use the coordinates in the application.")
+    onVisibleChanged: {
+        if (visible) {
+            forceActiveFocus();
+        }
+    }
+
+    Keys.onReleased: {
+        if (visible) {
+            if (event.key === Qt.Key_Back || event.key === Qt.Key_Escape) {
+                event.accepted = true
+                visible = false;
+            }
+        }
+    }
+
+    //-----------------------------------------------------------------------------------
+    // mask
+
+    Rectangle {
+        anchors.fill: parent
+        color: "#66000000"
+
+        MouseArea {
+            anchors.fill: parent
+            preventStealing: true
+            onClicked: {
+                discarded();
+                dialog.visible = false;
+            }
+        }
+    }
+
+    Item {
+        width: Math.min(280 * scaleFactor, parent.width * 0.8)
+        height: container.height
+        anchors.centerIn: parent
+        visible: true
+
+        //-----------------------------------------------------------------------------------
+        // popup background
+
+        Rectangle {
+            id: rect
+            color: backgroundColor
+            anchors.fill: parent
+        }
+
+        //-----------------------------------------------------------------------------------
 
         ColumnLayout {
-            anchors.fill: parent
+            id: container
 
-            Rectangle {
-                Layout.fillHeight: true
+            width: parent.width
+            anchors.horizontalCenter: parent.horizontalCenter
+            spacing: 0
+
+            Item {
                 Layout.fillWidth: true
-                color: "#fff"
-                Accessible.role: Accessible.Pane
+                Layout.preferredHeight: 24 * scaleFactor
+            }
 
-                Text{
-                    anchors.fill: parent
-                    anchors.margins: sf(5)
-                    text: qsTr("It looks like you copied coordinates to the clipboard. Do you want to use them in Trek2There?")
-                    wrapMode: Text.WordWrap
-                    font.pixelSize: 15 * AppFramework.displayScaleFactor
-                    Accessible.role: Accessible.StaticText
-                    Accessible.name: text
-                }
+            Label {
+                Layout.preferredWidth: parent.width - 48 * scaleFactor
+                Layout.alignment: Qt.AlignHCenter
+
+                text: title
+                visible: title > ""
+
+                font.pixelSize: 20 * scaleFactor
+                font.family: dialog.fontFamily
+                font.letterSpacing: 0.15 * scaleFactor
+                font.bold: true
+                color: dialog.titleColor
+                lineHeight: 27 * scaleFactor
+                lineHeightMode: Text.FixedHeight
+
+                padding: 0
+
+                wrapMode: Text.Wrap
+
+                LayoutMirroring.enabled: false
+
+                horizontalAlignment: isRightToLeft ? Text.AlignRight : Text.AlignLeft
+            }
+
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: thumbnail > "" ? 24 * scaleFactor : 8 * scaleFactor
+                visible: (title > "" || thumbnail > "") && description > ""
+            }
+
+            Label {
+                Layout.preferredWidth: parent.width - 48 * scaleFactor
+                Layout.alignment: Qt.AlignHCenter
+
+                text: description
+                visible: description > ""
+
+                font.pixelSize: 16 * scaleFactor
+                font.family: dialog.fontFamily
+                color: dialog.textColor
+                font.letterSpacing: 0
+                lineHeight: 24 * scaleFactor
+                lineHeightMode: Text.FixedHeight
+
+                padding: 0
+
+                wrapMode: Text.Wrap
+
+                horizontalAlignment: isRightToLeft ? Text.AlignRight : Text.AlignLeft
+            }
+
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 24 * scaleFactor
             }
 
             Rectangle {
-                Layout.fillHeight: true
-                Layout.fillWidth: true
+                Layout.preferredHeight: 80
+                Layout.preferredWidth: parent.width - 48 * scaleFactor
+                Layout.alignment: Qt.AlignHCenter
                 color: "#eee"
                 Accessible.role: Accessible.Pane
 
@@ -103,6 +244,8 @@ Dialog {
                             spacing: 0
 
                             Text {
+                                visible: !swapError.visible
+
                                 Layout.fillHeight: true
                                 Layout.fillWidth: true
                                 verticalAlignment: Text.AlignVCenter
@@ -112,6 +255,8 @@ Dialog {
                             }
 
                             Text {
+                                visible: !swapError.visible
+
                                 Layout.fillHeight: true
                                 Layout.fillWidth: true
                                 verticalAlignment: Text.AlignVCenter
@@ -122,14 +267,15 @@ Dialog {
 
                             StatusIndicator {
                                 id: swapError
+
                                 Layout.fillHeight: true
                                 Layout.fillWidth: true
                                 Layout.margins: sf(5)
-                                Layout.bottomMargin: 0
+                                Layout.leftMargin: 0
                                 messageType: swapError.error
                                 message: qsTr("Invalid coordinate swap.")
                                 hideAutomatically: true
-                                hideAfter: 4000
+                                hideAfter: 3000
                                 Accessible.role: Accessible.AlertMessage
                                 Accessible.name: message
                             }
@@ -141,21 +287,11 @@ Dialog {
                     Rectangle {
                         Layout.fillHeight: true
                         Layout.preferredWidth: sf(50)
-                        radius: sf(5)
+                        color: "#eee"
                         Accessible.role: Accessible.Pane
 
                         Button {
                             anchors.fill: parent
-//                            tooltip: qsTr("Swap coordinates")
-//                            style: ButtonStyle {
-//                                background: Rectangle{
-//                                    color: "transparent"
-//                                    anchors.fill: parent
-//                                    radius: sf(5)
-//                                    border.width: sf(1)
-//                                    border.color: buttonTextColor
-//                                }
-//                            }
 
                             Text {
                                 font.family: icons.name
@@ -191,80 +327,96 @@ Dialog {
                 }
             }
 
-/*
-            Rectangle {
+            Item {
                 Layout.fillWidth: true
-                Layout.preferredHeight: sf(50)
-                Layout.margins: sf(5)
-                Accessible.role: Accessible.Pane
+                Layout.preferredHeight: 24 * scaleFactor
+            }
+
+            Item {
+                Layout.preferredWidth: parent.width - 32 * scaleFactor
+                Layout.alignment: Qt.AlignHCenter
+                Layout.preferredHeight: 36 * scaleFactor
 
                 RowLayout {
                     anchors.fill: parent
+                    spacing: 0
 
-                    Button {
-                        Layout.fillHeight: true
+                    Item {
                         Layout.fillWidth: true
-                        text: qsTr("No")
-                        style: ButtonStyle {
-                            background: Rectangle {
-                                color: "transparent"
-                                anchors.fill: parent
-                                radius: sf(5)
-                                border.width: sf(1)
-                                border.color: buttonTextColor
-                            }
-                        }
+                        Layout.fillHeight: true
+                    }
 
-                        onClicked: {
-                            dismissCoordinates();
-                            swapError.hide();
-                            clipboardDialog.close();
-                        }
+                    Label {
+                        Layout.preferredWidth: Math.min(implicitWidth, parent.width / 2)
+                        Layout.fillHeight: true
+                        verticalAlignment: Text.AlignVCenter
 
-                        Accessible.role: Accessible.Button
-                        Accessible.name: qsTr("No")
-                        Accessible.description: qsTr("Do not use the coordinate values copied to the clipboard.")
-                        Accessible.onPressAction: {
-                            if (enabled && visible) {
-                                clicked(null);
+                        text: leftBtnString
+                        visible: text > ""
+                        rightPadding: 8 * scaleFactor
+                        leftPadding: rightPadding
+
+                        font.pixelSize: 14 * scaleFactor
+                        font.family: dialog.fontFamily
+                        font.letterSpacing: 0.75 * scaleFactor
+                        font.bold: true
+                        lineHeight: 19 * scaleFactor
+                        lineHeightMode: Text.FixedHeight
+                        color: buttonColor
+                        elide: isRightToLeft ? Text.ElideLeft : Text.ElideRight
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                dialog.visible = false
+                                leftFunction();
+                                clickLeft();
                             }
                         }
                     }
 
-                    Button {
+                    Item {
                         Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        text: qsTr("Yes")
-                        style: ButtonStyle {
-                            background: Rectangle {
-                                color: "transparent"
-                                anchors.fill: parent
-                                radius: sf(5)
-                                border.width: sf(1)
-                                border.color: buttonTextColor
-                            }
-                        }
+                        Layout.preferredWidth: 8 * scaleFactor
+                    }
 
-                        onClicked: {
-                            useCoordinates();
-                            swapError.hide();
-                            clipboardDialog.close();
-                        }
+                    Label {
+                        id: rightBtn
 
-                        Accessible.role: Accessible.Button
-                        Accessible.name: qsTr("Yes")
-                        Accessible.description: qsTr("Use the coordinate values copied to the clipboard.")
-                        Accessible.onPressAction: {
-                            if (enabled && visible) {
-                                clicked(null);
+                        Layout.preferredWidth: Math.min(implicitWidth, parent.width / 2)
+                        Layout.fillHeight: true
+                        verticalAlignment: Text.AlignVCenter
+
+                        text: rightBtnString
+                        visible: text > ""
+                        rightPadding: 8 * scaleFactor
+                        leftPadding: rightPadding
+
+                        font.pixelSize: 14 * scaleFactor
+                        font.family: dialog.fontFamily
+                        font.letterSpacing: 0.75 * scaleFactor
+                        font.bold: true
+                        lineHeight: 19 * scaleFactor
+                        lineHeightMode: Text.FixedHeight
+                        color: buttonColor
+                        elide: isRightToLeft ? Text.ElideLeft : Text.ElideRight
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                dialog.visible = false
+                                rightFunction();
+                                clickRight();
                             }
                         }
                     }
                 }
             }
-*/
+
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 16 * scaleFactor
+            }
         }
     }
-
-    // END /////////////////////////////////////////////////////////////////////
 }

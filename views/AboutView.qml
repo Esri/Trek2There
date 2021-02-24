@@ -266,7 +266,7 @@ Item {
                         }
 
                         RowLayout {
-                            id: appRow
+                            id: appRow1
 
                             spacing:0
 
@@ -300,7 +300,9 @@ Item {
                         }
 
                         RowLayout {
-                            anchors.top: appRow.bottom
+                            id: appRow2
+
+                            anchors.top: appRow1.bottom
                             spacing:0
 
                             Text {
@@ -328,6 +330,39 @@ Item {
                                 textFormat: Text.RichText
                                 color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                 Accessible.name: qsTr("Current version of the application framework %1".arg(frameworkVersionNumber.text))
+                                Accessible.role: Accessible.StaticText
+                            }
+                        }
+
+                        RowLayout {
+                            anchors.top: appRow2.bottom
+                            spacing:0
+
+                            Text {
+                                id: qtVersion
+
+                                Layout.fillHeight: true
+                                Layout.fillWidth: true
+                                horizontalAlignment: Text.AlignLeft
+
+                                text: qsTr("<b>Qt Version: </b>")
+                                textFormat: Text.RichText
+                                color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                                Accessible.role: Accessible.StaticText
+                                Accessible.name: qsTr("Current version of the Qt framework %1".arg(qtVersionNumber.text))
+                            }
+
+                            Text {
+                                id: qtVersionNumber
+
+                                Layout.fillHeight: true
+                                Layout.fillWidth: true
+                                horizontalAlignment: Text.AlignLeft
+
+                                text: "<b>%1</b>".arg(AppFramework.qtVersion)
+                                textFormat: Text.RichText
+                                color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+                                Accessible.name: qsTr("Current version of the Qt framework %1".arg(qtVersionNumber.text))
                                 Accessible.role: Accessible.StaticText
                             }
                         }
