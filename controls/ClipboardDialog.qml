@@ -26,7 +26,6 @@ import ArcGIS.AppFramework 1.0
 Item {
     id: dialog
 
-    anchors.fill: parent
     visible: false
 
     //-----------------------------------------------------------------------------------
@@ -136,22 +135,14 @@ Item {
         }
     }
 
-    Item {
-        width: Math.min(280 * scaleFactor, parent.width * 0.8)
+    Rectangle {
+        id: rect
+
+        width: Math.max(280 * scaleFactor, parent.width * 0.8)
         height: container.height
         anchors.centerIn: parent
-        visible: true
 
-        //-----------------------------------------------------------------------------------
-        // popup background
-
-        Rectangle {
-            id: rect
-            color: backgroundColor
-            anchors.fill: parent
-        }
-
-        //-----------------------------------------------------------------------------------
+        color: backgroundColor
 
         ColumnLayout {
             id: container
@@ -222,7 +213,7 @@ Item {
             }
 
             Rectangle {
-                Layout.preferredHeight: 80
+                Layout.preferredHeight: 80 * scaleFactor
                 Layout.preferredWidth: parent.width - 48 * scaleFactor
                 Layout.alignment: Qt.AlignHCenter
                 color: "#eee"
@@ -275,7 +266,7 @@ Item {
                                 messageType: swapError.error
                                 message: qsTr("Invalid coordinate swap.")
                                 hideAutomatically: true
-                                hideAfter: 3000
+                                hideAfter: 2000
                                 Accessible.role: Accessible.AlertMessage
                                 Accessible.name: message
                             }

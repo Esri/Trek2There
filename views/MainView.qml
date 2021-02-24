@@ -17,9 +17,11 @@
 import QtQuick 2.8
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
+import QtPositioning 5.12
 
 import ArcGIS.AppFramework 1.0
 
+import "../controls"
 import "../GNSSPlugin"
 
 Item {
@@ -150,4 +152,81 @@ Item {
     }
 
     //--------------------------------------------------------------------------
+
+    ClipboardDialog {
+        id: clipboardDialog
+
+        anchors.fill: parent
+
+        onUseCoordinates: {
+            if (clipLat !== "" && clipLon !== "") {
+                console.log("lat: %1, lon:%2".arg(clipLat).arg(clipLon))
+                requestedDestination = QtPositioning.coordinate(clipLat.toString(), clipLon.toString());
+                dismissCoordinates();
+            }
+        }
+    }
+
+
+    // -------------------------------------------------------------------------
+
+    Connections {
+        id: appClipboard
+
+        target: AppFramework.clipboard
+
+        function onDataChanged() {
+            checkClip();
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
+    Connections {
+        target: Qt.application
+
+        function onStateChanged() {
+            // Needed for UWP
+            if(safetyWarningAccepted && Qt.application.state === Qt.ApplicationActive) {
+                checkClip();
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
+    function checkClip() {
+        var lat = "";
+        var lon = "";
+
+        if (AppFramework.clipboard.dataAvailable && listenToClipboard) {
+            try {
+                var inJson = JSON.parse(AppFramework.clipboard.text);
+                if (inJson.hasOwnProperty("latitude") && inJson.hasOwnProperty("longitude")) {
+                    lat = inJson.latitude.toString().trim();
+                    lon = inJson.longitude.toString().trim();
+                }
+            } catch(e) {
+                if (e.toString().indexOf("JSON.parse: Parse error") > -1) {
+                    var incoords = AppFramework.clipboard.text.split(',');
+                    if (incoords.length === 2) {
+                        lat = incoords[0].toString().trim();
+                        lon = incoords[1].toString().trim();
+                    }
+                }
+            } finally {
+                if (lat !== "" && lon !== "") {
+                    if (validateCoordinates(lat, lon)) {
+                        clipboardDialog.clipLat = lat;
+                        clipboardDialog.clipLon = lon;
+                        clipboardDialog.open();
+
+                        AppFramework.clipboard.clear();
+                    }
+                }
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
 }
