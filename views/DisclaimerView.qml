@@ -14,9 +14,10 @@
  *
  */
 
-import QtQuick 2.8
-import QtQuick.Controls 2.1
-import QtQuick.Layouts 1.1
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
+
 import ArcGIS.AppFramework 1.0
 
 Item {

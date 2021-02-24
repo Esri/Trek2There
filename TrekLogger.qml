@@ -14,8 +14,8 @@
  *
  */
 
-import QtQuick 2.8
-import QtQuick.LocalStorage 2.0
+import QtQuick 2.15
+import QtQuick.LocalStorage 2.15
 
 /*  Database Schema
 

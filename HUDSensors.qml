@@ -1,6 +1,6 @@
-import QtQuick 2.5
-import QtQuick.Window 2.2
-import QtSensors 5.3
+import QtQuick 2.15
+import QtQuick.Window 2.15
+import QtSensors 5.15
 
 import ArcGIS.AppFramework 1.0
 

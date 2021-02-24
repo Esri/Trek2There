@@ -14,9 +14,9 @@
  *
  */
 
-import QtQuick 2.8
-import QtPositioning 5.8
-import QtLocation 5.8
+import QtQuick 2.15
+import QtPositioning 5.15
+import QtLocation 5.15
 
 import ArcGIS.AppFramework 1.0
 
