@@ -182,15 +182,16 @@ Item {
 
                                     font.pixelSize: baseFontSize
 
+                                    indicator.height: sf(30)
+                                    indicator.width: sf(30)
+
                                     background: Rectangle {
                                         anchors.fill: parent
                                         color: !nightMode ? dayModeSettings.background : nightModeSettings.background
                                     }
 
                                     contentItem: Text {
-                                        leftPadding: sf(12)
                                         rightPadding: coordBox.indicator.width + coordBox.spacing
-
                                         text: coordBox.displayText
                                         font: coordBox.font
                                         color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
@@ -207,6 +208,8 @@ Item {
                                         }
 
                                         contentItem: Text {
+                                            topPadding: sf(4)
+                                            bottomPadding: sf(4)
                                             text: modelData
                                             font: coordBox.font
                                             elide: Text.ElideRight
