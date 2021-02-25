@@ -49,6 +49,7 @@ Rectangle {
             color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
 
             text: qsTr("RadioButton")
+            font.pixelSize: baseFontSize
             horizontalAlignment: Text.AlignLeft
             verticalAlignment: Text.AlignVCenter
             leftPadding: control.indicator.width + control.spacing

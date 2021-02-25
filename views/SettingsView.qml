@@ -134,6 +134,7 @@ Item {
                                 anchors.fill: parent
                                 anchors.leftMargin: sideMargin
                                 text: qsTr("DESTINATION")
+                                font.pixelSize: largeFontSize
                                 verticalAlignment: Text.AlignBottom
                                 color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                 Accessible.role: Accessible.Heading
@@ -163,6 +164,7 @@ Item {
                                     Layout.preferredWidth: sf(120)
                                     text: qsTr("Format")
                                     verticalAlignment: Text.AlignVCenter
+                                    font.pixelSize: baseFontSize
                                     color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                     Accessible.role: Accessible.Heading
                                     Accessible.name: text
@@ -177,6 +179,8 @@ Item {
                                     Accessible.role: Accessible.ComboBox
                                     Accessible.name: qsTr("Change coordinate format")
                                     Accessible.description: qsTr("Change the format of the coordiante entry. For example decimal degrees to MGRS.")
+
+                                    font.pixelSize: baseFontSize
 
                                     background: Rectangle {
                                         anchors.fill: parent
@@ -361,6 +365,7 @@ Item {
                                 anchors.fill: parent
                                 anchors.leftMargin: sideMargin
                                 text: qsTr("DISTANCE UNIT")
+                                font.pixelSize: largeFontSize
                                 verticalAlignment: Text.AlignBottom
                                 color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                 Accessible.role: Accessible.Heading
@@ -439,6 +444,7 @@ Item {
                                 anchors.fill: parent
                                 anchors.leftMargin: sideMargin
                                 text: qsTr("LOCATION PROVIDER")
+                                font.pixelSize: largeFontSize
                                 verticalAlignment: Text.AlignBottom
                                 color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
 
@@ -476,6 +482,7 @@ Item {
                                             Layout.fillWidth: true
 
                                             text: (gnssSettings.lastUsedDeviceLabel > "" ? gnssSettings.lastUsedDeviceLabel : gnssSettings.lastUsedDeviceName) + " " + connectionStateText
+                                            font.pixelSize: baseFontSize
                                             color: connectionStateColor
                                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                             verticalAlignment: Text.AlignVCenter
@@ -489,6 +496,7 @@ Item {
                                             Layout.alignment: Qt.AlignRight
 
                                             text: "Change"
+                                            font.pixelSize: baseFontSize
                                             color: connectionStateColor
                                             verticalAlignment: Text.AlignVCenter
                                             horizontalAlignment: Text.AlignRight
@@ -523,6 +531,7 @@ Item {
                                 anchors.fill: parent
                                 anchors.leftMargin: sideMargin
                                 text: qsTr("EXPERIMENTAL FEATURES")
+                                font.pixelSize: largeFontSize
                                 verticalAlignment: Text.AlignBottom
                                 color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                 Accessible.role: Accessible.Heading
@@ -565,11 +574,11 @@ Item {
                                     Layout.leftMargin: sideMargin
                                     Layout.rightMargin: sideMargin
                                     text: qsTr("Esri Labs encourages users to use these features and provide feedback. Please <a href='mailto:%1'>email us</a> with your feedback.<br>").arg(feedbackEmail)
+                                    font.pixelSize: baseFontSize
                                     verticalAlignment: Text.AlignVCenter
                                     color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                     opacity: .8
                                     Accessible.ignored: true
-                                    font.pixelSize: 10 * AppFramework.displayScaleFactor
                                     wrapMode: Text.Wrap
                                     textFormat: Text.StyledText
                                     linkColor: "#007ac2"
@@ -627,11 +636,11 @@ Item {
                                     Layout.fillWidth: true
                                     Layout.leftMargin: sf(20) + sideMargin
                                     text: qsTr("Use compass to establish bearing to target if stationary.")
+                                    font.pixelSize: baseFontSize
                                     verticalAlignment: Text.AlignVCenter
                                     color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                     opacity: .8
                                     Accessible.ignored: true
-                                    font.pixelSize: 10 * AppFramework.displayScaleFactor
                                     wrapMode: Text.Wrap
                                     textFormat: Text.StyledText
                                 }
@@ -683,11 +692,11 @@ Item {
                                     Layout.fillWidth: true
                                     Layout.leftMargin: sf(20) + sideMargin
                                     text: qsTr("Activate the augmented reality display and show a location pin if the device is held upright.")
+                                    font.pixelSize: baseFontSize
                                     verticalAlignment: Text.AlignVCenter
                                     color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                     opacity: .8
                                     Accessible.ignored: true
-                                    font.pixelSize: 10 * AppFramework.displayScaleFactor
                                     wrapMode: Text.Wrap
                                     textFormat: Text.StyledText
                                 }

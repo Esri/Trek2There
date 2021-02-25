@@ -57,6 +57,7 @@ Rectangle {
             Layout.preferredWidth: sf(120)
             verticalAlignment: Text.AlignVCenter
             color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+            font.pixelSize: baseFontSize
             Accessible.role: Accessible.Heading
             Accessible.name: text
         }
@@ -78,6 +79,7 @@ Rectangle {
             }
 
             color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
+            font.pixelSize: baseFontSize
 
             onEditingFinished: rect.editingFinished();
         }

@@ -241,6 +241,7 @@ Item {
                                 Layout.fillWidth: true
                                 verticalAlignment: Text.AlignVCenter
                                 text: "Latitude (y): %1".arg(clipLat)
+                                font.pixelSize: 16 * scaleFactor
                                 Accessible.role: Accessible.Indicator
                                 Accessible.name: qsTr("This is the latitude or y value")
                             }
@@ -252,6 +253,7 @@ Item {
                                 Layout.fillWidth: true
                                 verticalAlignment: Text.AlignVCenter
                                 text: "Longitude (x): %1".arg(clipLon)
+                                font.pixelSize: 16 * scaleFactor
                                 Accessible.role: Accessible.Indicator
                                 Accessible.name: qsTr("This is the longitude or x value")
                             }

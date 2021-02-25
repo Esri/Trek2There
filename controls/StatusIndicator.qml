@@ -27,7 +27,7 @@ Rectangle {
     property bool animateHide: false
     property int hideAfter: 30000
     property int containerHeight: 50 * AppFramework.displayScaleFactor
-    property int statusTextFontSize: 14 * AppFramework.displayScaleFactor
+    property int statusTextFontSize: 16 * AppFramework.displayScaleFactor
     property int indicatorBorderWidth: 1 * AppFramework.displayScaleFactor
     property string statusTextFontColor: "#111"
     property alias message: statusText.text

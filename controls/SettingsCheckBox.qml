@@ -48,6 +48,7 @@ Rectangle {
             color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
 
             text: qsTr("CheckBox")
+            font.pixelSize: baseFontSize
             horizontalAlignment: Text.AlignLeft
             verticalAlignment: Text.AlignVCenter
             leftPadding: control.indicator.width + control.spacing

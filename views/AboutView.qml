@@ -187,6 +187,7 @@ Item {
                                 textFormat: Text.RichText
                                 color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                                 text: "<p>%1</p><p>%2</p>".arg(app.info.description).arg(esriLabsText)
+                                font.pixelSize: baseFontSize
                                 Accessible.role: Accessible.StaticText
                                 Accessible.name: qsTr("Description text")
                                 Accessible.readOnly: true
@@ -227,6 +228,7 @@ Item {
                             textFormat: Text.RichText
                             color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                             text: qsTr("<a href='http://esriurl.com/labseula' style='color:#007ac2'>View the license agreement</a> ")
+                            font.pixelSize: baseFontSize
                             onLinkActivated: {
                                  Qt.openUrlExternally(link);
                             }

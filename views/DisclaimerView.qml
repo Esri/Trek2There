@@ -47,6 +47,8 @@ Item {
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
                     text: qsTr("Disclaimer")
+                    font.pixelSize: largeFontSize
+                    font.bold: true
                     color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
 
                     Accessible.role: Accessible.Heading
@@ -101,6 +103,7 @@ Item {
                         rightPadding: 0
                         color: !nightMode ? dayModeSettings.foreground : nightModeSettings.foreground
                         text: "<p>%1</p><p>%2</p><p>%3</p><p>%4</p><p>%5</p>".arg(para1).arg(para2).arg(para3).arg(para4).arg(esriLabsText)
+                        font.pixelSize: sf(16)
                         wrapMode: TextArea.Wrap
                         onLinkActivated: {
                              Qt.openUrlExternally(link);
@@ -129,6 +132,7 @@ Item {
                     anchors.fill: parent
                     textFormat: Text.RichText
                     text: "<a href='http://esriurl.com/labseula' style='color:#007ac2'>%1</a>".arg(elementText)
+                    font.pixelSize: baseFontSize
                     onLinkActivated: {
                          Qt.openUrlExternally(link);
                     }
@@ -288,6 +292,7 @@ Item {
                                 anchors.centerIn: parent
                                 color: buttonTextColor
                                 text: qsTr("Accept")
+                                font.pixelSize: baseFontSize
                             }
 
                             onClicked: {
