@@ -14,10 +14,10 @@
  *
  */
 
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
-import QtQml.Models 2.15
+import QtQuick 2.12
+import QtQuick.Controls 2.12
+import QtQuick.Layouts 1.12
+import QtQml.Models 2.12
 
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
@@ -109,7 +109,7 @@ SettingsTab {
         Connections {
             target: settingsTabLocation
 
-            function onActivated() {
+            onActivated: {
                 if (_dirty) {
                     _item.createListTabView(gnssSettings.knownDevices);
                     _dirty = false;
@@ -122,13 +122,13 @@ SettingsTab {
         Connections {
             target: gnssSettings
 
-            function onReceiverAdded(name) {
+            onReceiverAdded: {
                 _item.addDeviceListTab(name, gnssSettings.knownDevices)
                 sortedListTabView.sort();
                 _dirty = true;
             }
 
-            function onReceiverRemoved(name) {
+            onReceiverRemoved: {
                 _dirty = true;
             }
         }
@@ -866,7 +866,7 @@ SettingsTab {
                 Connections {
                     target: settingsTabLocation
 
-                    function onSelectInternal() {
+                    onSelectInternal: {
                         if (delegate.delegateDeviceType === kDeviceTypeInternal) {
                             _item.connectProvider(delegate);
                         }

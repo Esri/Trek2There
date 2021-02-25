@@ -14,8 +14,8 @@
  *
  */
 
-import QtQml 2.15
-import QtQuick 2.15
+import QtQml 2.12
+import QtQuick 2.12
 
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Speech 1.0

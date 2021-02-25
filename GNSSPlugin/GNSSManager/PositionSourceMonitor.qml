@@ -14,8 +14,8 @@
  *
  */
 
-import QtQml 2.15
-import QtQuick 2.15
+import QtQml 2.12
+import QtQuick 2.12
 
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
@@ -86,7 +86,7 @@ Item {
         target: nmeaSource
         enabled: active && positionSourceManager.isGNSS
 
-        function onReceivedNmeaData() {
+        onReceivedNmeaData: {
             dataReceivedTime = (new Date()).valueOf();
         }
     }
@@ -99,7 +99,7 @@ Item {
         target: positionSourceManager
         enabled: active
 
-        function onNewPosition(position) {
+        onNewPosition: {
             positionReceivedTime = positionSourceManager.positionTimestamp
 
             if (!positionSourceManager.isGNSS || position.fixTypeValid && position.fixType > 0) {
@@ -112,7 +112,7 @@ Item {
             newPosition(position);
         }
 
-        function onIsConnectedChanged() {
+        onIsConnectedChanged: {
             if (positionSourceManager.isGNSS) {
                 if (positionSourceManager.isConnected) {
                     alert(GNSSAlerts.AlertType.Connected);
@@ -123,11 +123,11 @@ Item {
             }
         }
 
-        function onTcpError(errorString) { positionIsCurrent = false; }
-        function onDeviceError(errorString) { positionIsCurrent = false; }
-        function onNmeaLogFileError(errorString) { positionIsCurrent = false; }
-        function onDiscoveryAgentError(errorString) { positionIsCurrent = false; }
-        function onPositionSourceError(errorString) { positionIsCurrent = false; }
+        onTcpError: { positionIsCurrent = false; }
+        onDeviceError: { positionIsCurrent = false; }
+        onNmeaLogFileError: { positionIsCurrent = false; }
+        onDiscoveryAgentError: { positionIsCurrent = false; }
+        onPositionSourceError: { positionIsCurrent = false; }
     }
 
     //--------------------------------------------------------------------------

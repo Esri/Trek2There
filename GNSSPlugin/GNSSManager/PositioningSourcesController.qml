@@ -14,8 +14,8 @@
  *
  */
 
-import QtQml 2.15
-import QtQuick 2.15
+import QtQml 2.12
+import QtQuick 2.12
 
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
@@ -273,7 +273,7 @@ Item {
     Connections {
         target: nmeaSource
 
-        function onErrorChanged() {
+        onErrorChanged: {
             if (useFile) {
                 console.log("NMEA log file error:", nmeaSource.error)
 
@@ -294,7 +294,7 @@ Item {
     Connections {
         target: tcpSocket
 
-        function onErrorChanged() {
+        onErrorChanged: {
             if (useTCPConnection) {
                 console.log("TCP connection error:", tcpSocket.error, tcpSocket.errorString)
 
@@ -315,7 +315,7 @@ Item {
     Connections {
         target: currentDevice
 
-        function onConnectedChanged() {
+        onConnectedChanged: {
             if (currentDevice && useExternalGPS) {
                 if (stayConnected && !onSettingsPage) {
                     reconnect();
@@ -323,7 +323,7 @@ Item {
             }
         }
 
-        function onErrorChanged() {
+        onErrorChanged: {
             if (currentDevice && useExternalGPS) {
                 console.log("Device connection error:", currentDevice.error)
 
@@ -344,15 +344,15 @@ Item {
     Connections {
         target: discoveryAgent
 
-        function onDiscoverDevicesCompleted() {
+        onDiscoverDevicesCompleted: {
             console.log("Device discovery completed");
         }
 
-        function onRunningChanged() {
+        onRunningChanged: {
             console.log("DeviceDiscoveryAgent running", discoveryAgent.running);
         }
 
-        function onErrorChanged() {
+        onErrorChanged: {
             console.log("Device discovery agent error:", discoveryAgent.error)
 
             if (onSettingsPage) {
@@ -360,7 +360,7 @@ Item {
             }
         }
 
-        function onDeviceDiscovered(device) {
+        onDeviceDiscovered: {
             if (discoveryAgent.deviceFilter(device)) {
                 console.log("Device discovered - Name:", device.name, "Type:", device.deviceType);
             }

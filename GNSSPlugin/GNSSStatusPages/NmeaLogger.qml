@@ -14,8 +14,8 @@
  *
  */
 
-import QtQml 2.15
-import QtQuick 2.15
+import QtQml 2.12
+import QtQuick 2.12
 
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
@@ -95,7 +95,7 @@ Item {
         target: nmeaSource
         enabled: !positionSourceManager.isInternal
 
-        function onReceivedNmeaData() {
+        onReceivedNmeaData: {
             logSentence(nmeaSource.receivedSentence.trim())
         }
     }
@@ -106,7 +106,7 @@ Item {
         target: positionSourceManager
         enabled: positionSourceManager.isInternal
 
-        function onNewPosition(position) {
+        onNewPosition: {
             logPosition(position);
         }
     }

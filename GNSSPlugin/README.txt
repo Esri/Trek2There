@@ -121,7 +121,7 @@ of the GNSSManager:
     Connections {
         target: gnssManager
 
-        function onNewPosition(position) {
+        onNewPosition: {
             // ... do something, e.g. update Map centre ...
             // the 'position' parameter contains the current position
         }

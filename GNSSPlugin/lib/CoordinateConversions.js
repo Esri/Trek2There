@@ -16,7 +16,7 @@
 
 .pragma library
 
-.import QtQml 2.15 as QML
+.import QtQml 2.12 as QML
 .import ArcGIS.AppFramework.Sql 1.0 as Sql
 
 //------------------------------------------------------------------------------

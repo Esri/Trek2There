@@ -14,9 +14,9 @@
  *
  */
 
-import QtQml 2.15
-import QtQuick 2.15
-import QtPositioning 5.15
+import QtQml 2.12
+import QtQuick 2.12
+import QtPositioning 5.12
 
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
@@ -277,7 +277,7 @@ Item {
     Connections {
         target: positionSource
 
-        function onActiveChanged() {
+        onActiveChanged: {
             console.log("positionSource.active:", positionSource.active);
 
             // require warm-up after activation
@@ -287,7 +287,7 @@ Item {
             }
         }
 
-        function onPositionChanged() {
+        onPositionChanged: {
             var newposition = positionSource.position;
 
             // replace position time-stamp with current time if we're parsing a log file
@@ -319,7 +319,7 @@ Item {
             }
         }
 
-        function onSourceErrorChanged() {
+        onSourceErrorChanged: {
             console.error("Positioning Source Error:", positionSource.sourceError);
 
             var errorString = "";

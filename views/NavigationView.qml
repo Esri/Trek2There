@@ -14,15 +14,15 @@
  *
  */
 
-import QtQuick 2.15
-import QtQml 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
-import QtGraphicalEffects 1.15
-import QtPositioning 5.15
-import QtQuick.Window 2.15
-import QtMultimedia 5.15
-import QtSensors 5.15
+import QtQuick 2.12
+import QtQml 2.12
+import QtQuick.Controls 2.12
+import QtQuick.Layouts 1.12
+import QtGraphicalEffects 1.12
+import QtPositioning 5.12
+import QtQuick.Window 2.12
+import QtMultimedia 5.12
+import QtSensors 5.12
 
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Devices 1.0
@@ -124,7 +124,7 @@ Item {
     Connections {
         target: gnssManager
 
-        function onNewPosition(position) {
+        onNewPosition: {
             navigationView.newPosition = position;
         }
     }
@@ -1094,7 +1094,7 @@ Item {
     Connections {
         target: app
 
-        function onRequestedDestinationChanged() {
+        onRequestedDestinationChanged: {
             console.log("requested Destination: ", app.requestedDestination);
             if (app.requestedDestination !== null) {
                 startNavigation();

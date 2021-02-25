@@ -14,8 +14,8 @@
  *
  */
 
-import QtQml 2.15
-import QtQuick 2.15
+import QtQml 2.12
+import QtQuick 2.12
 
 import ArcGIS.AppFramework 1.0
 import ArcGIS.AppFramework.Positioning 1.0
@@ -116,14 +116,14 @@ Item {
     Connections {
         target: currentDevice
 
-        function onConnectedChanged() {
+        onConnectedChanged: {
             // cleanup in case the connection to the device is lost
             if (currentDevice && !currentDevice.connected) {
                 disconnect();
             }
         }
 
-        function onErrorChanged() {
+        onErrorChanged: {
             disconnect();
         }
     }
